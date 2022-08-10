@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace DistrictHeating
 {
+    public enum Pipe { returnPipe, warmPipe, hotPipe };
     /// <summary>
     /// the plant: contains information about the current state of the heating system.
     /// 
@@ -19,6 +20,8 @@ namespace DistrictHeating
             useThreePipes = false;
             System.Text.Json.JsonDocument jsonDocument = JsonDocument.Parse("");
             System.Text.Json.JsonElement root = jsonDocument.RootElement;
+            double[] test = { 1, 2, 3, 4, 5 };
+            test[0] = test[1];
         }
         public static int currentTime; // number of hours since first of january of the simulation
         public static double returnPipeTemp; // current temperature of the return pipe [K]
