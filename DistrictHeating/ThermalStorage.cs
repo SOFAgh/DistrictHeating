@@ -29,7 +29,7 @@ namespace DistrictHeating
         /// </summary>
         public double waterVolume { get { return pipeInnerDiameter * pipeInnerDiameter / 4.0 * Math.PI * boreHoleLength * 2.0; } } 
         // status:
-        public double[] cellSoilTemperature; // [K], this should in a leter versionn be splitted into 7 areas: 6 trapezoids and a inner hexagon
+        public double[] cellSoilTemperature; // [K], this should in a leter version be splitted into 7 areas: 6 trapezoids and a inner hexagon
         public double[] cellWaterTemperature; // [K]
     }
 }
