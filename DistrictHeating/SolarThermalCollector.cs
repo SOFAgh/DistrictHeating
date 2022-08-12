@@ -11,13 +11,14 @@ namespace DistrictHeating
     internal class SolarThermalCollector : IProsumer
     {
         public double Area { get; set; } // the area on the ground of the solar collector. This is not the sum of the panels area, which are inclined and less.
-        public void Step(out double volumeFlow, out double flowTemperature, out Pipe fromPipe, out Pipe toPipe)
+        public void Step(out double volumeFlow, out double flowTemperature, out Pipe fromPipe, out Pipe toPipe, out double electricity)
         {   // test implementation
             volumeFlow = 1; // [l/s]
             flowTemperature = 353; // [°K]
             fromPipe = Pipe.returnPipe;
-            if (Plant.useThreePipes) toPipe = Pipe.hotPipe;
+            if (DistrictHeating.plant.UseThreePipes) toPipe = Pipe.hotPipe;
             else toPipe = Pipe.warmPipe;
+            electricity = 0;
         }
     }
 }
