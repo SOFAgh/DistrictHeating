@@ -1,0 +1,31 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{biblatex}
+\author{Gerhard Hofmann}
+\title{Simulation eines Nahwärmesystems mit solarthermischer Energiequelle und Erdsonden-Wärmespeicher}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Kurzfassung}
+Nahwärmesysteme mit solarthermischer Energiequelle und Erdsonden-Wärmespeicher sind ein vielversprechendes Konzept für die Wärmewende, d.h. für die Wärmeversorgung von Büro- und Wohnhäusern ohne fossile Brennstoffe und mit minimalem Stromeinsatz.\\
+Ein solches System besteht aus mehreren Komponenten, die gut aufeinander abgestimmt sein müssen. Als Komponenten betrachten wir:\begin{itemize}
+\item Solarthermiefeld
+\item Erdsonden-Wärmespeicher
+\item Pufferspeicher
+\item Wärmeverbraucher
+\item Hausübergabestation
+\item Nahwärmeleitungen
+\item Wärmepumpen
+\end{itemize}
+Manche dieser Komponenten sind in einem bestimmten Szenario bereits vorgegeben, andere müssen noch dimensioniert werden. 
+Es wird angestrebt, eine möglichst hohe solare Deckungsrate bei der Wärmeversorgung zu erreichen. Dazu kann man mit der hier vorgestellten Software \texttt{DistrictHeating} die verschiedenen noch freien Parameter (z.B. Abstand der Erdsonden zueinander, Vorlauftemperatur im Netz u.v.m.) variieren und nach einer Simulation über den Jahresverlauf z.B. den Stromverbrauch der Wärmepumpen feststellen.\\
+Angeregt wurde die Entwicklung der Simulation \texttt{DistrictHeating} durch die Dissertation \glqq Object-oriented modelling of solar district heating grids with underground thermal energy storage\grqq von Julian Formhals, in der die Simulation eines ebensolchen Nahwärmesystems basierend auf  Modelica beschrieben wird. Diese Simulation von Julian Formhals ist weitaus realistischer als \texttt{DistrictHeating}, benötig jedoch auch wesentlich mehr Rechenzeit. Somit ist es kaum möglich mehrere Parameter über Testreihen zu verändern um eine optimale Konfiguration zu finden.
+\section{Einleitung}
+Das \texttt{DistrictHeating} zugrunde liegende Konzept besteht aus einem Nahwärme-Leitungsnetz mit zwei oder 
+\end{document}
