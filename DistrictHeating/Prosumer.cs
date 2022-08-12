@@ -8,6 +8,6 @@ namespace DistrictHeating
 {
     internal interface IProsumer
     {
-        void Step(out double volumeFlow, out double flowTemperature, out Pipe fromPipe, out Pipe toPipe);
+        void Step(out double volumeFlow, out double flowTemperature, out Pipe fromPipe, out Pipe toPipe, out double electricity);
     }
 }
