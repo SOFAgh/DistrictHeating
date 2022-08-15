@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace DistrictHeating
 {
-    internal interface IProsumer
+    public interface IProsumer
     {
-        void Step(out double volumeFlow, out double flowTemperature, out Pipe fromPipe, out Pipe toPipe, out double electricity);
+        void Initialize(Plant plant);
+        void Step(Plant plant, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
     }
 }

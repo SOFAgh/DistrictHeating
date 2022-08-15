@@ -46,12 +46,13 @@
             this.tabSolar = new System.Windows.Forms.TabPage();
             this.tabConsumer = new System.Windows.Forms.TabPage();
             this.tabWether = new System.Windows.Forms.TabPage();
+            this.saveTemperatureData = new System.Windows.Forms.Button();
+            this.readTemperatureData = new System.Windows.Forms.Button();
+            this.wetherData = new System.Windows.Forms.ListBox();
             this.tabSimulation = new System.Windows.Forms.TabPage();
             this.tabGraphics = new System.Windows.Forms.TabPage();
-            this.wetherData = new System.Windows.Forms.ListBox();
-            this.readTemperatureData = new System.Windows.Forms.Button();
-            this.saveTemperatureData = new System.Windows.Forms.Button();
             this.openTemperaturFile = new System.Windows.Forms.OpenFileDialog();
+            this.button1 = new System.Windows.Forms.Button();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -62,6 +63,7 @@
             this.tabMain.SuspendLayout();
             this.tabBHTES.SuspendLayout();
             this.tabWether.SuspendLayout();
+            this.tabSimulation.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -250,8 +252,37 @@
             this.tabWether.Text = "Wetterdaten";
             this.tabWether.UseVisualStyleBackColor = true;
             // 
+            // saveTemperatureData
+            // 
+            this.saveTemperatureData.Location = new System.Drawing.Point(849, 6);
+            this.saveTemperatureData.Name = "saveTemperatureData";
+            this.saveTemperatureData.Size = new System.Drawing.Size(178, 23);
+            this.saveTemperatureData.TabIndex = 1;
+            this.saveTemperatureData.Text = "Temperaturdaten speichern";
+            this.saveTemperatureData.UseVisualStyleBackColor = true;
+            // 
+            // readTemperatureData
+            // 
+            this.readTemperatureData.Location = new System.Drawing.Point(577, 6);
+            this.readTemperatureData.Name = "readTemperatureData";
+            this.readTemperatureData.Size = new System.Drawing.Size(178, 23);
+            this.readTemperatureData.TabIndex = 1;
+            this.readTemperatureData.Text = "Temperaturdaten lesen";
+            this.readTemperatureData.UseVisualStyleBackColor = true;
+            this.readTemperatureData.Click += new System.EventHandler(this.readTemperatureData_Click);
+            // 
+            // wetherData
+            // 
+            this.wetherData.FormattingEnabled = true;
+            this.wetherData.ItemHeight = 15;
+            this.wetherData.Location = new System.Drawing.Point(6, 6);
+            this.wetherData.Name = "wetherData";
+            this.wetherData.Size = new System.Drawing.Size(565, 574);
+            this.wetherData.TabIndex = 0;
+            // 
             // tabSimulation
             // 
+            this.tabSimulation.Controls.Add(this.button1);
             this.tabSimulation.Location = new System.Drawing.Point(4, 24);
             this.tabSimulation.Name = "tabSimulation";
             this.tabSimulation.Padding = new System.Windows.Forms.Padding(3);
@@ -270,45 +301,27 @@
             this.tabGraphics.Text = "Grafik";
             this.tabGraphics.UseVisualStyleBackColor = true;
             // 
-            // wetherData
-            // 
-            this.wetherData.FormattingEnabled = true;
-            this.wetherData.ItemHeight = 15;
-            this.wetherData.Location = new System.Drawing.Point(6, 6);
-            this.wetherData.Name = "wetherData";
-            this.wetherData.Size = new System.Drawing.Size(565, 574);
-            this.wetherData.TabIndex = 0;
-            // 
-            // readTemperatureData
-            // 
-            this.readTemperatureData.Location = new System.Drawing.Point(577, 6);
-            this.readTemperatureData.Name = "readTemperatureData";
-            this.readTemperatureData.Size = new System.Drawing.Size(178, 23);
-            this.readTemperatureData.TabIndex = 1;
-            this.readTemperatureData.Text = "Temperaturdaten lesen";
-            this.readTemperatureData.UseVisualStyleBackColor = true;
-            this.readTemperatureData.Click += new System.EventHandler(this.readTemperatureData_Click);
-            // 
-            // saveTemperatureData
-            // 
-            this.saveTemperatureData.Location = new System.Drawing.Point(849, 6);
-            this.saveTemperatureData.Name = "saveTemperatureData";
-            this.saveTemperatureData.Size = new System.Drawing.Size(178, 23);
-            this.saveTemperatureData.TabIndex = 1;
-            this.saveTemperatureData.Text = "Temperaturdaten speichern";
-            this.saveTemperatureData.UseVisualStyleBackColor = true;
-            // 
             // openTemperaturFile
             // 
             this.openTemperaturFile.FileName = " ";
             // 
-            // MainForm
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(898, 561);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(129, 23);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "Simulation Starten";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // DistrictHeating
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1065, 642);
             this.Controls.Add(this.tabMain);
-            this.Name = "MainForm";
+            this.Name = "DistrictHeating";
             this.Text = "Simulation einer Anlage mit Solarthermie, Erdsonden-Wärmespeicher und Wärmeverbra" +
     "uchern";
             this.tabPlant.ResumeLayout(false);
@@ -317,6 +330,7 @@
             this.tabBHTES.ResumeLayout(false);
             this.tabBHTES.PerformLayout();
             this.tabWether.ResumeLayout(false);
+            this.tabSimulation.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -341,5 +355,6 @@
         private Button readTemperatureData;
         private ListBox wetherData;
         private OpenFileDialog openTemperaturFile;
+        private Button button1;
     }
 }

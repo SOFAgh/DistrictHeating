@@ -8,17 +8,28 @@ namespace DistrictHeating
 {
     // Calculate sun direction from date and time: http://www.geoastro.de/SME/tk/index.htm
 
-    internal class SolarThermalCollector : IProsumer
+    public class SolarThermalCollector : IProsumer
     {
         public double Area { get; set; } // the area on the ground of the solar collector. This is not the sum of the panels area, which are inclined and less.
-        public void Step(out double volumeFlow, out double flowTemperature, out Pipe fromPipe, out Pipe toPipe, out double electricity)
+        public void Initialize(Plant plant) 
+        {
+            double globalSolarRadiation = 0.0;
+            double diffuseSolarRadiation = 0.0;
+            for (int hour = 0; hour < Plant.HoursPerYear; hour++)
+            {
+                globalSolarRadiation += plant.Climate.GlobalSolarRadiation[hour];
+                diffuseSolarRadiation += plant.Climate.DiffuseRadiation[hour];
+            }
+            
+        }
+        public void Step(Plant plant, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower)
         {   // test implementation
-            volumeFlow = 1; // [l/s]
-            flowTemperature = 353; // [°K]
+            volumetricFlowRate = 1; // [m³/s]
+            deltaT = 60; // [°K]
             fromPipe = Pipe.returnPipe;
-            if (DistrictHeating.plant.UseThreePipes) toPipe = Pipe.hotPipe;
+            if (plant.UseThreePipes) toPipe = Pipe.hotPipe;
             else toPipe = Pipe.warmPipe;
-            electricity = 0;
+            electricPower = 0;
         }
     }
 }

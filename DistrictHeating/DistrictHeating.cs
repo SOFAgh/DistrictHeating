@@ -5,7 +5,7 @@ namespace DistrictHeating
 {
     public partial class DistrictHeating : Form
     {
-        public static Plant Plant { get; set; } = new Plant();
+        public Plant Plant { get; set; } = new Plant();
         public DistrictHeating()
         {
             InitializeComponent();
@@ -25,6 +25,11 @@ namespace DistrictHeating
 
                 }
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Plant.Simulate();
         }
     }
 }
