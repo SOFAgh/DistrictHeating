@@ -7,6 +7,7 @@
 \usepackage{amssymb}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \usepackage{biblatex}
+\usepackage[dvipsnames]{xcolor}
 \author{Gerhard Hofmann}
 \title{Simulation eines Nahwärmesystems mit solarthermischer Energiequelle und Erdsonden-Wärmespeicher}
 \begin{document}
@@ -27,5 +28,47 @@ Manche dieser Komponenten sind in einem bestimmten Szenario bereits vorgegeben, 
 Es wird angestrebt, eine möglichst hohe solare Deckungsrate bei der Wärmeversorgung zu erreichen. Dazu kann man mit der hier vorgestellten Software \texttt{DistrictHeating} die verschiedenen noch freien Parameter (z.B. Abstand der Erdsonden zueinander, Vorlauftemperatur im Netz u.v.m.) variieren und nach einer Simulation über den Jahresverlauf z.B. den Stromverbrauch der Wärmepumpen feststellen.\\
 Angeregt wurde die Entwicklung der Simulation \texttt{DistrictHeating} durch die Dissertation \glqq Object-oriented modelling of solar district heating grids with underground thermal energy storage\grqq von Julian Formhals, in der die Simulation eines ebensolchen Nahwärmesystems basierend auf  Modelica beschrieben wird. Diese Simulation von Julian Formhals ist weitaus realistischer als \texttt{DistrictHeating}, benötig jedoch auch wesentlich mehr Rechenzeit. Somit ist es kaum möglich mehrere Parameter über Testreihen zu verändern um eine optimale Konfiguration zu finden.
 \section{Einleitung}
-Das \texttt{DistrictHeating} zugrunde liegende Konzept besteht aus einem Nahwärme-Leitungsnetz mit zwei oder 
+Das \texttt{DistrictHeating} zugrunde liegende physikalische Konzept besteht aus einem Nahwärme-Leitungsnetz mit zwei oder drei Leitungen, die in der Straße verlegt werden und an die die verschiedenen Komponenten angeschlossen sind. Die einzelnen Komponenten können dem Netz Wärme entziehen oder Wärme zuführen.
+\section{Die Simulation}
+\texttt{DistrictHeating} ist in \texttt{C\#} geschrieben und läuft unter .NET. Die Applikation enthält eine Benutzeroberfläche, mit deren Hilfe die Komponenten zusammengestellt und definiert werden können. Die Möglichkeiten sind weit entfernt von dem, was in Modelica möglich ist. Es ist vielmehr genau zugeschnitten auf eine Anlage mit einem Solarthermiefeld, einem Erdsonden-Wärmespeicher, einem Pufferspeicher, verschiedenen Wärmeverbrauchern, Nahwärmeleitungen
+und Wärmepumpen.
+\subsection{Komponenten} Die einzelnen Komponenten sind als Klassen implementiert. Im wesentlichen ist es die Aufgabe der Komponenten zu einem gegebenen Zeitpunkt zu berechnen, mit welcher Leistung dem System gerade Energie zugeführt oder entnommen wird und wie viel zusätzlicher Strom (z.B. für eine Wärmepumpe) verwendet wird. Dazu muss die Komponente folgende Werte bestimmen:
+\begin{description}
+\item[Volumenstrom (\texttt{out double volumetricFlowRate}) in $\frac{m^3}{s}$]
+\item[Temperaturdifferenz (\texttt{out double deltaT}) in $K$]
+\item[Eingangsleitung (\texttt{out Pipe fromPipe})]
+\item[Ausgangsleitung (\texttt{out Pipe toPipe})]
+\item[Elektrische Leistung (\texttt{out double electricPower}) in $W$]
+\end{description}
+\texttt{Pipe} ist einer der folgenden Werte: \texttt{enum Pipe \{ returnPipe, warmPipe, hotPipe \}}.
+Es sind Anlagen simulierbar mit zwei Leitungen (warmer Vorlauf und kalter Rücklauf für Verbraucher, für Erzeuger ist die Richtung umgekehrt) oder drei Leitungen (im Winter zwei verschiedene Temperaturen für Vorlauf, der wärmere für Warmwasser und Heizkörperheizung mit garantierten 50°C, im Sommer 50°C für Warmwasser und 5°C zum Kühlen, und jeweils ein Rücklauf). Im Dreileitungssystem entscheidet die Komponente, aus welcher Leitung sie das Wasser zieht und in welche Leitung sie das thermisch veränderte Wasser wieder abgibt.
+Die Leistung wird definiert durch einen Volumenstrom $\frac{m^3}{s}$ des Wärmeträgers (Wassers) in den Leitungen und einer Temperaturdifferenz $\Delta T$ zwischen dem entnommenen und dem wieder zugeführten Wasser.
+\subsection{Die Anlage (\texttt{class Plant})}
+Die Anlage (\texttt{class Plant}) ist das zentrale und singuläre Objekt der Simulation. Sie ist selbst keine Komponente. Sie kennt den Zustand der Leitungen, d.h. die Temperatur des Wassers in den Leitungen. Darüber hinaus kennt sie den Zeitpunkt, an dem sich die Simulation gerade befindet und hält eine Liste aller Komponenten.\\
+Die Simulation fragt alle Komponenten der Reihe nach ab, mit welcher Leistung sie gerade arbeiten und verändert entsprechend die Temperatur im Leitungsnetz. Die Geometrie des Leitungsnetzes, also an welcher Stelle die einzelnen Komponenten angeschlossen sind, oder die Auslegung als Ring oder Netz, wird nicht berücksichtigt. Lediglich die Länge, das Wasservolumen und die Dämmwerte sind gegeben.\\
+\subsection{Die Heizung (\texttt{class HeatingConsumer})}
+Die Heizung (\texttt{class HeatingConsumer}) ist der typische Wärmeverbraucher. In ihrer Definition sind folgende Eigenschaften gesetzt:
+\begin{description}
+\item[Vorlauftemperatur (\texttt{double[] SupplyTemp}):] acht Werte, die die Vorlauftemperatur zwischen -20°C und +20°C in 5° Schritten definieren. Zwischenwerte werden interpoliert.
+\item[Gesamtverbrauch pro Jahr (\texttt{double PowerConsumptionPerYear}) in $J$.]
+\item[Die Temperaturen (\texttt{double DayTemperature, double NightTemperature}):] die gewünschte Raumtemperatur.
+\item[Nachtabsenkung (\texttt{int DayStartHour, int DayEndHour}):]
+ Start- und Endzeit für die Tagestemperatur. Dazwischen ist Nachtabsenkung.
+\item[Gütegrad der Wärmepumpe (\texttt{double HeatPumpEfficiency}):]
+Die Effizienz der Wärmepumpe, die zum Einsatz kommt, wenn die Temperatur aus dem Nahwärmenetz kleiner ist als die gewünschte Vorlauftemperatur.
+\end{description}
+Die Heizung greift auf die Wetterdaten zu. Aus der Außentemperatur und der gewünschten Innentemperatur berechnet sich die benötigte Leistung. Da der Zielwert Jahresverbrauch vorgegeben ist, kann die Leistung zu einem gegebenen Zeitpunkt so normiert werden, dass übers Jahr genau der Zielwert erreicht wird. Das entspricht nicht ganz den physikalischen Gegebenheiten, stellt aber die Aussage der Simulation nicht weiter in Frage. Ebenfalls wird die Trägheit der Raumwärme nicht berücksichtigt. Diese Fehler verschieben nur geringfügig (im Stundenbereich) die geforderte Leistung nach vorne oder hinten. So wie ja auch der Tageszeitrhythmus der Hausbewohner nicht bekannt ist. Die Aussagekraft aber steht und fällt mit der Gesamtleistung der Heizung und der korrekten Verteilung des Gesamtverbrauchs zumindest auf die einzelnen Tage des Jahres.\\
+Wenn die Temperatur aus dem Nahwärmenetz kleiner ist als die geforderte Vorlauftemperatur, springt die Wärmepumpe ein.
+Sei $T_{n}$ die Netztemperatur, $T_{v}$ die benötigte Vorlauftemperatur, $\eta_{hp}$ der Gütegrad der Wärmepumpe und $P_{th}$ die benötigte thermische Leistung (berechnet aus Wetterdaten und Jahresverbrauch), so berechnet sich die benötigte Entzugsleistung aus dem Netz $P_{n}$ und die elektrische Leistung $P_{el}$ wie folgt:
+\begin{align}
+    COP &= \eta_{hp}\cdot \frac{T_{v}}{T_{v}-T_{n}}\\
+    P_{n} &= \frac{COP-1}{COP}\cdot P_{th}\\
+    P_{el} &= \frac{1}{COP}\cdot P_{th}
+\end{align}
+Wenn die Netztemperatur groß genug ist, ist $P_{n}=P_{th}$.
+Die Leistung $P_{n}$ muss in einen Volumenstrom $Q$ und Temperaturdifferenz $\Delta T$ umgerechnet werden:
+\begin{align}
+    Q &= \frac{P_{th}}{4.2\cdot\Delta T}
+\end{align}
+\colorbox{Yellow}{$\Delta T$  wird z.Z. fest auf $10$ gesetzt, vielleicht gibt es eine realistischere Abschätzung oder Formel.}
 \end{document}
