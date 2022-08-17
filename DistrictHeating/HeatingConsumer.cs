@@ -88,7 +88,7 @@ namespace DistrictHeating
             powerFactor = EnergyConsumptionPerYear / sumEnergy / 3600; // this factor scales the temperature difference of powerNeeded to the actual power in W
         }
         private double sqr(double d) { return d * d; }
-        public void Step(Plant plant, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower)
+        public void EnergyFlow(Plant plant, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower)
         {
             // set output to no heating at all:
 
@@ -128,7 +128,7 @@ namespace DistrictHeating
                         double cop = HeatPumpEfficiency * (supplyNeeded+Plant.ZeroK) / heatPumpOffset;
                         electricPower = powerNeeded / cop; // mechanical power of the heat pump
                         double netPower = (cop - 1) / cop * powerNeeded; // thermal power from the district heating net
-                        volumetricFlowRate = netPower / (4200 * DeltaTemp) / 1000 ; // "/ 1000": kg (water) -> m³,  "/ 1000": KJ->J
+                        volumetricFlowRate = netPower / (4200 * DeltaTemp) / 1000 ; // "/ 1000": kg (water) -> m³
                     }
                 }
             }

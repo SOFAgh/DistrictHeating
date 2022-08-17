@@ -93,6 +93,7 @@ namespace DistrictHeating
                                         }
                                         int hn = DateToHourNumber(month, day, hour);
                                         valuePerHour[hn] = Convert.ToDouble(parts[valueIndex], CultureInfo.InvariantCulture);
+                                        if (valuePerHour[hn] == -999 && hn > 0) valuePerHour[hn] = valuePerHour[hn - 1]; // -999 is an error in data
                                     }
                                 }
                                 catch { }
