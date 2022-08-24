@@ -29,7 +29,8 @@ namespace DistrictHeating
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Plant.CheckSolarHeatConsitency();
+            // Plant.CheckSolarHeatConsitency();
+            Plant.CheckBoreHoleFieldAndSolarConsistency();
         }
     }
 }

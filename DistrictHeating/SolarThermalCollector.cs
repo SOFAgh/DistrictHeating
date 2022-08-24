@@ -31,7 +31,14 @@ namespace DistrictHeating
             double powerGenerated = efficiency * (plant.Climate.GlobalSolarRadiation[plant.CurrentHourIndex] - 0.2 * plant.Climate.DiffuseRadiation[plant.CurrentHourIndex]) / 3600 * 10000 * Area; // current power in W
             // reduction by the diffuse radiation and the efficiency factor of 0.5 are guesses to result in a energy production of about 400 kWh/(m²*a) 
             deltaT = 80 + Plant.ZeroK - plant.returnPipeTemp; // deltaT to yield an output of 80°C
-            volumetricFlowRate = powerGenerated / (4200 * deltaT) / 1000; // "/ 1000": kg (water) -> m³
+            if (deltaT > 0)
+            {
+                volumetricFlowRate = powerGenerated / (4200 * deltaT) / 1000; // "/ 1000": kg (water) -> m³
+            } else
+            {
+                volumetricFlowRate = 0.0;
+                deltaT = 0.0;
+            }
             fromPipe = Pipe.returnPipe;
             if (plant.UseThreePipes) toPipe = Pipe.hotPipe;
             else toPipe = Pipe.warmPipe;
