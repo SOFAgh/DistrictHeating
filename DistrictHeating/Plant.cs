@@ -95,6 +95,12 @@ namespace DistrictHeating
             }
             return res / numHours;
         }
+        public void StartSimulation()
+        {
+            SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
+            SolarThermalCollector.Initialize(this);
+            this.returnPipeTemp = 10 + ZeroK;
+        }
         public void CheckBoreHoleFieldAndSolarConsistency()
         {
             SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
@@ -105,17 +111,19 @@ namespace DistrictHeating
             BoreHoleField bhf = new BoreHoleField(4, ZeroK + 10);
             double dbgBhfBegin = bhf.GetTotalEnergy(ZeroK + 10);
             long tc0 = DateTime.Now.Ticks;
-            for (int i = 0; i < HoursPerYear; i++)
+            int step = 3600; // step with 3600 seconds, i.e. one hour
+            for (int i = 0; i < HoursPerYear * 3600 / step; i++)
             {
-                currentTime = i * 3600.0;
+                currentTime = i * step;
                 SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
                 // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
-                double usedEnergy = (volumetricFlowRate * 1000 * 3600) * (deltaT) * 4200; // Joule used in this hour
+                double usedEnergy = volumetricFlowRate * 1000 * step * deltaT * 4200; // Joule produced in this hour by solarthermal collectors
                 totalEnergy += usedEnergy;
-                bhf.TransferEnergie(volumetricFlowRate, returnPipeTemp + deltaT, out double outTemp, 3600 );
+                bhf.TransferEnergie(volumetricFlowRate, returnPipeTemp + deltaT, out double outTemp, step);
                 if (volumetricFlowRate != 0)
                 {
-                    excessEnergy += (returnPipeTemp - outTemp) * volumetricFlowRate * 3600 * 4200000 / 3600 / 1000;
+                    returnPipeTemp = outTemp;
+                    // excessEnergy += (returnPipeTemp - outTemp) * volumetricFlowRate * step * 4200000 / 3600 / 1000;
                 }
                 // bhf.Dump(i.ToString("D4"));
             }
@@ -123,7 +131,26 @@ namespace DistrictHeating
             double sec = (tc1 - tc0) / 100000.0;
             double kWhTh = bhf.GetTotalEnergy(ZeroK + 10) / 3600 / 1000; // J -> kWh
             double kWhThSolar = totalEnergy / 3600 / 1000; // J -> kWh
-            bhf.Dump("final");
+            this.returnPipeTemp = 10 + ZeroK;
+            totalEnergy = 0.0; // accumulate thermal energy
+            excessEnergy = 0.0;
+            BoreHoleField bhf1 = new BoreHoleField(4, ZeroK + 10);
+            step = 60; // step with 69 seconds
+            for (int i = 0; i < HoursPerYear * 3600 / step; i++)
+            {
+                currentTime = i * step;
+                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+                // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
+                double usedEnergy = volumetricFlowRate * 1000 * step * deltaT * 4200; // Joule produced in this hour by solarthermal collectors
+                totalEnergy += usedEnergy;
+                bhf1.TransferEnergie(volumetricFlowRate, returnPipeTemp + deltaT, out double outTemp, step);
+                if (volumetricFlowRate != 0)
+                {
+                    excessEnergy += (returnPipeTemp - outTemp) * volumetricFlowRate * step * 4200000 / 3600 / 1000;
+                }
+                // bhf.Dump(i.ToString("D4"));
+            }
+            double diff = bhf1.CompareWith(bhf); // 0.035K average difference between all points of the grid, while temperature ranges from 10°C to 50°C. 3600s steps versus 60s steps
         }
         public void CheckBoreHoleFieldConsistency()
         {

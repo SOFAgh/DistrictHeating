@@ -188,7 +188,6 @@ namespace DistrictHeating
                     // 6 * heatCapacityPerTriangle is the sum of the 6 triangles
                     // (6 * boreHoles[index].t + 2 * meanTemp) / 18 is the leveled temperature (meanTemp is the sum of 6 temperatures, so we have 18 temperatures here)
                     double prismEnergy = heatCapacityPerTriangle * (6 * boreHoles[index].t + 2 * meanTemp) / 3;
-                    double dbgenbefore = prismEnergy;
                     double energyToTransfer = power * duration;
                     double minimumWaterEnergy = (6 * boreHoles[index].t + 2 * meanTemp) / 18.0 * waterVolume * 4200000; // in J relative to prism temperature,  4.2 kJ/(kg*K) or 4200000 J/(m³*K)
                     // if (minimumWaterEnergy > waterEnergy - energyToTransfer) energyToTransfer = waterEnergy - minimumWaterEnergy; // water cannot become colder than the prism temperature
@@ -196,17 +195,14 @@ namespace DistrictHeating
                     // if (maximumPrismEnergy < prismEnergy + energyToTransfer) energyToTransfer = maximumPrismEnergy - prismEnergy;
                     if ((minimumWaterEnergy > waterEnergy - energyToTransfer) || (maximumPrismEnergy < prismEnergy + energyToTransfer))
                     {   // if boundary conditions are not met, we use a intermediate temperature and calculate the energy transfer
+                        // so both the water temperature and the boreHole temperature will be the same at the end, i.e. tm
                         double tm = (waterVolume * 4200000 * currentInTemperature + 2 * heatCapacityPerTriangle * boreHoles[index].t) / (waterVolume * 4200000 + 2 * heatCapacityPerTriangle);
                         energyToTransfer = heatCapacityPerTriangle * (6 * tm + 2 * meanTemp) / 3 - prismEnergy;
-                        double dbg = (waterVolume * 4200000 * currentInTemperature) - (waterVolume * 4200000 * tm);
+                        // double dbg = (waterVolume * 4200000 * currentInTemperature) - (waterVolume * 4200000 * tm); // must be the same as energyToTransfer
                     }
                     prismEnergy += energyToTransfer;
-                    // dbgenergy += energyToTransfer;
                     // now we modify the central temperature of the hexagon so that the new prismEnergy represents prismEnergy += energyToTransfer
                     boreHoles[index].t = (prismEnergy * 3.0 / (heatCapacityPerTriangle) - 2 * meanTemp) / 6.0;
-                    if (boreHoles[index].t >= currentInTemperature) { }
-                    double dbgprismEnergy = heatCapacityPerTriangle / 3.0 * (6 * boreHoles[index].t + 2 * meanTemp);
-                    double dbgafter = dbgprismEnergy - dbgenbefore;
                     waterEnergy -= energyToTransfer;
                     currentInTemperature = waterEnergy / (waterVolume * 4200000);
                 }
@@ -335,6 +331,24 @@ namespace DistrictHeating
                 }
                 fs.Close();
             }
+        }
+        public double CompareWith(BoreHoleField other)
+        {
+            double maxdist = 0.0;
+            double maxTemp = 0.0, minTemp = double.MaxValue;
+            double res = 0.0;
+            foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+            {
+                int i = item.Key.Item1;
+                int j = item.Key.Item2;
+                int k = item.Key.Item3;
+                if (item.Value.t > maxTemp) maxTemp = item.Value.t;
+                if (item.Value.t < minTemp) minTemp = item.Value.t;
+                double d = Math.Abs(other.temperatureAtHexCoord[new Tuple<int, int, int>(i, j, k)].t - item.Value.t);
+                if (d > maxdist) maxdist = d;
+                res += d;
+            }
+            return res / temperatureAtHexCoord.Count;
         }
     }
 }
