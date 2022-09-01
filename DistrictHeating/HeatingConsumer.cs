@@ -9,7 +9,7 @@ namespace DistrictHeating
     public class HeatingConsumer : IProsumer
     {
         public string? Name { get; set; }
-        public double[] SupplyTemp { get; set; } = { 20, 38, 44, 50, 56, 62, 68, 72 }; // desired supply temperatures at 20°C, 15°C, ..., -15°C, -20°C ambient temperature
+        public double[] SupplyTemp { get; set; } = { 20, 30, 38, 44, 50, 56, 62, 68, 72 }; // desired supply temperatures at 20°C, 15°C, ..., -15°C, -20°C ambient temperature
         public double EnergyConsumptionPerYear { get; set; }
         public double DayTemperature { get; set; }
         public double NightTemperature { get; set; }
@@ -17,6 +17,7 @@ namespace DistrictHeating
         public int DayEndHour { get; set; }
         public double DeltaTemp { get; set; }
         public double HeatPumpEfficiency { get; set; }
+        public int NumberOfInstances { get; set; }
         public static HeatingConsumer UnderFloorHeating
         {
             get
@@ -31,7 +32,8 @@ namespace DistrictHeating
                     EnergyConsumptionPerYear = 10000000.0 * 3600.0,
                     DeltaTemp = 10,
                     SupplyTemp = new double[] { 20, 25, 30, 34, 38, 41, 44, 48, 50 }, // from: https://www.vaillant.de/heizung/heizung-verstehen/tipps-rund-um-ihre-heizung/vorlauf-rucklauftemperatur
-                    HeatPumpEfficiency = 0.5
+                    HeatPumpEfficiency = 0.5,
+                    NumberOfInstances = 30
                 };
             }
         }
@@ -49,7 +51,8 @@ namespace DistrictHeating
                     EnergyConsumptionPerYear = 15000000.0 * 3600.0,
                     DeltaTemp = 10,
                     SupplyTemp = new double[] { 20, 30, 38, 44, 50, 56, 62, 68, 72 }, // from: https://www.vaillant.de/heizung/heizung-verstehen/tipps-rund-um-ihre-heizung/vorlauf-rucklauftemperatur
-                    HeatPumpEfficiency = 0.5
+                    HeatPumpEfficiency = 0.5,
+                    NumberOfInstances = 70
                 };
             }
         }
@@ -104,8 +107,8 @@ namespace DistrictHeating
             {   // we need heating
 
                 double normalized = Math.Min(Math.Max(20 - ambient, 0), 39.9999);
-                double normOffset = Math.IEEERemainder(normalized, 5);
                 int supplyIndex = (int)Math.Floor(normalized / 5);
+                double normOffset = normalized / 5 - supplyIndex;
                 double supplyNeeded = SupplyTemp[supplyIndex] + normOffset * (SupplyTemp[supplyIndex + 1] - SupplyTemp[supplyIndex]);
                 double powerNeeded = powerFactor * (supplyNeeded - ambient); // the power we need for heating in W at currentTime
                 if (plant.UseThreePipes)
@@ -121,6 +124,7 @@ namespace DistrictHeating
                     {   // use the warm pipe without heat pump
                         electricPower = 0.0;
                         volumetricFlowRate = powerNeeded / (4200 * DeltaTemp) / 1000 ;
+                        volumetricFlowRate *= NumberOfInstances; // this object resembles a single instance of a heating system. But it is used multiple times in the plant
                     }
                     else
                     {   // we need the heat pump!
@@ -129,6 +133,8 @@ namespace DistrictHeating
                         electricPower = powerNeeded / cop; // mechanical power of the heat pump
                         double netPower = (cop - 1) / cop * powerNeeded; // thermal power from the district heating net
                         volumetricFlowRate = netPower / (4200 * DeltaTemp) / 1000 ; // "/ 1000": kg (water) -> m³
+                        volumetricFlowRate *= NumberOfInstances; // this object resembles a single instance of a heating system. But it is used multiple times in the plant
+                        electricPower *= NumberOfInstances;
                     }
                 }
             }

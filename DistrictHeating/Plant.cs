@@ -19,12 +19,6 @@ namespace DistrictHeating
     {
         public static int HoursPerYear = 8760;
         public static double ZeroK = 273.15;
-        //public Plant(int n)
-        //{
-        //    currentTime = 0;
-        //    UseThreePipes = false;
-        //    Climate = new Climate();
-        //    SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
         //    JsonSerializer serializer = new JsonSerializer();
         //    serializer.Converters.Add(new JavaScriptDateTimeConverter());
         //    serializer.NullValueHandling = NullValueHandling.Ignore;
@@ -47,24 +41,38 @@ namespace DistrictHeating
             UseThreePipes = false;
             Climate = new Climate();
             SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
-            Heating = new List<IProsumer>();
+            Heating = new List<HeatingConsumer>();
             Heating.Add(HeatingConsumer.RadiatorHeating);
             Heating.Add(HeatingConsumer.UnderFloorHeating);
+            BoreHoleField = new BoreHoleField(4, ZeroK + 10);
+            BufferStorage = new BufferStorage();
         }
+        // current state data:
         public double currentTime; // number of seconds since first of january of the simulation
         public double returnPipeTemp; // current temperature of the return pipe [K]
-        public double returnPipeFlow; // current volume flow of the return pipe [l/s]
         public double warmPipeTemp; // current temperature of the warm pipe [K]
-        public double warmPipeFlow; // current volume flow of the warm pipe [l/s]
         public double hotPipeTemp; // current temperature of the hot pipe [K]
-        public double hotPipeFlow; // current volume flow of the hot pipe [l/s]
+        // diagrams
+        public List<double> returnPipeTempPerHour = new List<double>();
+        public List<double> warmPipeTempPerHour = new List<double>();
+        public List<double> hotPipeTempPerHour = new List<double>();
+        public List<double> boreHoleEnergyPerDay = new List<double>();
+        public List<double> heatConsumptionPerHour = new List<double>();
+        public List<double> electricityConsumptionPerHour = new List<double>();
+        // plant properties
         public bool UseThreePipes { get; set; } = false; // use a three pipe system
         public double WarmPipeMinTemp { get; set; } = 40; // minimum temperature for the warm pipe
         public double HotPipeMinTemp { get; set; } = 50; // minimum temperature for the hot pipe
-        public double[] HotPipeSupplyTemp { get; set; } = { 0, 38, 44, 50, 56, 62, 68, 72 }; // desired supply temperatures at 20°C, 15°C, ..., -15°C, -20°C ambient temperature
         public Climate Climate { get; set; }
         public SolarThermalCollector SolarThermalCollector;
-        public List<IProsumer> Heating;
+        public List<HeatingConsumer> Heating;
+        public BoreHoleField BoreHoleField;
+        public BufferStorage BufferStorage;
+        public double PiplineLength { get; set; } = 3000; // in m
+        public double PipeDiameter { get; set; } = 0.05; // in m
+        public double PipeInsulationDiameter { get; set; } = 0.15; // in m
+        public double InsulationLambda { get; set; } = 0.04; // in W/(m*K)
+        public int NumConnections { get; set; } = 80; // number of connected houses
 
         public int CurrentHourIndex { get { return (int)Math.Floor(currentTime / 3600); } }
         internal double GetCurrentTemperature()
@@ -97,9 +105,122 @@ namespace DistrictHeating
         }
         public void StartSimulation()
         {
-            SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
+            // initialize the components
             SolarThermalCollector.Initialize(this);
-            this.returnPipeTemp = 10 + ZeroK;
+            returnPipeTemp = 10 + ZeroK; // 10°C for all pipes
+            warmPipeTemp = 10 + ZeroK;
+            hotPipeTemp = 10 + ZeroK;
+            double pipeVolume = PiplineLength * PipeDiameter * PipeDiameter * Math.PI / 4.0; // volume of water inside the pipes (m³)
+            for (int j = 0; j < Heating.Count; j++)
+            {
+                Heating[j].Initialize(this); // calculate scaling factors
+            }
+            // in the following loop we consider for each time step (one hour) how much energy the solar collectors will deliver and how much energy the heaters will require
+            // wich both depend on whether data. The difference will be stored in or must be provided by the boreholefield. Now the question is the temperature level
+            // because it makes a difference for the distribution of the energy between heat and elecricity. What temperature can we assume on the warm pipe (and hot pipe)
+            // for the next hour? The simple, but not perfect solution would be: if more is consumed than provided, we use the outlet temperatur of the storage, otherwise
+            // we use the outlet temperatur of the solar collector as the warm pipe temperature. But this doesn't respect the volumetric flowrate. For the same energy
+            // the flowrate through the collectors is much slower than through the heaters, because of the hgher temperature lift. Controlling the flow rate should be part
+            // of the Controller not of the simulation. So, as the first approach, we use the simple solution
+            //
+            // different approach:
+            // the temperatures of the pipes (returnPipeTemp, warmPipeTemp, hotPipeTemp) stay constant over the period 'step'. Each device consumes fron one pip and delivers
+            // to another pipe. This water is collected and determins the temperatures of the next period.
+            int step = 3600; // step with 3600 seconds, i.e. one hour
+            for (int i = 0; i < HoursPerYear * 3600 / step; i++)
+            {
+                currentTime = i * step; // current time is in s
+                // we assume a pool for each pipe, which is at the beginning filled with water at the current temperature of the respective pipe.
+                // in the course of the"step" (i.e. one hour) the pools will grow or shrink, they might even underflow, but this is no problem
+                double returnPipeVolume = 0.0;
+                double warmPipeVolume = 0.0;
+                double hotPipeVolume = 0.0;
+                double returnPipeEnergy = 0.0;
+                double warmPipeEnergy = 0.0;
+                double hotPipeEnergy = 0.0;
+                double heatConsumption = 0.0;
+                double electricityConsumption = 0.0;
+                // let the solar collectors do their work
+                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+                double solarVolume = volumetricFlowRate * step; // this much water was pumped through the collectors fromPipe->toPipe
+                if (solarVolume > 0)
+                {
+                    if (fromPipe == Pipe.returnPipe) // which it always should be
+                    {
+                        if (toPipe == Pipe.warmPipe)
+                        {
+                            warmPipeEnergy += solarVolume * (returnPipeTemp + deltaT);
+                            warmPipeVolume += solarVolume;
+                        }
+                        else if (toPipe == Pipe.hotPipe)
+                        {
+                            hotPipeEnergy += solarVolume * (returnPipeTemp + deltaT);
+                            hotPipeVolume += solarVolume;
+                        }
+                    }
+                }
+                if (i > 4000) // after almost half a year
+                {
+                    for (int j = 0; j < Heating.Count; j++)
+                    {
+                        Heating[j].EnergyFlow(this, out volumetricFlowRate, out deltaT, out fromPipe, out toPipe, out electricPower);
+                        double heatingVolume = volumetricFlowRate * step; // amount of water which has been used by this heating
+                        if (toPipe == Pipe.returnPipe)
+                        {
+                            double inTemp = (fromPipe == Pipe.warmPipe) ? warmPipeTemp : hotPipeTemp;
+                            returnPipeVolume += heatingVolume; // add this amount of water to the return pipe pool with the now decreased temperature
+                            returnPipeEnergy += heatingVolume * (inTemp + deltaT); // deltaT is negative!
+                            heatConsumption += -heatingVolume * deltaT * 4200000; // in J, deltaT is negative, but we want a positiv value
+                            electricityConsumption += electricPower * step;
+                        }
+                    }
+                }
+                // now we have to balance the two or three pools, by pumping the water through the borehole field
+                if (this.UseThreePipes)
+                {
+
+                }
+                else
+                {
+                    if (warmPipeVolume > returnPipeVolume)
+                    {   // there was more hot water generated as used. Pump the difference through the boreHoleField
+                        if (warmPipeVolume > 0)
+                        {
+                            BoreHoleField.TransferEnergie((warmPipeVolume-returnPipeVolume) / step, warmPipeTemp, out double outTemp, step);
+                            returnPipeVolume += warmPipeVolume;
+                            returnPipeEnergy += warmPipeVolume * outTemp;
+                        }
+                    }
+                    else
+                    {   // water from the warm pipe has been used, transfer from return pipe to warm pipe
+                        if (returnPipeVolume > 0)
+                        {
+                            BoreHoleField.TransferEnergie(-(returnPipeVolume-warmPipeVolume) / step, returnPipeTemp, out double outTemp, step);
+                            warmPipeVolume += returnPipeVolume;
+                            warmPipeEnergy += returnPipeVolume * outTemp;
+                        }
+                    }
+                }
+                if (returnPipeVolume > 0) returnPipeTemp = returnPipeEnergy / returnPipeVolume;
+                if (warmPipeVolume > 0) warmPipeTemp = warmPipeEnergy / warmPipeVolume;
+                if (hotPipeVolume>0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;
+
+                // save the current data for the graphical representation
+                int currentSeconds = (int)Math.Round(currentTime);
+                if (currentSeconds % 3600 == 0) // should always reach exact hours
+                {
+                    int hourIndex = currentSeconds / 3600;
+                    returnPipeTempPerHour.Add(returnPipeTemp); // index should be correct
+                    warmPipeTempPerHour.Add(warmPipeTemp);
+                    hotPipeTempPerHour.Add(hotPipeTemp);
+                    heatConsumptionPerHour.Add(heatConsumption);
+                    electricityConsumptionPerHour.Add(electricityConsumption);
+                    if (hourIndex % 24 == 12) // once a day at 12:00
+                    {
+                        boreHoleEnergyPerDay.Add(BoreHoleField.GetTotalEnergy(ZeroK + 10));
+                    }
+                }
+            }
         }
         public void CheckBoreHoleFieldAndSolarConsistency()
         {
@@ -125,32 +246,33 @@ namespace DistrictHeating
                     returnPipeTemp = outTemp;
                     // excessEnergy += (returnPipeTemp - outTemp) * volumetricFlowRate * step * 4200000 / 3600 / 1000;
                 }
-                // bhf.Dump(i.ToString("D4"));
+                if (i % 24 == 12) bhf.Dump("D" + (i / 24).ToString("D4"));
+                System.Diagnostics.Trace.WriteLine(currentTime.ToString() + ": " + bhf.GetTemperatureAt(29, 0, -29).ToString());
             }
             long tc1 = DateTime.Now.Ticks;
             double sec = (tc1 - tc0) / 100000.0;
             double kWhTh = bhf.GetTotalEnergy(ZeroK + 10) / 3600 / 1000; // J -> kWh
             double kWhThSolar = totalEnergy / 3600 / 1000; // J -> kWh
-            this.returnPipeTemp = 10 + ZeroK;
-            totalEnergy = 0.0; // accumulate thermal energy
-            excessEnergy = 0.0;
-            BoreHoleField bhf1 = new BoreHoleField(4, ZeroK + 10);
-            step = 60; // step with 69 seconds
-            for (int i = 0; i < HoursPerYear * 3600 / step; i++)
-            {
-                currentTime = i * step;
-                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
-                // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
-                double usedEnergy = volumetricFlowRate * 1000 * step * deltaT * 4200; // Joule produced in this hour by solarthermal collectors
-                totalEnergy += usedEnergy;
-                bhf1.TransferEnergie(volumetricFlowRate, returnPipeTemp + deltaT, out double outTemp, step);
-                if (volumetricFlowRate != 0)
-                {
-                    excessEnergy += (returnPipeTemp - outTemp) * volumetricFlowRate * step * 4200000 / 3600 / 1000;
-                }
-                // bhf.Dump(i.ToString("D4"));
-            }
-            double diff = bhf1.CompareWith(bhf); // 0.035K average difference between all points of the grid, while temperature ranges from 10°C to 50°C. 3600s steps versus 60s steps
+            //this.returnPipeTemp = 10 + ZeroK;
+            //totalEnergy = 0.0; // accumulate thermal energy
+            //excessEnergy = 0.0;
+            //BoreHoleField bhf1 = new BoreHoleField(4, ZeroK + 10);
+            //step = 60; // step with 69 seconds
+            //for (int i = 0; i < HoursPerYear * 3600 / step; i++)
+            //{
+            //    currentTime = i * step;
+            //    SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+            //    // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
+            //    double usedEnergy = volumetricFlowRate * 1000 * step * deltaT * 4200; // Joule produced in this hour by solarthermal collectors
+            //    totalEnergy += usedEnergy;
+            //    bhf1.TransferEnergie(volumetricFlowRate, returnPipeTemp + deltaT, out double outTemp, step);
+            //    if (volumetricFlowRate != 0)
+            //    {
+            //        excessEnergy += (returnPipeTemp - outTemp) * volumetricFlowRate * step * 4200000 / 3600 / 1000;
+            //    }
+            //    // bhf.Dump(i.ToString("D4"));
+            //}
+            //double diff = bhf1.CompareWith(bhf); // 0.035K average difference between all points of the grid, while temperature ranges from 10°C to 50°C. 3600s steps versus 60s steps
         }
         public void CheckBoreHoleFieldConsistency()
         {

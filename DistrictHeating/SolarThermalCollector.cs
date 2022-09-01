@@ -10,7 +10,14 @@ namespace DistrictHeating
 
     public class SolarThermalCollector : IProsumer
     {
-        public double Area { get; set; } // the area on the ground of the solar collector. This is not the sum of the panels area, which are inclined and less.
+        /// <summary>
+        /// The area on the ground of the solar collector. This is not the sum of the panels area, which are inclined and less.
+        /// </summary>
+        public double Area { get; set; } = 3000;
+        /// <summary>
+        /// The efficiency of the solar field. Currently implemented as a constant value, not depending on temperature difference
+        /// </summary>
+        public double Efficiency { get; set; } = 0.5;
         public void Initialize(Plant plant)
         {
             double globalSolarRadiation = 0.0;
@@ -27,8 +34,7 @@ namespace DistrictHeating
         {
             double ambientTempDiff = plant.GetCurrentTemperature() + Plant.ZeroK - plant.returnPipeTemp;
             // double efficiency = Math.Max(Math.Min((45 + ambientTempDiff), 65), 25) / 100; // efficiency between 25% and 65% depending on supply temperature versus ambient temperature
-            double efficiency = 0.5; // fixed efficiency, would need more data for the above formula.
-            double powerGenerated = efficiency * (plant.Climate.GlobalSolarRadiation[plant.CurrentHourIndex] - 0.2 * plant.Climate.DiffuseRadiation[plant.CurrentHourIndex]) / 3600 * 10000 * Area; // current power in W
+            double powerGenerated = Efficiency * (plant.Climate.GlobalSolarRadiation[plant.CurrentHourIndex] - 0.2 * plant.Climate.DiffuseRadiation[plant.CurrentHourIndex]) / 3600 * 10000 * Area; // current power in W
             // reduction by the diffuse radiation and the efficiency factor of 0.5 are guesses to result in a energy production of about 400 kWh/(m²*a) 
             deltaT = 80 + Plant.ZeroK - plant.returnPipeTemp; // deltaT to yield an output of 80°C
             if (deltaT > 0)

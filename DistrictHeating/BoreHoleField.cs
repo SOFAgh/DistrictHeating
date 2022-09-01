@@ -66,6 +66,7 @@ namespace DistrictHeating
         /// Heat capacity in j/(m³*K)
         /// </summary>
         public double HeatCapacity { get; set; } = 700 * 2200; // J/(m³*K), Sandstein https://www.schweizer-fn.de/stoff/wkapazitaet/wkapazitaet_baustoff_erde.php
+        public int NumberOfBoreHoles { get { return boreHoles.Count; } }
         /// <summary>
         /// The power (W) which will be transferred at a given temperature difference between the water in the pipe and the soil in W/K
         /// </summary>
@@ -75,26 +76,31 @@ namespace DistrictHeating
         private List<TempPoint> boreHoles = new List<TempPoint>();
         private const int grid = 6; // the grid segments between boreholes
         private double triangleArea;
+        private double borderTemperature; // the mean temperature of a ring surrounding the field. Used to calculate the energy loss.
+        private int numberOfBorderPoints; // number of points on the border
         public BoreHoleField(int numRings, double initialTemperature)
         {
             triangleArea = (distance / 6) * (distance / 6) * Math.Sqrt(3.0) / 4.0;
             // 1. create the hexagonal array of temperature points
             int dbgmaxi = 0;
-            for (int i = -(numRings + 1) * 12; i <= (numRings + 1) * 12; i++)
+            for (int i = -(numRings + 1) * 2 * grid; i <= (numRings + 1) * 2 * grid; i++)
             {
-                for (int j = -(numRings + 1) * 12; j <= (numRings + 1) * 12; j++)
+                for (int j = -(numRings + 1) * 2 * grid; j <= (numRings + 1) * 2 * grid; j++)
                 {
                     int k = -i - j;
-                    if (Math.Abs(i) + Math.Abs(j) + Math.Abs(k) > (numRings + 1) * 12 - 1) continue; // outside the hexagon
+                    if (Math.Abs(i) + Math.Abs(j) + Math.Abs(k) > (numRings + 1) * 2 * grid - 1) continue; // outside the hexagon
                     TempPoint tpijk = new TempPoint(initialTemperature, 0.0, i, j, k);
                     temperatureAtHexCoord[new Tuple<int, int, int>(i, j, k)] = tpijk;
-                    if ((Math.Abs(i) + Math.Abs(k)) % 6 == 0 && (Math.Abs(i) + Math.Abs(j)) % 6 == 0 && (Math.Abs(j) + Math.Abs(k)) % 6 == 0)
+                    if (Math.Abs(i) + Math.Abs(j) + Math.Abs(k) > (numRings + 1) * 2 * grid - 1) continue; // outside the hexagon
+                    if ((Math.Abs(i) + Math.Abs(k)) % grid == 0 && (Math.Abs(i) + Math.Abs(j)) % grid == 0 && (Math.Abs(j) + Math.Abs(k)) % grid == 0)
                     {   // there are 5 temperature points points in between the boreholes
                         boreHoles.Add(tpijk);
                         if (i > dbgmaxi) dbgmaxi = i;
                     }
                 }
             }
+            borderTemperature = initialTemperature;
+
             (double x, double y) p1 = fromHexCoord(0, dbgmaxi, -dbgmaxi);
             (double x, double y) p2 = fromHexCoord(0, -dbgmaxi, dbgmaxi);
 
@@ -143,6 +149,7 @@ namespace DistrictHeating
                     item.Value.connectedPoints.Add(tp); // 5
                     item.Value.connectedAngle.Add(5);
                 }
+                numberOfBorderPoints += 6 - item.Value.connectedPoints.Count;
             }
         }
         private (double x, double y) fromHexCoord(int i, int j, int k)
@@ -163,22 +170,19 @@ namespace DistrictHeating
         /// <param name="duration">duration of the transfer [s]</param>
         public void TransferEnergie(double volumeStream, double inTemperature, out double outTemperature, double duration)
         {
-            double waterVolume = volumeStream * duration; // in m³
+            double waterVolume = Math.Abs(volumeStream * duration); // in m³
             double waterEnergy = inTemperature * waterVolume * 4200000; // in J relative to 0 K,  4.2 kJ/(kg*K) or 4200000 J/(m³*K)
-            double currentInTemperature = inTemperature; // will decrease (or increase) from borehole to borehole
-            double heatCapacityPerTriangle = triangleArea * HeatCapacity * Length; // to get the energy multiply by deltaT
-            //double dbgEnergyStart = this.GetTotalEnergy(Plant.ZeroK + 10);
-            //double dbgenergy = 0.0;
+            double currentWaterTemperature = inTemperature; // will decrease (or increase) from borehole to borehole
+            double heatCapacityPerTriangle = triangleArea * HeatCapacity * Length; // to get the energy you have to multiply by deltaT
             if (volumeStream != 0.0)
             {
                 for (int i = 0; i < boreHoles.Count; i++)
-                {   // we assume all the water to stay in each borehole for the provided duration. It will be cooled (or heated) by the power (deltaT * TransferPower)
+                {   // we assume all the water to stay in each borehole for the provided duration. It will be cooled (or heated) by the power (deltaT * TransferPower * Length)
                     // then we pass it on to the next borehole
                     int index = (volumeStream < 0) ? boreHoles.Count - i - 1 : i; // respecting direction of flow
-                    double deltaT = currentInTemperature - boreHoles[index].t;
+                    double deltaT = currentWaterTemperature - boreHoles[index].t;
                     double power = deltaT * TransferPower * Length;
-                    double meanTemp = 0.0;
-                    // there are always 6 triangles around the borehole
+                    double meanTemp = 0.0; // 6 times the mean temperature of the surrounding points. There are always 6 triangles around the borehole
                     for (int j = 0; j < 6; j++)
                     {
                         meanTemp += boreHoles[index].connectedPoints[j].t;
@@ -191,12 +195,12 @@ namespace DistrictHeating
                     double energyToTransfer = power * duration;
                     double minimumWaterEnergy = (6 * boreHoles[index].t + 2 * meanTemp) / 18.0 * waterVolume * 4200000; // in J relative to prism temperature,  4.2 kJ/(kg*K) or 4200000 J/(m³*K)
                     // if (minimumWaterEnergy > waterEnergy - energyToTransfer) energyToTransfer = waterEnergy - minimumWaterEnergy; // water cannot become colder than the prism temperature
-                    double maximumPrismEnergy = heatCapacityPerTriangle * (6 * currentInTemperature + 2 * meanTemp) / 3;
+                    double maximumPrismEnergy = heatCapacityPerTriangle * (6 * currentWaterTemperature + 2 * meanTemp) / 3;
                     // if (maximumPrismEnergy < prismEnergy + energyToTransfer) energyToTransfer = maximumPrismEnergy - prismEnergy;
                     if ((minimumWaterEnergy > waterEnergy - energyToTransfer) || (maximumPrismEnergy < prismEnergy + energyToTransfer))
                     {   // if boundary conditions are not met, we use a intermediate temperature and calculate the energy transfer
                         // so both the water temperature and the boreHole temperature will be the same at the end, i.e. tm
-                        double tm = (waterVolume * 4200000 * currentInTemperature + 2 * heatCapacityPerTriangle * boreHoles[index].t) / (waterVolume * 4200000 + 2 * heatCapacityPerTriangle);
+                        double tm = (waterVolume * 4200000 * currentWaterTemperature + 2 * heatCapacityPerTriangle * boreHoles[index].t) / (waterVolume * 4200000 + 2 * heatCapacityPerTriangle);
                         energyToTransfer = heatCapacityPerTriangle * (6 * tm + 2 * meanTemp) / 3 - prismEnergy;
                         // double dbg = (waterVolume * 4200000 * currentInTemperature) - (waterVolume * 4200000 * tm); // must be the same as energyToTransfer
                     }
@@ -204,50 +208,47 @@ namespace DistrictHeating
                     // now we modify the central temperature of the hexagon so that the new prismEnergy represents prismEnergy += energyToTransfer
                     boreHoles[index].t = (prismEnergy * 3.0 / (heatCapacityPerTriangle) - 2 * meanTemp) / 6.0;
                     waterEnergy -= energyToTransfer;
-                    currentInTemperature = waterEnergy / (waterVolume * 4200000);
+                    currentWaterTemperature = waterEnergy / (waterVolume * 4200000);
                 }
             }
-            outTemperature = currentInTemperature;
-            //double dbgWaterConsumed = (inTemperature - outTemperature) * waterVolume * 4200000;
-            //double dbgEnergyEnd = this.GetTotalEnergy(Plant.ZeroK + 10);
-            //double dbgEnergyConsumed = dbgEnergyEnd - dbgEnergyStart;
+            outTemperature = currentWaterTemperature; // this is the last water temperature afte leaving the last borehole
             // now we need to adapt each temperature point by the influence of its neighbours
-            // foreach (Tuple<int, int, int> key in temperatureAtHexCoord.Keys)
+            // first we keep the temperatures unchanged and calculate the deltaT for each point
+            double borderdt = 0.0;
             Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
             {
                 double dt = 0.0;
                 TempPoint itemValue = temperatureAtHexCoord[key];
                 double t0 = itemValue.t;
-                double parameterToDetermin = 0.5 * 1e-5; // this parameter will depend on Lambda and maybe also on HeatCapacity
-                double f = parameterToDetermin * duration / (Distance / 6); // is this linear to the inverse of the distance?
+                double parameterToDetermin = 0.5 * 1e-5; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
+                double f = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
                 int cnt = itemValue.connectedPoints.Count;
+                // here we assume that all points have the same distance and are regularly distributed around the central point (in 60° steps)
                 for (int l = 0; l < cnt; l++)
                 {
-                    //double a1 = itemValue.connectedAngle[(l + 1) % cnt] - itemValue.connectedAngle[l];
-                    //double a2 = itemValue.connectedAngle[l] - itemValue.connectedAngle[(l + cnt - 1) % cnt];
-                    //if (a1 < 0) a1 += 6;
-                    //if (a2 < 0) a2 += 6;
-                    //double weight = (a1 + a2) / 2.0;
                     dt += f * (itemValue.connectedPoints[l].t - t0);
                 }
-                dt /= cnt;
-                itemValue.dt = dt;
+                if (cnt < 6)
+                {
+                    // this is a point at the border of the field. It is also influenced by the outside temperature. And it influences the outsid temperature
+                    // I first tried to make the field much bigger (but no extra boreholes) so that the border almost remained unchanged. Then recorded the temperatures
+                    // at the points where the border of the smaller field would be. then I adaptet the additional parameters here
+                    // ((Distance / 2) and (24 * numberOfBorderPoints)) tho get a result with the small field at the border, which is similar to the respective points on the big field.
+                    // Maybe we have to experiment with these two arbitrary parameters.
+                    double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
+                    dt += (6 - cnt) * bdt;
+                    borderdt += bdt / (24 * numberOfBorderPoints);
+                }
+                itemValue.dt = dt / 6; // save this value, the modification happens for all points simultaneously after this loop
             });
+            // now we change all temperatures
+            borderTemperature -= borderdt;
             Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
             {
                 TempPoint itemValue = temperatureAtHexCoord[key];
                 itemValue.t += itemValue.dt;
                 itemValue.dt = 0;
             });
-            //foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
-            //{
-            //    item.Value.t += item.Value.dt;
-            //    item.Value.dt = 0;
-            //}
-            //double dbgEnergyAfterRelax = this.GetTotalEnergy(Plant.ZeroK + 10);
-            //double err = dbgEnergyAfterRelax - dbgEnergyEnd;
-            //System.Diagnostics.Trace.WriteLine(err.ToString() + ": " + sumdt1.ToString() + "; " + sumdt2.ToString() + "; " + (sumdt2*temperatureAtHexCoord.Count).ToString());
-            //if (Math.Abs(err) > 1) { }
         }
         private double TriangleArea((double x, double y) p1, (double x, double y) p2, (double x, double y) p3)
         {
@@ -349,6 +350,47 @@ namespace DistrictHeating
                 res += d;
             }
             return res / temperatureAtHexCoord.Count;
+        }
+        public double GetTemperatureAt(int i, int j, int k)
+        {
+            return temperatureAtHexCoord[new Tuple<int, int, int>(i, j, k)].t;
+        }
+        public double GetTotalEnergy(double baseTemperature, int outside)
+        {
+            double volume = 0.0;
+            double dbgTotalArea = 0.0;
+            foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+            {
+                int i = item.Key.Item1;
+                int j = item.Key.Item2;
+                int k = item.Key.Item3;
+                if (Math.Abs(i) + Math.Abs(k) + Math.Abs(k) > outside)
+                {
+                    TempPoint? t1, t2;
+                    if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i, j - 1, k + 1), out t1) && temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i - 1, j, k + 1), out t2))
+                    {
+                        volume += triangleArea * ((item.Value.t + t1.t + t2.t) / 3 - baseTemperature);
+                        dbgTotalArea += triangleArea;
+                    }
+                    if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i, j - 1, k + 1), out t1) && temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i + 1, j - 1, k), out t2))
+                    {
+                        volume += triangleArea * ((item.Value.t + t1.t + t2.t) / 3 - baseTemperature);
+                        dbgTotalArea += triangleArea;
+                    }
+                }
+            }
+            return volume * HeatCapacity * Length;
+        }
+
+        internal double GetColdEndTemperature(int ringNumber)
+        {
+            // no rings yet
+            return boreHoles[boreHoles.Count - 1].t;
+        }
+        internal double GetHotEndTemperature(int ringNumber)
+        {
+            // no rings yet
+            return boreHoles[0].t;
         }
     }
 }
