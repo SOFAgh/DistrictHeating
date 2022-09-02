@@ -52,6 +52,8 @@
             System.Windows.Forms.Label label31;
             System.Windows.Forms.Label label32;
             System.Windows.Forms.Label label33;
+            System.Windows.Forms.Label label34;
+            System.Windows.Forms.Label label35;
             this.tabPlant = new System.Windows.Forms.TabPage();
             this.threePipes = new System.Windows.Forms.RadioButton();
             this.twoPipes = new System.Windows.Forms.RadioButton();
@@ -106,10 +108,14 @@
             this.readTemperatureData = new System.Windows.Forms.Button();
             this.wetherData = new System.Windows.Forms.ListBox();
             this.tabSimulation = new System.Windows.Forms.TabPage();
-            this.button1 = new System.Windows.Forms.Button();
+            this.startBorderTemperature = new System.Windows.Forms.TextBox();
+            this.startCenterTemperature = new System.Windows.Forms.TextBox();
+            this.startSimulation = new System.Windows.Forms.Button();
             this.tabGraphics = new System.Windows.Forms.TabPage();
-            this.openTemperaturFile = new System.Windows.Forms.OpenFileDialog();
             this.graphicsPanel = new System.Windows.Forms.Panel();
+            this.openTemperaturFile = new System.Windows.Forms.OpenFileDialog();
+            this.panelLeft = new System.Windows.Forms.Panel();
+            this.panelRight = new System.Windows.Forms.Panel();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -134,6 +140,8 @@
             label31 = new System.Windows.Forms.Label();
             label32 = new System.Windows.Forms.Label();
             label33 = new System.Windows.Forms.Label();
+            label34 = new System.Windows.Forms.Label();
+            label35 = new System.Windows.Forms.Label();
             this.tabPlant.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabBHTES.SuspendLayout();
@@ -360,6 +368,24 @@
             label33.TabIndex = 4;
             label33.Text = "Wirkungsgrad Solarthermie (in %):";
             label33.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label34
+            // 
+            label34.Location = new System.Drawing.Point(6, 38);
+            label34.Name = "label34";
+            label34.Size = new System.Drawing.Size(320, 15);
+            label34.TabIndex = 6;
+            label34.Text = "Anfangstemperatur in der Mitte des Speichers (in °C): ";
+            label34.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label35
+            // 
+            label35.Location = new System.Drawing.Point(6, 67);
+            label35.Name = "label35";
+            label35.Size = new System.Drawing.Size(320, 15);
+            label35.TabIndex = 6;
+            label35.Text = "Anfangstemperatur am Rand des Speichers (in °C): ";
+            label35.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // tabPlant
             // 
@@ -878,7 +904,11 @@
             // 
             // tabSimulation
             // 
-            this.tabSimulation.Controls.Add(this.button1);
+            this.tabSimulation.Controls.Add(this.startBorderTemperature);
+            this.tabSimulation.Controls.Add(label35);
+            this.tabSimulation.Controls.Add(this.startCenterTemperature);
+            this.tabSimulation.Controls.Add(label34);
+            this.tabSimulation.Controls.Add(this.startSimulation);
             this.tabSimulation.Location = new System.Drawing.Point(4, 24);
             this.tabSimulation.Name = "tabSimulation";
             this.tabSimulation.Padding = new System.Windows.Forms.Padding(3);
@@ -887,18 +917,34 @@
             this.tabSimulation.Text = "Simulation";
             this.tabSimulation.UseVisualStyleBackColor = true;
             // 
-            // button1
+            // startBorderTemperature
             // 
-            this.button1.Location = new System.Drawing.Point(898, 561);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(129, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Simulation Starten";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.startBorderTemperature.Location = new System.Drawing.Point(333, 64);
+            this.startBorderTemperature.Name = "startBorderTemperature";
+            this.startBorderTemperature.Size = new System.Drawing.Size(100, 23);
+            this.startBorderTemperature.TabIndex = 7;
+            // 
+            // startCenterTemperature
+            // 
+            this.startCenterTemperature.Location = new System.Drawing.Point(333, 35);
+            this.startCenterTemperature.Name = "startCenterTemperature";
+            this.startCenterTemperature.Size = new System.Drawing.Size(100, 23);
+            this.startCenterTemperature.TabIndex = 7;
+            // 
+            // startSimulation
+            // 
+            this.startSimulation.Location = new System.Drawing.Point(898, 561);
+            this.startSimulation.Name = "startSimulation";
+            this.startSimulation.Size = new System.Drawing.Size(129, 23);
+            this.startSimulation.TabIndex = 0;
+            this.startSimulation.Text = "Simulation Starten";
+            this.startSimulation.UseVisualStyleBackColor = true;
+            this.startSimulation.Click += new System.EventHandler(this.startSimulation_Click);
             // 
             // tabGraphics
             // 
+            this.tabGraphics.Controls.Add(this.panelRight);
+            this.tabGraphics.Controls.Add(this.panelLeft);
             this.tabGraphics.Controls.Add(this.graphicsPanel);
             this.tabGraphics.Location = new System.Drawing.Point(4, 24);
             this.tabGraphics.Name = "tabGraphics";
@@ -908,17 +954,31 @@
             this.tabGraphics.Text = "Grafik";
             this.tabGraphics.UseVisualStyleBackColor = true;
             // 
+            // graphicsPanel
+            // 
+            this.graphicsPanel.Location = new System.Drawing.Point(53, 6);
+            this.graphicsPanel.Name = "graphicsPanel";
+            this.graphicsPanel.Size = new System.Drawing.Size(931, 539);
+            this.graphicsPanel.TabIndex = 0;
+            this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
+            // 
             // openTemperaturFile
             // 
             this.openTemperaturFile.FileName = " ";
             // 
-            // graphicsPanel
+            // panelLeft
             // 
-            this.graphicsPanel.Location = new System.Drawing.Point(6, 6);
-            this.graphicsPanel.Name = "graphicsPanel";
-            this.graphicsPanel.Size = new System.Drawing.Size(1021, 539);
-            this.graphicsPanel.TabIndex = 0;
-            this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
+            this.panelLeft.Location = new System.Drawing.Point(6, 6);
+            this.panelLeft.Name = "panelLeft";
+            this.panelLeft.Size = new System.Drawing.Size(41, 539);
+            this.panelLeft.TabIndex = 1;
+            // 
+            // panelRight
+            // 
+            this.panelRight.Location = new System.Drawing.Point(990, 6);
+            this.panelRight.Name = "panelRight";
+            this.panelRight.Size = new System.Drawing.Size(37, 539);
+            this.panelRight.TabIndex = 0;
             // 
             // DistrictHeating
             // 
@@ -942,6 +1002,7 @@
             this.tabConsumer.PerformLayout();
             this.tabWether.ResumeLayout(false);
             this.tabSimulation.ResumeLayout(false);
+            this.tabSimulation.PerformLayout();
             this.tabGraphics.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -967,7 +1028,7 @@
         private Button readTemperatureData;
         private ListBox wetherData;
         private OpenFileDialog openTemperaturFile;
-        private Button button1;
+        private Button startSimulation;
         private TextBox pipeDiameter;
         private TextBox vlm20;
         private TextBox vlm15;
@@ -1007,5 +1068,9 @@
         private TextBox solarEfficiency;
         private TextBox solarFieldSize;
         private Panel graphicsPanel;
+        private TextBox startBorderTemperature;
+        private TextBox startCenterTemperature;
+        private Panel panelRight;
+        private Panel panelLeft;
     }
 }

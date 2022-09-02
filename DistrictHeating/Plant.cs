@@ -57,8 +57,11 @@ namespace DistrictHeating
         public List<double> warmPipeTempPerHour = new List<double>();
         public List<double> hotPipeTempPerHour = new List<double>();
         public List<double> boreHoleEnergyPerDay = new List<double>();
+        public List<double> boreHoleTempBorderPerHour = new List<double>();
+        public List<double> boreHoleTempCenterPerHour = new List<double>();
         public List<double> heatConsumptionPerHour = new List<double>();
         public List<double> electricityConsumptionPerHour = new List<double>();
+        public List<double> volumeFlowPerHour = new List<double>();
         // plant properties
         public bool UseThreePipes { get; set; } = false; // use a three pipe system
         public double WarmPipeMinTemp { get; set; } = 40; // minimum temperature for the warm pipe
@@ -68,12 +71,11 @@ namespace DistrictHeating
         public List<HeatingConsumer> Heating;
         public BoreHoleField BoreHoleField;
         public BufferStorage BufferStorage;
-        public double PiplineLength { get; set; } = 3000; // in m
-        public double PipeDiameter { get; set; } = 0.05; // in m
-        public double PipeInsulationDiameter { get; set; } = 0.15; // in m
-        public double InsulationLambda { get; set; } = 0.04; // in W/(m*K)
-        public int NumConnections { get; set; } = 80; // number of connected houses
-
+        public double PiplineLength = 3000; // in m
+        public double PipeDiameter = 0.05; // in m
+        public double PipeInsulationDiameter = 0.15; // in m
+        public double InsulationLambda = 0.04; // in W/(m*K)
+        public int NumConnections = 80; // number of connected houses
         public int CurrentHourIndex { get { return (int)Math.Floor(currentTime / 3600); } }
         internal double GetCurrentTemperature()
         {
@@ -107,14 +109,16 @@ namespace DistrictHeating
         {
             // initialize the components
             SolarThermalCollector.Initialize(this);
-            returnPipeTemp = 10 + ZeroK; // 10°C for all pipes
-            warmPipeTemp = 10 + ZeroK;
-            hotPipeTemp = 10 + ZeroK;
+            returnPipeTemp = 10 + ZeroK; // 10°C for return pipe
+            warmPipeTemp = 20 + ZeroK; // 20° for warm and hot, only relevant for the first step
+            hotPipeTemp = 20 + ZeroK;
             double pipeVolume = PiplineLength * PipeDiameter * PipeDiameter * Math.PI / 4.0; // volume of water inside the pipes (m³)
             for (int j = 0; j < Heating.Count; j++)
             {
                 Heating[j].Initialize(this); // calculate scaling factors
             }
+            BoreHoleField.Initialize();
+
             // in the following loop we consider for each time step (one hour) how much energy the solar collectors will deliver and how much energy the heaters will require
             // wich both depend on whether data. The difference will be stored in or must be provided by the boreholefield. Now the question is the temperature level
             // because it makes a difference for the distribution of the energy between heat and elecricity. What temperature can we assume on the warm pipe (and hot pipe)
@@ -159,20 +163,17 @@ namespace DistrictHeating
                         }
                     }
                 }
-                if (i > 4000) // after almost half a year
+                for (int j = 0; j < Heating.Count; j++)
                 {
-                    for (int j = 0; j < Heating.Count; j++)
+                    Heating[j].EnergyFlow(this, out volumetricFlowRate, out deltaT, out fromPipe, out toPipe, out electricPower);
+                    double heatingVolume = volumetricFlowRate * step; // amount of water which has been used by this heating
+                    if (toPipe == Pipe.returnPipe)
                     {
-                        Heating[j].EnergyFlow(this, out volumetricFlowRate, out deltaT, out fromPipe, out toPipe, out electricPower);
-                        double heatingVolume = volumetricFlowRate * step; // amount of water which has been used by this heating
-                        if (toPipe == Pipe.returnPipe)
-                        {
-                            double inTemp = (fromPipe == Pipe.warmPipe) ? warmPipeTemp : hotPipeTemp;
-                            returnPipeVolume += heatingVolume; // add this amount of water to the return pipe pool with the now decreased temperature
-                            returnPipeEnergy += heatingVolume * (inTemp + deltaT); // deltaT is negative!
-                            heatConsumption += -heatingVolume * deltaT * 4200000; // in J, deltaT is negative, but we want a positiv value
-                            electricityConsumption += electricPower * step;
-                        }
+                        double inTemp = (fromPipe == Pipe.warmPipe) ? warmPipeTemp : hotPipeTemp;
+                        returnPipeVolume += heatingVolume; // add this amount of water to the return pipe pool with the now decreased temperature
+                        returnPipeEnergy += heatingVolume * (inTemp + deltaT); // deltaT is negative!
+                        heatConsumption += -heatingVolume * deltaT * 4200000; // in J, deltaT is negative, but we want a positiv value
+                        electricityConsumption += electricPower * step;
                     }
                 }
                 // now we have to balance the two or three pools, by pumping the water through the borehole field
@@ -186,7 +187,7 @@ namespace DistrictHeating
                     {   // there was more hot water generated as used. Pump the difference through the boreHoleField
                         if (warmPipeVolume > 0)
                         {
-                            BoreHoleField.TransferEnergie((warmPipeVolume-returnPipeVolume) / step, warmPipeTemp, out double outTemp, step);
+                            BoreHoleField.TransferEnergie((warmPipeVolume - returnPipeVolume) / step, warmPipeTemp, out double outTemp, step);
                             returnPipeVolume += warmPipeVolume;
                             returnPipeEnergy += warmPipeVolume * outTemp;
                         }
@@ -195,7 +196,7 @@ namespace DistrictHeating
                     {   // water from the warm pipe has been used, transfer from return pipe to warm pipe
                         if (returnPipeVolume > 0)
                         {
-                            BoreHoleField.TransferEnergie(-(returnPipeVolume-warmPipeVolume) / step, returnPipeTemp, out double outTemp, step);
+                            BoreHoleField.TransferEnergie(-(returnPipeVolume - warmPipeVolume) / step, returnPipeTemp, out double outTemp, step);
                             warmPipeVolume += returnPipeVolume;
                             warmPipeEnergy += returnPipeVolume * outTemp;
                         }
@@ -203,25 +204,38 @@ namespace DistrictHeating
                 }
                 if (returnPipeVolume > 0) returnPipeTemp = returnPipeEnergy / returnPipeVolume;
                 if (warmPipeVolume > 0) warmPipeTemp = warmPipeEnergy / warmPipeVolume;
-                if (hotPipeVolume>0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;
+                if (hotPipeVolume > 0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;
 
                 // save the current data for the graphical representation
                 int currentSeconds = (int)Math.Round(currentTime);
                 if (currentSeconds % 3600 == 0) // should always reach exact hours
                 {
                     int hourIndex = currentSeconds / 3600;
-                    returnPipeTempPerHour.Add(returnPipeTemp); // index should be correct
-                    warmPipeTempPerHour.Add(warmPipeTemp);
-                    hotPipeTempPerHour.Add(hotPipeTemp);
-                    heatConsumptionPerHour.Add(heatConsumption);
-                    electricityConsumptionPerHour.Add(electricityConsumption);
+                    returnPipeTempPerHour.Add(returnPipeTemp - ZeroK); // index should be correct
+                    warmPipeTempPerHour.Add(warmPipeTemp - ZeroK);
+                    hotPipeTempPerHour.Add(hotPipeTemp - ZeroK);
+                    boreHoleTempCenterPerHour.Add(BoreHoleField.GetHotEndTemperature(0) - ZeroK);
+                    boreHoleTempBorderPerHour.Add(BoreHoleField.GetColdEndTemperature(0) - ZeroK);
+                    heatConsumptionPerHour.Add(JouleToKWh(heatConsumption));
+                    electricityConsumptionPerHour.Add(JouleToKWh(electricityConsumption));
                     if (hourIndex % 24 == 12) // once a day at 12:00
                     {
-                        boreHoleEnergyPerDay.Add(BoreHoleField.GetTotalEnergy(ZeroK + 10));
+                        if (boreHoleEnergyPerDay.Count == 0) boreHoleEnergyPerDay.Add(0);
+                        else boreHoleEnergyPerDay.Add(BoreHoleField.GetTotalEnergy(ZeroK + 10) - boreHoleEnergyPerDay[boreHoleEnergyPerDay.Count - 1]); // differenc to yesterday
                     }
                 }
             }
         }
+
+        private double ToCelsius(double temp)
+        {
+            return temp - ZeroK;
+        }
+        private double JouleToKWh(double joule)
+        {
+            return joule / 3600 / 1000;
+        }
+
         public void CheckBoreHoleFieldAndSolarConsistency()
         {
             SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };

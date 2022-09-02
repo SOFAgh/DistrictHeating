@@ -31,11 +31,13 @@ namespace DistrictHeating
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void startSimulation_Click(object sender, EventArgs e)
         {
             // Plant.CheckSolarHeatConsitency();
             // Plant.CheckBoreHoleFieldAndSolarConsistency();
-            Plant.StartSimulation();
+            Control? ctrl = GetPlantData();
+            if (ctrl == null) Plant.StartSimulation();
+            else ctrl?.Focus();
         }
         private void SetPlantData()
         {
@@ -59,6 +61,8 @@ namespace DistrictHeating
             boreHoleLength.Text = Plant.BoreHoleField.Length.ToString();
             groundHeatCapacity.Text = Plant.BoreHoleField.HeatCapacity.ToString();
             groundLambda.Text = Plant.BoreHoleField.Lambda.ToString();
+            startCenterTemperature.Text = (Plant.BoreHoleField.startBoreholeFieldCenterTemperature - Plant.ZeroK).ToString();
+            startBorderTemperature.Text = (Plant.BoreHoleField.startBoreholeFieldBorderTemperature - Plant.ZeroK).ToString();
             // bufferStorage
             bufferStorageEnergyTransfer.Text = Plant.BufferStorage.EnergyTransfer.ToString();
             bufferStroageSize.Text = Plant.BufferStorage.Volume.ToString();
@@ -68,6 +72,47 @@ namespace DistrictHeating
             solarEfficiency.Text = Plant.SolarThermalCollector.Efficiency.ToString();
             // heating
             SetHeatingNameData(0);
+        }
+        public Control? GetPlantData()
+        {
+            // plant
+            if (!double.TryParse(pipelineLength.Text, out Plant.PiplineLength)) return pipelineLength;
+            if (!double.TryParse(pipeDiameter.Text, out Plant.PipeDiameter)) return pipeDiameter;
+            Plant.PipeDiameter /= 1000;
+            if (!double.TryParse(insulationLambda.Text, out Plant.InsulationLambda)) return insulationLambda;
+            if (!double.TryParse(pipeInsulationDiameter.Text, out Plant.PipeInsulationDiameter)) return pipeInsulationDiameter;
+            Plant.PipeInsulationDiameter /= 1000;
+            if (!int.TryParse(numConnections.Text, out Plant.NumConnections)) return numConnections;
+            // boreHoleField
+            // TODO: Anzahl der Bohrlöcher veränderbar machen!!!
+            //for (int i = 0; i < numBoreHoles.Items.Count; i++)
+            //{
+            //    numBoreHoles.SelectedIndex = 0;
+            //    if (numBoreHoles.Items[i].ToString().StartsWith(Plant.BoreHoleField.NumberOfBoreHoles.ToString()))
+            //    {
+            //        numBoreHoles.SelectedIndex = i;
+            //        break;
+            //    }
+            //}
+            //borHoleDistance.Text = Plant.BoreHoleField.Distance.ToString();
+            //boreHoleLength.Text = Plant.BoreHoleField.Length.ToString();
+            //groundHeatCapacity.Text = Plant.BoreHoleField.HeatCapacity.ToString();
+            //groundLambda.Text = Plant.BoreHoleField.Lambda.ToString();
+            if (!double.TryParse(startCenterTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldCenterTemperature)) return startCenterTemperature;
+            Plant.BoreHoleField.startBoreholeFieldCenterTemperature += Plant.ZeroK;
+            if (!double.TryParse(startBorderTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldBorderTemperature)) return startBorderTemperature;
+            Plant.BoreHoleField.startBoreholeFieldBorderTemperature += Plant.ZeroK;
+            //// bufferStorage
+            //bufferStorageEnergyTransfer.Text = Plant.BufferStorage.EnergyTransfer.ToString();
+            //bufferStroageSize.Text = Plant.BufferStorage.Volume.ToString();
+            //bufferStorageInstances.Text = Plant.BufferStorage.NumberOfStorages.ToString();
+            //// solar
+            //solarFieldSize.Text = Plant.SolarThermalCollector.Area.ToString();
+            //solarEfficiency.Text = Plant.SolarThermalCollector.Efficiency.ToString();
+            //// heating
+
+            GetHeatingNameData(HeatingName.SelectedIndex);
+            return null;
         }
         private void SetHeatingNameData(int indexToSelect)
         {
@@ -156,30 +201,55 @@ namespace DistrictHeating
         {
             var p = sender as Panel;
             var g = e.Graphics;
+            Graphics gLeft = panelLeft.CreateGraphics();
+            Graphics gRight = panelRight.CreateGraphics();
 
             g.FillRectangle(new SolidBrush(Color.LightYellow), p.DisplayRectangle);
 
-            Matrix transformMatrix = new Matrix();
-            List<PointF> pHeat = new List<PointF>();
-            List<PointF> pElectr = new List<PointF>();
-            float max = 0;
+            double tempMin = double.MaxValue;
+            double tempMax = double.MinValue;
             for (int i = 0; i < Plant.heatConsumptionPerHour.Count; i++)
             {
-                float b = (float)(Plant.heatConsumptionPerHour[i] / 1e7);
-                pHeat.Add(new PointF(i, b));
-                max = Math.Max(max, b);
-                b = (float)(Plant.electricityConsumptionPerHour[i] / 1e7);
-                pElectr.Add(new PointF(i, b));
-                max = Math.Max(max, b);
+                tempMin = Math.Min(tempMin, Plant.returnPipeTempPerHour[i]);
+                tempMax = Math.Max(tempMax, Plant.returnPipeTempPerHour[i]);
+                tempMin = Math.Min(tempMin, Plant.warmPipeTempPerHour[i]);
+                tempMax = Math.Max(tempMax, Plant.warmPipeTempPerHour[i]);
+                tempMin = Math.Min(tempMin, Plant.hotPipeTempPerHour[i]);
+                tempMax = Math.Max(tempMax, Plant.hotPipeTempPerHour[i]);
+                tempMin = Math.Min(tempMin, Plant.boreHoleTempBorderPerHour[i]);
+                tempMax = Math.Max(tempMax, Plant.boreHoleTempBorderPerHour[i]);
+                tempMin = Math.Min(tempMin, Plant.boreHoleTempCenterPerHour[i]);
+                tempMax = Math.Max(tempMax, Plant.boreHoleTempCenterPerHour[i]);
             }
-            max *= 1.2f;
-            transformMatrix = new Matrix(p.DisplayRectangle.Width / (float)(Plant.heatConsumptionPerHour.Count), 0, 0, -p.DisplayRectangle.Height / max, 0, p.DisplayRectangle.Height );
-            g.Transform = transformMatrix;
-            Brush brush = new SolidBrush(Color.Blue);
-            Pen penHeat = new Pen(brush, 2);
-            Pen penElectr = new Pen(new SolidBrush(Color.Green), 2);
-            g.DrawCurve(penHeat, pHeat.ToArray());
-            g.DrawCurve(penElectr, pElectr.ToArray());
+            Pen penBlack = new Pen(new SolidBrush(Color.Black), 1);
+
+            int horLineDiff = p.Height / 13;
+            for (int i = 0; i < 12; i++)
+            {
+                g.DrawLine(penBlack, 0, (i + 1) * horLineDiff, p.Width, (i + 1) * horLineDiff);
+                gLeft.DrawString(i.ToString(),)
+            }
+            //Matrix transformMatrix = new Matrix();
+            //List<PointF> pHeat = new List<PointF>();
+            //List<PointF> pElectr = new List<PointF>();
+            //float max = 0;
+            //for (int i = 0; i < Plant.heatConsumptionPerHour.Count; i++)
+            //{
+            //    float b = (float)(Plant.heatConsumptionPerHour[i] / 1e7);
+            //    pHeat.Add(new PointF(i, b));
+            //    max = Math.Max(max, b);
+            //    b = (float)(Plant.electricityConsumptionPerHour[i] / 1e7);
+            //    pElectr.Add(new PointF(i, b));
+            //    max = Math.Max(max, b);
+            //}
+            //max *= 1.2f;
+            //transformMatrix = new Matrix(p.DisplayRectangle.Width / (float)(Plant.heatConsumptionPerHour.Count), 0, 0, -p.DisplayRectangle.Height / max, 0, p.DisplayRectangle.Height);
+            //g.Transform = transformMatrix;
+            //Brush brush = new SolidBrush(Color.Blue);
+            //Pen penHeat = new Pen(brush, 2);
+            //Pen penElectr = new Pen(new SolidBrush(Color.Green), 2);
+            //g.DrawCurve(penHeat, pHeat.ToArray());
+            //g.DrawCurve(penElectr, pElectr.ToArray());
         }
     }
 }

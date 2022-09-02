@@ -71,6 +71,15 @@ namespace DistrictHeating
         /// The power (W) which will be transferred at a given temperature difference between the water in the pipe and the soil in W/K
         /// </summary>
         public double TransferPower { get; set; } = 5; // i.e. 50 W/m at deltaT 10K
+        /// <summary>
+        /// Start temperature in the center for the simulation
+        /// </summary>
+        public double startBoreholeFieldCenterTemperature = 40 + 273.15;
+        /// <summary>
+        /// Start temperature at the border for the simulation
+        /// </summary>
+        public double startBoreholeFieldBorderTemperature = 10 + 273.15;
+
         // internal representation of the field
         private Dictionary<Tuple<int, int, int>, TempPoint> temperatureAtHexCoord = new Dictionary<Tuple<int, int, int>, TempPoint>();
         private List<TempPoint> boreHoles = new List<TempPoint>();
@@ -78,8 +87,10 @@ namespace DistrictHeating
         private double triangleArea;
         private double borderTemperature; // the mean temperature of a ring surrounding the field. Used to calculate the energy loss.
         private int numberOfBorderPoints; // number of points on the border
+        private int maxHexCoordinate;
         public BoreHoleField(int numRings, double initialTemperature)
         {
+            maxHexCoordinate = 0;
             triangleArea = (distance / 6) * (distance / 6) * Math.Sqrt(3.0) / 4.0;
             // 1. create the hexagonal array of temperature points
             int dbgmaxi = 0;
@@ -91,6 +102,7 @@ namespace DistrictHeating
                     if (Math.Abs(i) + Math.Abs(j) + Math.Abs(k) > (numRings + 1) * 2 * grid - 1) continue; // outside the hexagon
                     TempPoint tpijk = new TempPoint(initialTemperature, 0.0, i, j, k);
                     temperatureAtHexCoord[new Tuple<int, int, int>(i, j, k)] = tpijk;
+                    maxHexCoordinate = Math.Max(Math.Max(maxHexCoordinate, Math.Abs(i)), Math.Max(Math.Abs(j), Math.Abs(k)));
                     if (Math.Abs(i) + Math.Abs(j) + Math.Abs(k) > (numRings + 1) * 2 * grid - 1) continue; // outside the hexagon
                     if ((Math.Abs(i) + Math.Abs(k)) % grid == 0 && (Math.Abs(i) + Math.Abs(j)) % grid == 0 && (Math.Abs(j) + Math.Abs(k)) % grid == 0)
                     {   // there are 5 temperature points points in between the boreholes
@@ -160,7 +172,21 @@ namespace DistrictHeating
             double y = (i - k) * a;
             return (x, y);
         }
-
+        /// <summary>
+        /// Sets a linear temperature field from the center to the border. Used to initialize a certain state
+        /// </summary>
+        /// <param name="centerTemperature"></param>
+        /// <param name="borderTemperature"></param>
+        public void Initialize()
+        {
+            Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
+            {
+                int c = Math.Max(Math.Max(Math.Abs(key.Item1), Math.Abs(key.Item2)), Math.Abs(key.Item3));
+                TempPoint itemValue = temperatureAtHexCoord[key];
+                double f = (maxHexCoordinate - c) / (double)maxHexCoordinate; // 1: center, 0: border
+                itemValue.t = startBoreholeFieldBorderTemperature + f * (startBoreholeFieldCenterTemperature - startBoreholeFieldBorderTemperature);
+            });
+        }
         /// <summary>
         /// Trensfers energy from or to the borehole field
         /// </summary>
