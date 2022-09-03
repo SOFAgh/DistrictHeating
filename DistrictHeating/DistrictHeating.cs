@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing.Drawing2D;
 using System.Globalization;
+using System.IO;
 using System.Windows.Forms;
 
 namespace DistrictHeating
@@ -9,10 +11,12 @@ namespace DistrictHeating
     {
         public Plant Plant { get; set; } = new Plant();
         private int HeatingNameIndex;
+        private PaintDiagram paintDiagram;
         public DistrictHeating()
         {
             InitializeComponent();
             SetPlantData();
+            paintDiagram = new PaintDiagram(graphicsPanel, panelLeft, panelRight, Plant);
         }
 
         private void readTemperatureData_Click(object sender, EventArgs e)
@@ -199,57 +203,7 @@ namespace DistrictHeating
 
         private void graphicsPanel_Paint(object sender, PaintEventArgs e)
         {
-            var p = sender as Panel;
-            var g = e.Graphics;
-            Graphics gLeft = panelLeft.CreateGraphics();
-            Graphics gRight = panelRight.CreateGraphics();
-
-            g.FillRectangle(new SolidBrush(Color.LightYellow), p.DisplayRectangle);
-
-            double tempMin = double.MaxValue;
-            double tempMax = double.MinValue;
-            for (int i = 0; i < Plant.heatConsumptionPerHour.Count; i++)
-            {
-                tempMin = Math.Min(tempMin, Plant.returnPipeTempPerHour[i]);
-                tempMax = Math.Max(tempMax, Plant.returnPipeTempPerHour[i]);
-                tempMin = Math.Min(tempMin, Plant.warmPipeTempPerHour[i]);
-                tempMax = Math.Max(tempMax, Plant.warmPipeTempPerHour[i]);
-                tempMin = Math.Min(tempMin, Plant.hotPipeTempPerHour[i]);
-                tempMax = Math.Max(tempMax, Plant.hotPipeTempPerHour[i]);
-                tempMin = Math.Min(tempMin, Plant.boreHoleTempBorderPerHour[i]);
-                tempMax = Math.Max(tempMax, Plant.boreHoleTempBorderPerHour[i]);
-                tempMin = Math.Min(tempMin, Plant.boreHoleTempCenterPerHour[i]);
-                tempMax = Math.Max(tempMax, Plant.boreHoleTempCenterPerHour[i]);
-            }
-            Pen penBlack = new Pen(new SolidBrush(Color.Black), 1);
-
-            int horLineDiff = p.Height / 13;
-            for (int i = 0; i < 12; i++)
-            {
-                g.DrawLine(penBlack, 0, (i + 1) * horLineDiff, p.Width, (i + 1) * horLineDiff);
-                gLeft.DrawString(i.ToString(),)
-            }
-            //Matrix transformMatrix = new Matrix();
-            //List<PointF> pHeat = new List<PointF>();
-            //List<PointF> pElectr = new List<PointF>();
-            //float max = 0;
-            //for (int i = 0; i < Plant.heatConsumptionPerHour.Count; i++)
-            //{
-            //    float b = (float)(Plant.heatConsumptionPerHour[i] / 1e7);
-            //    pHeat.Add(new PointF(i, b));
-            //    max = Math.Max(max, b);
-            //    b = (float)(Plant.electricityConsumptionPerHour[i] / 1e7);
-            //    pElectr.Add(new PointF(i, b));
-            //    max = Math.Max(max, b);
-            //}
-            //max *= 1.2f;
-            //transformMatrix = new Matrix(p.DisplayRectangle.Width / (float)(Plant.heatConsumptionPerHour.Count), 0, 0, -p.DisplayRectangle.Height / max, 0, p.DisplayRectangle.Height);
-            //g.Transform = transformMatrix;
-            //Brush brush = new SolidBrush(Color.Blue);
-            //Pen penHeat = new Pen(brush, 2);
-            //Pen penElectr = new Pen(new SolidBrush(Color.Green), 2);
-            //g.DrawCurve(penHeat, pHeat.ToArray());
-            //g.DrawCurve(penElectr, pElectr.ToArray());
+            paintDiagram.Paint();
         }
     }
 }
