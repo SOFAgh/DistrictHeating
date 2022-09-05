@@ -130,9 +130,6 @@ namespace DistrictHeating
                     unitStep[unit] = step;
                 }
             }
-            int l1start = 0, l1step = 0, l2start = 0, l2step = 0;
-            int r1start = 0, r1step = 0, r2start = 0, r2step = 0;
-            string l1unit = null, l2unit = null, r1unit = null, r2unit = null;
             string[] units = unitStart.Keys.ToArray();
 
             if (units.Length == 1)
@@ -179,7 +176,7 @@ namespace DistrictHeating
                     sum[plant.Diagrams[i].name] = 0.0f;
                     num[plant.Diagrams[i].name] = 0;
                 }
-                else 
+                else
                 {
                     sum[plant.Diagrams[i].name] += (float)plant.Diagrams[i].val;
                     num[plant.Diagrams[i].name] += 1;
@@ -187,6 +184,11 @@ namespace DistrictHeating
             }
             using (Graphics grDiagram = diagram.CreateGraphics())
             {
+                List<PointF> test = new List<PointF>();
+                for (int i = 0; i < 365; i++)
+                {
+                    test.Add(new PointF(i * horScale, (float)((i / 36) * 10.0f * unitFactor["°C"] + unitOffset["°C"])));
+                }
                 grDiagram.Clear(Color.White);
                 for (int i = 0; i < 12; i++)
                 {
@@ -196,6 +198,7 @@ namespace DistrictHeating
                 {
                     grDiagram.DrawCurve(Pens.Red, paths["warmPipe"].ToArray());
                     grDiagram.DrawCurve(Pens.Green, paths["ambientTemperature"].ToArray());
+                    grDiagram.DrawLines(Pens.Blue, test.ToArray());
                 }
             }
         }
@@ -243,10 +246,8 @@ namespace DistrictHeating
                 while (lowest < min - step) lowest += step;
             }
             while (highest < max) highest += step;
-            lowest += step;
-            highest -= step;
-            factor = -(double)diagram.Height / (double)(highest - lowest);
-            offset = diagram.Height - lowest * celsiusFactor;
+            factor = -(double)diagram.Height / (double)(highest - lowest + 2);
+            offset = diagram.Height - lowest * factor;
             start = lowest;
         }
 
