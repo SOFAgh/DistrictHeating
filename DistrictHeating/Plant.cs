@@ -54,14 +54,32 @@ namespace DistrictHeating
         public double warmPipeTemp; // current temperature of the warm pipe [K]
         public double hotPipeTemp; // current temperature of the hot pipe [K]
         // diagrams
+        public struct DiagramEntry
+        {
+            public int timeStamp; // seconds
+            public string name; // name of the entry
+            public double val; // value of the entry
+            public string unit; // unit of the entry
+            public DiagramEntry(int timeStamp, string name, double val, string unit)
+            {
+                this.timeStamp = timeStamp;
+                this.name = name;
+                this.val = val;
+                this.unit = unit;
+            }
+        }
+        public List<DiagramEntry> Diagrams = new List<DiagramEntry>();
         public List<double> returnPipeTempPerHour = new List<double>();
         public List<double> warmPipeTempPerHour = new List<double>();
         public List<double> hotPipeTempPerHour = new List<double>();
+        public List<double> ambientTemperaturePerHour = new List<double>();
         public List<double> boreHoleEnergyPerDay = new List<double>();
         public List<double> boreHoleTempBorderPerHour = new List<double>();
         public List<double> boreHoleTempCenterPerHour = new List<double>();
+        public List<double> boreHoleEnergyFlowPerHour = new List<double>();
         public List<double> heatConsumptionPerHour = new List<double>();
         public List<double> electricityConsumptionPerHour = new List<double>();
+        public List<double> solarHeatPerHour = new List<double>();
         public List<double> volumeFlowPerHour = new List<double>();
         // plant properties
         public bool UseThreePipes { get; set; } = false; // use a three pipe system
@@ -148,6 +166,7 @@ namespace DistrictHeating
                 // let the solar collectors do their work
                 SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
                 double solarVolume = volumetricFlowRate * step; // this much water was pumped through the collectors fromPipe->toPipe
+                double solarEnergy = solarVolume * deltaT * 4200000;
                 if (solarVolume > 0)
                 {
                     if (fromPipe == Pipe.returnPipe) // which it always should be
@@ -178,6 +197,8 @@ namespace DistrictHeating
                     }
                 }
                 // now we have to balance the two or three pools, by pumping the water through the borehole field
+                double transferredEnergy = 0.0;
+                double volumeFlow = 0.0;
                 if (this.UseThreePipes)
                 {
 
@@ -189,6 +210,8 @@ namespace DistrictHeating
                         if (warmPipeVolume > 0)
                         {
                             BoreHoleField.TransferEnergie((warmPipeVolume - returnPipeVolume) / step, warmPipeTemp, out double outTemp, step);
+                            transferredEnergy = (warmPipeVolume - returnPipeVolume) * (outTemp - warmPipeTemp) * 4200000;
+                            volumeFlow = (warmPipeVolume - returnPipeVolume) / step;
                             returnPipeVolume += warmPipeVolume;
                             returnPipeEnergy += warmPipeVolume * outTemp;
                         }
@@ -198,6 +221,8 @@ namespace DistrictHeating
                         if (returnPipeVolume > 0)
                         {
                             BoreHoleField.TransferEnergie(-(returnPipeVolume - warmPipeVolume) / step, returnPipeTemp, out double outTemp, step);
+                            transferredEnergy = (warmPipeVolume - returnPipeVolume) * (outTemp - returnPipeTemp) * 4200000;
+                            volumeFlow = (warmPipeVolume - returnPipeVolume) / step;
                             warmPipeVolume += returnPipeVolume;
                             warmPipeEnergy += returnPipeVolume * outTemp;
                         }
@@ -212,20 +237,31 @@ namespace DistrictHeating
                 if (currentSeconds % 3600 == 0) // should always reach exact hours
                 {
                     int hourIndex = currentSeconds / 3600;
-                    returnPipeTempPerHour.Add(returnPipeTemp - ZeroK); // index should be correct
-                    warmPipeTempPerHour.Add(warmPipeTemp - ZeroK);
-                    hotPipeTempPerHour.Add(hotPipeTemp - ZeroK);
-                    boreHoleTempCenterPerHour.Add(BoreHoleField.GetHotEndTemperature(0) - ZeroK);
-                    boreHoleTempBorderPerHour.Add(BoreHoleField.GetColdEndTemperature(0) - ZeroK);
-                    heatConsumptionPerHour.Add(JouleToKWh(heatConsumption));
-                    electricityConsumptionPerHour.Add(JouleToKWh(electricityConsumption));
+                    DiagramAdd(currentSeconds, "returnPipe", returnPipeTemp - ZeroK, "°C");
+                    DiagramAdd(currentSeconds, "warmPipe", warmPipeTemp - ZeroK, "°C");
+                    DiagramAdd(currentSeconds, "hotPipe", hotPipeTemp - ZeroK, "°C");
+                    DiagramAdd(currentSeconds, "boreHoleCenter", BoreHoleField.GetHotEndTemperature(0) - ZeroK, "°C");
+                    DiagramAdd(currentSeconds, "boreHoleBorder", BoreHoleField.GetColdEndTemperature(0) - ZeroK, "°C");
+                    DiagramAdd(currentSeconds, "heatConsumption", JouleToKW(heatConsumption, step), "kW");
+                    DiagramAdd(currentSeconds, "electricityConsumption", JouleToKW(electricityConsumption, step), "kW");
+                    DiagramAdd(currentSeconds, "solarEnergy", JouleToKW(solarEnergy, step), "kW");
+                    DiagramAdd(currentSeconds, "heatConsumption", JouleToKW(heatConsumption, step), "kW");
+                    DiagramAdd(currentSeconds, "solarEnergy", JouleToKW(solarEnergy, step), "kW");
+                    DiagramAdd(currentSeconds, "boreHoleEnergyFlow", JouleToKW(transferredEnergy, step), "kW");
+                    DiagramAdd(currentSeconds, "ambientTemperature", GetCurrentTemperature(), "°C");
+                    DiagramAdd(currentSeconds, "volumeFlow", volumeFlow * 1000, "l/s"); // m³ -> l
                     if (hourIndex % 24 == 12) // once a day at 12:00
                     {
-                        if (boreHoleEnergyPerDay.Count == 0) boreHoleEnergyPerDay.Add(0);
-                        else boreHoleEnergyPerDay.Add(BoreHoleField.GetTotalEnergy(ZeroK + 10) - boreHoleEnergyPerDay[boreHoleEnergyPerDay.Count - 1]); // differenc to yesterday
+                        boreHoleEnergyPerDay.Add(JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)));
+                        DiagramAdd(currentSeconds, "boreHoleEnergy",JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)), "kWh");
                     }
                 }
             }
+        }
+
+        private void DiagramAdd(int currentSeconds, string name, double value, string unit)
+        {
+            Diagrams.Add(new DiagramEntry(currentSeconds, name, value, unit));
         }
 
         private double ToCelsius(double temp)
@@ -235,6 +271,10 @@ namespace DistrictHeating
         private double JouleToKWh(double joule)
         {
             return joule / 3600 / 1000;
+        }
+        private double JouleToKW(double joule, double step)
+        {
+            return joule / step / 1000;
         }
 
         public void CheckBoreHoleFieldAndSolarConsistency()
