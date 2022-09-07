@@ -90,6 +90,10 @@ namespace DistrictHeating
                                         if (!yearToData.TryGetValue(year, out double[]? valuePerHour))
                                         {
                                             yearToData[year] = valuePerHour = new double[8760];
+                                            for (int i = 0; i < valuePerHour.Length; i++)
+                                            {
+                                                valuePerHour[i] = 0;
+                                            }
                                         }
                                         int hn = DateToHourNumber(month, day, hour);
                                         valuePerHour[hn] = Convert.ToDouble(parts[valueIndex], CultureInfo.InvariantCulture);
@@ -117,7 +121,7 @@ namespace DistrictHeating
             int res = 0;
             for (int i = 1; i < month; i++)
             {
-                res += 24 * months[i];
+                res += 24 * months[i - 1];
             }
             res += (day - 1) * 24 + hour;
             return res;

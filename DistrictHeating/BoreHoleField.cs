@@ -50,7 +50,7 @@ namespace DistrictHeating
         /// <summary>
         /// Length of the boreholes
         /// </summary>
-        public double Length { get; set; } = 100;
+        public double Length = 100;
         /// <summary>
         /// Volume of the water in the heat exchanging pipes
         /// </summary>
@@ -62,11 +62,11 @@ namespace DistrictHeating
         /// <summary>
         /// Thermal conductivity in W/(m*K)
         /// </summary>
-        public double Lambda { get; set; } = 2.3; // in W/(m*K) Sandstein Wikipedia
+        public double Lambda = 2.3; // in W/(m*K) Sandstein Wikipedia
         /// <summary>
         /// Heat capacity in j/(m³*K)
         /// </summary>
-        public double HeatCapacity { get; set; } = 700 * 2200; // J/(m³*K), Sandstein https://www.schweizer-fn.de/stoff/wkapazitaet/wkapazitaet_baustoff_erde.php
+        public double HeatCapacity = 700 * 2200; // J/(m³*K), Sandstein https://www.schweizer-fn.de/stoff/wkapazitaet/wkapazitaet_baustoff_erde.php
         public int NumberOfBoreHoles { get { return boreHoles.Count; } }
         /// <summary>
         /// The power (W) which will be transferred at a given temperature difference between the water in the pipe and the soil in W/K
@@ -247,7 +247,7 @@ namespace DistrictHeating
                 double dt = 0.0;
                 TempPoint itemValue = temperatureAtHexCoord[key];
                 double t0 = itemValue.t;
-                double parameterToDetermin = 0.5 * 1e-5; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
+                double parameterToDetermin = Lambda / HeatCapacity; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
                 double f = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
                 int cnt = itemValue.connectedPoints.Count;
                 // here we assume that all points have the same distance and are regularly distributed around the central point (in 60° steps)

@@ -34,6 +34,7 @@ namespace DistrictHeating
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.Label label1;
             System.Windows.Forms.Label label2;
             System.Windows.Forms.Label label3;
@@ -60,6 +61,12 @@ namespace DistrictHeating
             System.Windows.Forms.Label label33;
             System.Windows.Forms.Label label34;
             System.Windows.Forms.Label label35;
+            System.Windows.Forms.Label label36;
+            System.Windows.Forms.Label label37;
+            System.Windows.Forms.Label label38;
+            System.Windows.Forms.Label label39;
+            System.Windows.Forms.Label label40;
+            System.Windows.Forms.Label label41;
             this.tabPlant = new System.Windows.Forms.TabPage();
             this.threePipes = new System.Windows.Forms.RadioButton();
             this.twoPipes = new System.Windows.Forms.RadioButton();
@@ -114,14 +121,39 @@ namespace DistrictHeating
             this.readTemperatureData = new System.Windows.Forms.Button();
             this.wetherData = new System.Windows.Forms.ListBox();
             this.tabSimulation = new System.Windows.Forms.TabPage();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.startBorderTemperature = new System.Windows.Forms.TextBox();
             this.startCenterTemperature = new System.Windows.Forms.TextBox();
             this.startSimulation = new System.Windows.Forms.Button();
             this.tabGraphics = new System.Windows.Forms.TabPage();
-            this.graphicsPanel = new System.Windows.Forms.Panel();
-            this.openTemperaturFile = new System.Windows.Forms.OpenFileDialog();
-            this.panelLeft = new System.Windows.Forms.Panel();
+            this.zoomMinus = new System.Windows.Forms.Button();
+            this.zoomPlus = new System.Windows.Forms.Button();
+            this.timeScale = new System.Windows.Forms.Panel();
             this.panelRight = new System.Windows.Forms.Panel();
+            this.panelLeft = new System.Windows.Forms.Panel();
+            this.graphicsPanel = new System.Windows.Forms.Panel();
+            this.legend = new System.Windows.Forms.TabPage();
+            this.warmPipe = new System.Windows.Forms.CheckBox();
+            this.returnPipe = new System.Windows.Forms.CheckBox();
+            this.hotPipe = new System.Windows.Forms.CheckBox();
+            this.boreHoleCenter = new System.Windows.Forms.CheckBox();
+            this.boreHoleBorder = new System.Windows.Forms.CheckBox();
+            this.heatConsumption = new System.Windows.Forms.CheckBox();
+            this.electricityConsumption = new System.Windows.Forms.CheckBox();
+            this.solarEnergy = new System.Windows.Forms.CheckBox();
+            this.boreHoleEnergyFlow = new System.Windows.Forms.CheckBox();
+            this.ambientTemperature = new System.Windows.Forms.CheckBox();
+            this.volumeFlow = new System.Windows.Forms.CheckBox();
+            this.boreHoleEnergy = new System.Windows.Forms.CheckBox();
+            this.openTemperaturFile = new System.Windows.Forms.OpenFileDialog();
+            this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.boreHoleAdded = new System.Windows.Forms.TextBox();
+            this.boreHoleRemoved = new System.Windows.Forms.TextBox();
+            this.solarTotal = new System.Windows.Forms.TextBox();
+            this.heatProduced = new System.Windows.Forms.TextBox();
+            this.electricityTotal = new System.Windows.Forms.TextBox();
+            this.solarPercentage = new System.Windows.Forms.TextBox();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -148,6 +180,12 @@ namespace DistrictHeating
             label33 = new System.Windows.Forms.Label();
             label34 = new System.Windows.Forms.Label();
             label35 = new System.Windows.Forms.Label();
+            label36 = new System.Windows.Forms.Label();
+            label37 = new System.Windows.Forms.Label();
+            label38 = new System.Windows.Forms.Label();
+            label39 = new System.Windows.Forms.Label();
+            label40 = new System.Windows.Forms.Label();
+            label41 = new System.Windows.Forms.Label();
             this.tabPlant.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabBHTES.SuspendLayout();
@@ -157,6 +195,8 @@ namespace DistrictHeating
             this.tabWether.SuspendLayout();
             this.tabSimulation.SuspendLayout();
             this.tabGraphics.SuspendLayout();
+            this.legend.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -482,6 +522,7 @@ namespace DistrictHeating
             this.tabMain.Controls.Add(this.tabWether);
             this.tabMain.Controls.Add(this.tabSimulation);
             this.tabMain.Controls.Add(this.tabGraphics);
+            this.tabMain.Controls.Add(this.legend);
             this.tabMain.Location = new System.Drawing.Point(12, 12);
             this.tabMain.Name = "tabMain";
             this.tabMain.SelectedIndex = 0;
@@ -910,6 +951,8 @@ namespace DistrictHeating
             // 
             // tabSimulation
             // 
+            this.tabSimulation.Controls.Add(this.groupBox1);
+            this.tabSimulation.Controls.Add(this.progressBar);
             this.tabSimulation.Controls.Add(this.startBorderTemperature);
             this.tabSimulation.Controls.Add(label35);
             this.tabSimulation.Controls.Add(this.startCenterTemperature);
@@ -922,6 +965,14 @@ namespace DistrictHeating
             this.tabSimulation.TabIndex = 4;
             this.tabSimulation.Text = "Simulation";
             this.tabSimulation.UseVisualStyleBackColor = true;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(6, 561);
+            this.progressBar.Maximum = 1000;
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(886, 23);
+            this.progressBar.TabIndex = 8;
             // 
             // startBorderTemperature
             // 
@@ -949,6 +1000,9 @@ namespace DistrictHeating
             // 
             // tabGraphics
             // 
+            this.tabGraphics.Controls.Add(this.zoomMinus);
+            this.tabGraphics.Controls.Add(this.zoomPlus);
+            this.tabGraphics.Controls.Add(this.timeScale);
             this.tabGraphics.Controls.Add(this.panelRight);
             this.tabGraphics.Controls.Add(this.panelLeft);
             this.tabGraphics.Controls.Add(this.graphicsPanel);
@@ -960,17 +1014,39 @@ namespace DistrictHeating
             this.tabGraphics.Text = "Grafik";
             this.tabGraphics.UseVisualStyleBackColor = true;
             // 
-            // graphicsPanel
+            // zoomMinus
             // 
-            this.graphicsPanel.Location = new System.Drawing.Point(53, 6);
-            this.graphicsPanel.Name = "graphicsPanel";
-            this.graphicsPanel.Size = new System.Drawing.Size(931, 539);
-            this.graphicsPanel.TabIndex = 0;
-            this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
+            this.zoomMinus.Location = new System.Drawing.Point(10, 551);
+            this.zoomMinus.Name = "zoomMinus";
+            this.zoomMinus.Size = new System.Drawing.Size(37, 33);
+            this.zoomMinus.TabIndex = 3;
+            this.zoomMinus.Text = "-";
+            this.zoomMinus.UseVisualStyleBackColor = true;
+            this.zoomMinus.Click += new System.EventHandler(this.zoomMinus_Click);
             // 
-            // openTemperaturFile
+            // zoomPlus
             // 
-            this.openTemperaturFile.FileName = " ";
+            this.zoomPlus.Location = new System.Drawing.Point(990, 551);
+            this.zoomPlus.Name = "zoomPlus";
+            this.zoomPlus.Size = new System.Drawing.Size(37, 33);
+            this.zoomPlus.TabIndex = 3;
+            this.zoomPlus.Text = "+";
+            this.zoomPlus.UseVisualStyleBackColor = true;
+            this.zoomPlus.Click += new System.EventHandler(this.zoomPlus_Click);
+            // 
+            // timeScale
+            // 
+            this.timeScale.Location = new System.Drawing.Point(53, 551);
+            this.timeScale.Name = "timeScale";
+            this.timeScale.Size = new System.Drawing.Size(931, 33);
+            this.timeScale.TabIndex = 2;
+            // 
+            // panelRight
+            // 
+            this.panelRight.Location = new System.Drawing.Point(990, 6);
+            this.panelRight.Name = "panelRight";
+            this.panelRight.Size = new System.Drawing.Size(37, 539);
+            this.panelRight.TabIndex = 0;
             // 
             // panelLeft
             // 
@@ -979,12 +1055,303 @@ namespace DistrictHeating
             this.panelLeft.Size = new System.Drawing.Size(41, 539);
             this.panelLeft.TabIndex = 1;
             // 
-            // panelRight
+            // graphicsPanel
             // 
-            this.panelRight.Location = new System.Drawing.Point(990, 6);
-            this.panelRight.Name = "panelRight";
-            this.panelRight.Size = new System.Drawing.Size(37, 539);
-            this.panelRight.TabIndex = 0;
+            this.graphicsPanel.Location = new System.Drawing.Point(53, 6);
+            this.graphicsPanel.Name = "graphicsPanel";
+            this.graphicsPanel.Size = new System.Drawing.Size(931, 539);
+            this.graphicsPanel.TabIndex = 0;
+            this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
+            this.graphicsPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseDown);
+            this.graphicsPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseMove);
+            this.graphicsPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseUp);
+            // 
+            // legend
+            // 
+            this.legend.Controls.Add(this.warmPipe);
+            this.legend.Controls.Add(this.returnPipe);
+            this.legend.Controls.Add(this.hotPipe);
+            this.legend.Controls.Add(this.boreHoleCenter);
+            this.legend.Controls.Add(this.boreHoleBorder);
+            this.legend.Controls.Add(this.heatConsumption);
+            this.legend.Controls.Add(this.electricityConsumption);
+            this.legend.Controls.Add(this.solarEnergy);
+            this.legend.Controls.Add(this.boreHoleEnergyFlow);
+            this.legend.Controls.Add(this.ambientTemperature);
+            this.legend.Controls.Add(this.volumeFlow);
+            this.legend.Controls.Add(this.boreHoleEnergy);
+            this.legend.Location = new System.Drawing.Point(4, 24);
+            this.legend.Name = "legend";
+            this.legend.Padding = new System.Windows.Forms.Padding(3);
+            this.legend.Size = new System.Drawing.Size(1033, 590);
+            this.legend.TabIndex = 8;
+            this.legend.Text = "Legende";
+            this.legend.UseVisualStyleBackColor = true;
+            // 
+            // warmPipe
+            // 
+            this.warmPipe.AutoSize = true;
+            this.warmPipe.ForeColor = System.Drawing.Color.DarkOrange;
+            this.warmPipe.Location = new System.Drawing.Point(239, 74);
+            this.warmPipe.Name = "warmPipe";
+            this.warmPipe.Size = new System.Drawing.Size(192, 19);
+            this.warmPipe.TabIndex = 0;
+            this.warmPipe.Text = "Vorlauf (warm) Netzleitung (°C)";
+            this.warmPipe.UseVisualStyleBackColor = true;
+            this.warmPipe.CheckedChanged += new System.EventHandler(this.warmPipe_CheckedChanged);
+            // 
+            // returnPipe
+            // 
+            this.returnPipe.AutoSize = true;
+            this.returnPipe.ForeColor = System.Drawing.Color.Black;
+            this.returnPipe.Location = new System.Drawing.Point(239, 94);
+            this.returnPipe.Name = "returnPipe";
+            this.returnPipe.Size = new System.Drawing.Size(160, 19);
+            this.returnPipe.TabIndex = 0;
+            this.returnPipe.Text = "Rücklauf Netzleitung (°C)";
+            this.returnPipe.UseVisualStyleBackColor = true;
+            this.returnPipe.CheckedChanged += new System.EventHandler(this.returnPipe_CheckedChanged);
+            // 
+            // hotPipe
+            // 
+            this.hotPipe.AutoSize = true;
+            this.hotPipe.ForeColor = System.Drawing.Color.Maroon;
+            this.hotPipe.Location = new System.Drawing.Point(239, 114);
+            this.hotPipe.Name = "hotPipe";
+            this.hotPipe.Size = new System.Drawing.Size(185, 19);
+            this.hotPipe.TabIndex = 0;
+            this.hotPipe.Text = "Vorlauf (heiß) Netzleitung (°C)";
+            this.hotPipe.UseVisualStyleBackColor = true;
+            this.hotPipe.CheckedChanged += new System.EventHandler(this.hotPipe_CheckedChanged);
+            // 
+            // boreHoleCenter
+            // 
+            this.boreHoleCenter.AutoSize = true;
+            this.boreHoleCenter.ForeColor = System.Drawing.Color.Red;
+            this.boreHoleCenter.Location = new System.Drawing.Point(239, 134);
+            this.boreHoleCenter.Name = "boreHoleCenter";
+            this.boreHoleCenter.Size = new System.Drawing.Size(157, 19);
+            this.boreHoleCenter.TabIndex = 0;
+            this.boreHoleCenter.Text = "Erdsondenfeld Mitte (°C)";
+            this.boreHoleCenter.UseVisualStyleBackColor = true;
+            this.boreHoleCenter.CheckedChanged += new System.EventHandler(this.boreHoleCenter_CheckedChanged);
+            // 
+            // boreHoleBorder
+            // 
+            this.boreHoleBorder.AutoSize = true;
+            this.boreHoleBorder.ForeColor = System.Drawing.Color.Purple;
+            this.boreHoleBorder.Location = new System.Drawing.Point(239, 154);
+            this.boreHoleBorder.Name = "boreHoleBorder";
+            this.boreHoleBorder.Size = new System.Drawing.Size(156, 19);
+            this.boreHoleBorder.TabIndex = 0;
+            this.boreHoleBorder.Text = "Erdsondenfeld Rand (°C)";
+            this.boreHoleBorder.UseVisualStyleBackColor = true;
+            this.boreHoleBorder.CheckedChanged += new System.EventHandler(this.boreHoleBorder_CheckedChanged);
+            // 
+            // heatConsumption
+            // 
+            this.heatConsumption.AutoSize = true;
+            this.heatConsumption.ForeColor = System.Drawing.Color.Fuchsia;
+            this.heatConsumption.Location = new System.Drawing.Point(239, 174);
+            this.heatConsumption.Name = "heatConsumption";
+            this.heatConsumption.Size = new System.Drawing.Size(192, 19);
+            this.heatConsumption.TabIndex = 0;
+            this.heatConsumption.Text = "Wärmeverbrauch Heizung (kW)";
+            this.heatConsumption.UseVisualStyleBackColor = true;
+            this.heatConsumption.CheckedChanged += new System.EventHandler(this.heatConsumption_CheckedChanged);
+            // 
+            // electricityConsumption
+            // 
+            this.electricityConsumption.AutoSize = true;
+            this.electricityConsumption.ForeColor = System.Drawing.Color.DeepPink;
+            this.electricityConsumption.Location = new System.Drawing.Point(239, 194);
+            this.electricityConsumption.Name = "electricityConsumption";
+            this.electricityConsumption.Size = new System.Drawing.Size(273, 19);
+            this.electricityConsumption.TabIndex = 0;
+            this.electricityConsumption.Text = "Stromverbrauch Heizung (Wärmepumpe) (kW)";
+            this.electricityConsumption.UseVisualStyleBackColor = true;
+            this.electricityConsumption.CheckedChanged += new System.EventHandler(this.electricityConsumption_CheckedChanged);
+            // 
+            // solarEnergy
+            // 
+            this.solarEnergy.AutoSize = true;
+            this.solarEnergy.ForeColor = System.Drawing.Color.Olive;
+            this.solarEnergy.Location = new System.Drawing.Point(239, 214);
+            this.solarEnergy.Name = "solarEnergy";
+            this.solarEnergy.Size = new System.Drawing.Size(169, 19);
+            this.solarEnergy.TabIndex = 0;
+            this.solarEnergy.Text = "Leistung Solarthermie (kW)";
+            this.solarEnergy.UseVisualStyleBackColor = true;
+            this.solarEnergy.CheckedChanged += new System.EventHandler(this.solarEnergy_CheckedChanged);
+            // 
+            // boreHoleEnergyFlow
+            // 
+            this.boreHoleEnergyFlow.AutoSize = true;
+            this.boreHoleEnergyFlow.ForeColor = System.Drawing.Color.Navy;
+            this.boreHoleEnergyFlow.Location = new System.Drawing.Point(239, 234);
+            this.boreHoleEnergyFlow.Name = "boreHoleEnergyFlow";
+            this.boreHoleEnergyFlow.Size = new System.Drawing.Size(196, 19);
+            this.boreHoleEnergyFlow.TabIndex = 0;
+            this.boreHoleEnergyFlow.Text = "Energiefluss Erdsondenfeld (kW)";
+            this.boreHoleEnergyFlow.UseVisualStyleBackColor = true;
+            this.boreHoleEnergyFlow.CheckedChanged += new System.EventHandler(this.boreHoleEnergyFlow_CheckedChanged);
+            // 
+            // ambientTemperature
+            // 
+            this.ambientTemperature.AutoSize = true;
+            this.ambientTemperature.ForeColor = System.Drawing.Color.Blue;
+            this.ambientTemperature.Location = new System.Drawing.Point(239, 254);
+            this.ambientTemperature.Name = "ambientTemperature";
+            this.ambientTemperature.Size = new System.Drawing.Size(220, 19);
+            this.ambientTemperature.TabIndex = 0;
+            this.ambientTemperature.Text = "Außentemperatur (Wetterdaten) (°C)";
+            this.ambientTemperature.UseVisualStyleBackColor = true;
+            this.ambientTemperature.CheckedChanged += new System.EventHandler(this.ambientTemperature_CheckedChanged);
+            // 
+            // volumeFlow
+            // 
+            this.volumeFlow.AutoSize = true;
+            this.volumeFlow.ForeColor = System.Drawing.Color.Teal;
+            this.volumeFlow.Location = new System.Drawing.Point(239, 274);
+            this.volumeFlow.Name = "volumeFlow";
+            this.volumeFlow.Size = new System.Drawing.Size(208, 19);
+            this.volumeFlow.TabIndex = 0;
+            this.volumeFlow.Text = "Volumenfluss im Leitungsnetz (l/s)";
+            this.volumeFlow.UseVisualStyleBackColor = true;
+            this.volumeFlow.CheckedChanged += new System.EventHandler(this.volumeFlow_CheckedChanged);
+            // 
+            // boreHoleEnergy
+            // 
+            this.boreHoleEnergy.AutoSize = true;
+            this.boreHoleEnergy.ForeColor = System.Drawing.Color.Brown;
+            this.boreHoleEnergy.Location = new System.Drawing.Point(239, 294);
+            this.boreHoleEnergy.Name = "boreHoleEnergy";
+            this.boreHoleEnergy.Size = new System.Drawing.Size(321, 19);
+            this.boreHoleEnergy.TabIndex = 0;
+            this.boreHoleEnergy.Text = "Energie im Erdsondenfeld (bezogen aud 10°C) (in MWh)";
+            this.boreHoleEnergy.UseVisualStyleBackColor = true;
+            this.boreHoleEnergy.CheckedChanged += new System.EventHandler(this.boreHoleEnergy_CheckedChanged);
+            // 
+            // openTemperaturFile
+            // 
+            this.openTemperaturFile.FileName = " ";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.solarPercentage);
+            this.groupBox1.Controls.Add(label41);
+            this.groupBox1.Controls.Add(this.electricityTotal);
+            this.groupBox1.Controls.Add(label40);
+            this.groupBox1.Controls.Add(this.heatProduced);
+            this.groupBox1.Controls.Add(label39);
+            this.groupBox1.Controls.Add(this.solarTotal);
+            this.groupBox1.Controls.Add(label38);
+            this.groupBox1.Controls.Add(this.boreHoleRemoved);
+            this.groupBox1.Controls.Add(label37);
+            this.groupBox1.Controls.Add(this.boreHoleAdded);
+            this.groupBox1.Controls.Add(label36);
+            this.groupBox1.Location = new System.Drawing.Point(6, 93);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(436, 434);
+            this.groupBox1.TabIndex = 9;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Ergebnisse";
+            // 
+            // boreHoleAdded
+            // 
+            this.boreHoleAdded.Location = new System.Drawing.Point(327, 22);
+            this.boreHoleAdded.Name = "boreHoleAdded";
+            this.boreHoleAdded.Size = new System.Drawing.Size(100, 23);
+            this.boreHoleAdded.TabIndex = 9;
+            // 
+            // label36
+            // 
+            label36.Location = new System.Drawing.Point(0, 25);
+            label36.Name = "label36";
+            label36.Size = new System.Drawing.Size(320, 15);
+            label36.TabIndex = 8;
+            label36.Text = "Erdsondenspeicher Eintrag (MWh):";
+            label36.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label37
+            // 
+            label37.Location = new System.Drawing.Point(0, 54);
+            label37.Name = "label37";
+            label37.Size = new System.Drawing.Size(320, 15);
+            label37.TabIndex = 8;
+            label37.Text = "Erdsondenspeicher Lieferung (MWh):";
+            label37.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // boreHoleRemoved
+            // 
+            this.boreHoleRemoved.Location = new System.Drawing.Point(327, 51);
+            this.boreHoleRemoved.Name = "boreHoleRemoved";
+            this.boreHoleRemoved.Size = new System.Drawing.Size(100, 23);
+            this.boreHoleRemoved.TabIndex = 9;
+            // 
+            // label38
+            // 
+            label38.Location = new System.Drawing.Point(0, 83);
+            label38.Name = "label38";
+            label38.Size = new System.Drawing.Size(320, 15);
+            label38.TabIndex = 8;
+            label38.Text = "Solarthermie Leistung (MWh):";
+            label38.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // solarTotal
+            // 
+            this.solarTotal.Location = new System.Drawing.Point(327, 80);
+            this.solarTotal.Name = "solarTotal";
+            this.solarTotal.Size = new System.Drawing.Size(100, 23);
+            this.solarTotal.TabIndex = 9;
+            // 
+            // label39
+            // 
+            label39.Location = new System.Drawing.Point(0, 112);
+            label39.Name = "label39";
+            label39.Size = new System.Drawing.Size(320, 15);
+            label39.TabIndex = 8;
+            label39.Text = "erzeugte Wärme (MWh):";
+            label39.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // heatProduced
+            // 
+            this.heatProduced.Location = new System.Drawing.Point(327, 109);
+            this.heatProduced.Name = "heatProduced";
+            this.heatProduced.Size = new System.Drawing.Size(100, 23);
+            this.heatProduced.TabIndex = 9;
+            // 
+            // label40
+            // 
+            label40.Location = new System.Drawing.Point(0, 141);
+            label40.Name = "label40";
+            label40.Size = new System.Drawing.Size(320, 15);
+            label40.TabIndex = 8;
+            label40.Text = "Anteil Elektrizität (MWh):";
+            label40.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // electricityTotal
+            // 
+            this.electricityTotal.Location = new System.Drawing.Point(327, 138);
+            this.electricityTotal.Name = "electricityTotal";
+            this.electricityTotal.Size = new System.Drawing.Size(100, 23);
+            this.electricityTotal.TabIndex = 9;
+            // 
+            // label41
+            // 
+            label41.Location = new System.Drawing.Point(0, 170);
+            label41.Name = "label41";
+            label41.Size = new System.Drawing.Size(320, 15);
+            label41.TabIndex = 8;
+            label41.Text = "solarer Deckungsgrad in % und COP:";
+            label41.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // solarPercentage
+            // 
+            this.solarPercentage.Location = new System.Drawing.Point(327, 167);
+            this.solarPercentage.Name = "solarPercentage";
+            this.solarPercentage.Size = new System.Drawing.Size(100, 23);
+            this.solarPercentage.TabIndex = 9;
             // 
             // DistrictHeating
             // 
@@ -1010,6 +1377,10 @@ namespace DistrictHeating
             this.tabSimulation.ResumeLayout(false);
             this.tabSimulation.PerformLayout();
             this.tabGraphics.ResumeLayout(false);
+            this.legend.ResumeLayout(false);
+            this.legend.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1078,5 +1449,30 @@ namespace DistrictHeating
         private TextBox startCenterTemperature;
         private Panel panelRight;
         private Panel panelLeft;
+        private Panel timeScale;
+        private TabPage legend;
+        private CheckBox warmPipe;
+        private CheckBox returnPipe;
+        private CheckBox hotPipe;
+        private CheckBox boreHoleCenter;
+        private CheckBox boreHoleBorder;
+        private CheckBox heatConsumption;
+        private CheckBox electricityConsumption;
+        private CheckBox solarEnergy;
+        private CheckBox boreHoleEnergyFlow;
+        private CheckBox ambientTemperature;
+        private CheckBox volumeFlow;
+        private CheckBox boreHoleEnergy;
+        private ToolTip toolTipDiagram;
+        private Button zoomMinus;
+        private Button zoomPlus;
+        private ProgressBar progressBar;
+        private GroupBox groupBox1;
+        private TextBox solarPercentage;
+        private TextBox electricityTotal;
+        private TextBox heatProduced;
+        private TextBox solarTotal;
+        private TextBox boreHoleRemoved;
+        private TextBox boreHoleAdded;
     }
 }

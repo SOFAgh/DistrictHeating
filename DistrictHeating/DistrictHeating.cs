@@ -15,8 +15,9 @@ namespace DistrictHeating
         public DistrictHeating()
         {
             InitializeComponent();
+            Plant.progressBar = progressBar;
+            paintDiagram = new PaintDiagram(graphicsPanel, panelLeft, panelRight, timeScale, toolTipDiagram, Plant);
             SetPlantData();
-            paintDiagram = new PaintDiagram(graphicsPanel, panelLeft, panelRight, Plant);
         }
 
         private void readTemperatureData_Click(object sender, EventArgs e)
@@ -40,7 +41,16 @@ namespace DistrictHeating
             // Plant.CheckSolarHeatConsitency();
             // Plant.CheckBoreHoleFieldAndSolarConsistency();
             Control? ctrl = GetPlantData();
-            if (ctrl == null) Plant.StartSimulation();
+            if (ctrl == null)
+            {
+                Plant.StartSimulation();
+                solarPercentage.Text = (Plant.solarPercentage * 100).ToString("F2") + "% ";
+                electricityTotal.Text = Plant.electricityTotal.ToString("F2");
+                heatProduced.Text = Plant.heatProduced.ToString("F2");
+                solarTotal.Text = Plant.solarTotal.ToString("F2");
+                boreHoleRemoved.Text = Plant.boreHoleRemoved.ToString("F2");
+                boreHoleAdded.Text = Plant.boreHoleAdded.ToString("F2");
+            }
             else ctrl?.Focus();
         }
         private void SetPlantData()
@@ -76,6 +86,19 @@ namespace DistrictHeating
             solarEfficiency.Text = Plant.SolarThermalCollector.Efficiency.ToString();
             // heating
             SetHeatingNameData(0);
+            returnPipe.Checked = paintDiagram.ShowReturnPipeTemperature;
+            warmPipe.Checked = paintDiagram.ShowWarmPipeTemperature;
+            hotPipe.Checked = paintDiagram.ShowHotPipeTemperature;
+            boreHoleCenter.Checked = paintDiagram.ShowBoreHoleTempCenter;
+            boreHoleBorder.Checked = paintDiagram.ShowBoreHoleTempBorder;
+            heatConsumption.Checked = paintDiagram.ShowHeatConsumption;
+            electricityConsumption.Checked = paintDiagram.ShowElectricityConsumption;
+            solarEnergy.Checked = paintDiagram.ShowSolarHeat;
+            boreHoleEnergyFlow.Checked = paintDiagram.ShowBoreHoleEnergyFlow;
+            ambientTemperature.Checked = paintDiagram.ShowAmbientTemperature;
+            volumeFlow.Checked = paintDiagram.ShowVolumeFlow;
+            boreHoleEnergy.Checked = paintDiagram.ShowBoreHoleEnergy;
+
         }
         public Control? GetPlantData()
         {
@@ -89,19 +112,16 @@ namespace DistrictHeating
             if (!int.TryParse(numConnections.Text, out Plant.NumConnections)) return numConnections;
             // boreHoleField
             // TODO: Anzahl der Bohrlöcher veränderbar machen!!!
-            //for (int i = 0; i < numBoreHoles.Items.Count; i++)
-            //{
-            //    numBoreHoles.SelectedIndex = 0;
-            //    if (numBoreHoles.Items[i].ToString().StartsWith(Plant.BoreHoleField.NumberOfBoreHoles.ToString()))
-            //    {
-            //        numBoreHoles.SelectedIndex = i;
-            //        break;
-            //    }
-            //}
-            //borHoleDistance.Text = Plant.BoreHoleField.Distance.ToString();
-            //boreHoleLength.Text = Plant.BoreHoleField.Length.ToString();
-            //groundHeatCapacity.Text = Plant.BoreHoleField.HeatCapacity.ToString();
-            //groundLambda.Text = Plant.BoreHoleField.Lambda.ToString();
+            if (int.TryParse(numBoreHoles.Text.Substring(numBoreHoles.Text.IndexOf('(') + 1, 2).Trim(), out int nb))
+            {
+                Plant.BoreHoleField = new BoreHoleField(nb, Plant.ZeroK + 10);
+            }
+            else return numBoreHoles;
+            if (!double.TryParse(borHoleDistance.Text, out double bhdist)) return borHoleDistance;
+            Plant.BoreHoleField.Distance = bhdist;
+            if (!double.TryParse(boreHoleLength.Text, out Plant.BoreHoleField.Length)) return boreHoleLength;
+            if (!double.TryParse(groundHeatCapacity.Text, out Plant.BoreHoleField.HeatCapacity)) return groundHeatCapacity;
+            if (!double.TryParse(groundLambda.Text, out Plant.BoreHoleField.Lambda)) return groundLambda;
             if (!double.TryParse(startCenterTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldCenterTemperature)) return startCenterTemperature;
             Plant.BoreHoleField.startBoreholeFieldCenterTemperature += Plant.ZeroK;
             if (!double.TryParse(startBorderTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldBorderTemperature)) return startBorderTemperature;
@@ -111,11 +131,23 @@ namespace DistrictHeating
             //bufferStroageSize.Text = Plant.BufferStorage.Volume.ToString();
             //bufferStorageInstances.Text = Plant.BufferStorage.NumberOfStorages.ToString();
             //// solar
-            //solarFieldSize.Text = Plant.SolarThermalCollector.Area.ToString();
-            //solarEfficiency.Text = Plant.SolarThermalCollector.Efficiency.ToString();
+            if (!double.TryParse(solarFieldSize.Text, out Plant.SolarThermalCollector.Area)) return solarFieldSize;
+            if (!double.TryParse(solarEfficiency.Text, out Plant.SolarThermalCollector.Efficiency)) return solarEfficiency;
             //// heating
 
             GetHeatingNameData(HeatingName.SelectedIndex);
+            paintDiagram.ShowReturnPipeTemperature = returnPipe.Checked;
+            paintDiagram.ShowWarmPipeTemperature = warmPipe.Checked;
+            paintDiagram.ShowHotPipeTemperature = hotPipe.Checked;
+            paintDiagram.ShowBoreHoleTempCenter = boreHoleCenter.Checked;
+            paintDiagram.ShowBoreHoleTempBorder = boreHoleBorder.Checked;
+            paintDiagram.ShowHeatConsumption = heatConsumption.Checked;
+            paintDiagram.ShowElectricityConsumption = electricityConsumption.Checked;
+            paintDiagram.ShowSolarHeat = solarEnergy.Checked;
+            paintDiagram.ShowBoreHoleEnergyFlow = boreHoleEnergyFlow.Checked;
+            paintDiagram.ShowAmbientTemperature = ambientTemperature.Checked;
+            paintDiagram.ShowVolumeFlow = volumeFlow.Checked;
+            paintDiagram.ShowBoreHoleEnergy = boreHoleEnergy.Checked;
             return null;
         }
         private void SetHeatingNameData(int indexToSelect)
@@ -204,6 +236,94 @@ namespace DistrictHeating
         private void graphicsPanel_Paint(object sender, PaintEventArgs e)
         {
             paintDiagram.Paint();
+        }
+
+        private void warmPipe_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowWarmPipeTemperature = (sender as CheckBox).Checked;
+        }
+
+        private void returnPipe_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowReturnPipeTemperature = (sender as CheckBox).Checked;
+        }
+
+        private void hotPipe_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowHotPipeTemperature = (sender as CheckBox).Checked;
+        }
+
+        private void boreHoleCenter_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowBoreHoleTempCenter = (sender as CheckBox).Checked;
+        }
+
+        private void boreHoleBorder_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowBoreHoleTempBorder = (sender as CheckBox).Checked;
+        }
+
+        private void heatConsumption_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowHeatConsumption = (sender as CheckBox).Checked;
+        }
+
+        private void electricityConsumption_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowElectricityConsumption = (sender as CheckBox).Checked;
+        }
+
+        private void solarEnergy_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowSolarHeat = (sender as CheckBox).Checked;
+        }
+
+        private void boreHoleEnergyFlow_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowBoreHoleEnergyFlow = (sender as CheckBox).Checked;
+        }
+
+        private void ambientTemperature_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowAmbientTemperature = (sender as CheckBox).Checked;
+        }
+
+        private void volumeFlow_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowVolumeFlow = (sender as CheckBox).Checked;
+        }
+
+        private void boreHoleEnergy_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowBoreHoleEnergy = (sender as CheckBox).Checked;
+        }
+
+        private void graphicsPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (sender is Panel panel)
+            {
+                paintDiagram.OnMouseMove(e);
+            }
+        }
+
+        private void zoomPlus_Click(object sender, EventArgs e)
+        {
+            paintDiagram.ZoomPlus();
+        }
+
+        private void zoomMinus_Click(object sender, EventArgs e)
+        {
+            paintDiagram.ZoomMinus();
+        }
+
+        private void graphicsPanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            paintDiagram.OnMouseDown(e);
+        }
+
+        private void graphicsPanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            paintDiagram.OnMouseUp(e);
         }
     }
 }

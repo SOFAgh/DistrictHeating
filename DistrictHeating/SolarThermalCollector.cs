@@ -13,11 +13,11 @@ namespace DistrictHeating
         /// <summary>
         /// The area on the ground of the solar collector. This is not the sum of the panels area, which are inclined and less.
         /// </summary>
-        public double Area { get; set; } = 3000;
+        public double Area = 3000;
         /// <summary>
         /// The efficiency of the solar field. Currently implemented as a constant value, not depending on temperature difference
         /// </summary>
-        public double Efficiency { get; set; } = 0.5;
+        public double Efficiency = 0.5;
         public void Initialize(Plant plant)
         {
             double globalSolarRadiation = 0.0;
