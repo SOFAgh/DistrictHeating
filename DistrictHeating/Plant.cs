@@ -50,6 +50,7 @@ namespace DistrictHeating
             Heating.Add(HeatingConsumer.UnderFloorHeating);
             BoreHoleField = new BoreHoleField(4, ZeroK + 10);
             BufferStorage = new BufferStorage();
+            Pipeline = new Pipeline();
         }
         // current state data:
         public double currentTime; // number of seconds since first of january of the simulation
@@ -95,12 +96,8 @@ namespace DistrictHeating
         public SolarThermalCollector SolarThermalCollector;
         public List<HeatingConsumer> Heating;
         public BoreHoleField BoreHoleField;
+        public Pipeline Pipeline;
         public BufferStorage BufferStorage;
-        public double PiplineLength = 3000; // in m
-        public double PipeDiameter = 0.05; // in m
-        public double PipeInsulationDiameter = 0.15; // in m
-        public double InsulationLambda = 0.04; // in W/(m*K)
-        public int NumConnections = 80; // number of connected houses
         public int CurrentHourIndex { get { return (int)Math.Floor(currentTime / 3600); } }
         internal double GetCurrentTemperature()
         {
@@ -144,7 +141,6 @@ namespace DistrictHeating
             returnPipeTemp = 10 + ZeroK; // 10°C for return pipe
             warmPipeTemp = 20 + ZeroK; // 20° for warm and hot, only relevant for the first step
             hotPipeTemp = 20 + ZeroK;
-            double pipeVolume = PiplineLength * PipeDiameter * PipeDiameter * Math.PI / 4.0; // volume of water inside the pipes (m³)
             for (int j = 0; j < Heating.Count; j++)
             {
                 Heating[j].Initialize(this); // calculate scaling factors
@@ -250,6 +246,11 @@ namespace DistrictHeating
                 if (returnPipeVolume > 0) returnPipeTemp = returnPipeEnergy / returnPipeVolume;
                 if (warmPipeVolume > 0) warmPipeTemp = warmPipeEnergy / warmPipeVolume;
                 if (hotPipeVolume > 0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;
+                
+                // change the temperatures according to temperature loss in the pipe system
+                returnPipeTemp = Pipeline.TemperatureChange(returnPipeTemp, step);
+                warmPipeTemp = Pipeline.TemperatureChange(warmPipeTemp, step);
+                hotPipeTemp = Pipeline.TemperatureChange(hotPipeTemp, step);
 
                 // save the current data for the graphical representation
                 int currentSeconds = (int)Math.Round(currentTime);

@@ -56,11 +56,11 @@ namespace DistrictHeating
         private void SetPlantData()
         {
             // plant
-            pipelineLength.Text = Plant.PiplineLength.ToString("#");
-            pipeDiameter.Text = (Plant.PipeDiameter * 1000).ToString("#"); // mm to m
-            insulationLambda.Text = Plant.InsulationLambda.ToString();
-            pipeInsulationDiameter.Text = (Plant.PipeInsulationDiameter * 1000).ToString();
-            numConnections.Text = Plant.NumConnections.ToString();
+            pipelineLength.Text = Plant.Pipeline.length.ToString("#");
+            pipeDiameter.Text = (Plant.Pipeline.innerDiameter * 1000).ToString("#"); // mm to m
+            insulationLambda.Text = Plant.Pipeline.insulationLambda.ToString();
+            pipeInsulationDiameter.Text = (Plant.Pipeline.outerDiameter * 1000).ToString();
+            numConnections.Text = Plant.Pipeline.connections.ToString();
             // boreHoleField
             for (int i = 0; i < numBoreHoles.Items.Count; i++)
             {
@@ -103,13 +103,13 @@ namespace DistrictHeating
         public Control? GetPlantData()
         {
             // plant
-            if (!double.TryParse(pipelineLength.Text, out Plant.PiplineLength)) return pipelineLength;
-            if (!double.TryParse(pipeDiameter.Text, out Plant.PipeDiameter)) return pipeDiameter;
-            Plant.PipeDiameter /= 1000;
-            if (!double.TryParse(insulationLambda.Text, out Plant.InsulationLambda)) return insulationLambda;
-            if (!double.TryParse(pipeInsulationDiameter.Text, out Plant.PipeInsulationDiameter)) return pipeInsulationDiameter;
-            Plant.PipeInsulationDiameter /= 1000;
-            if (!int.TryParse(numConnections.Text, out Plant.NumConnections)) return numConnections;
+            if (!double.TryParse(pipelineLength.Text, out Plant.Pipeline.length)) return pipelineLength;
+            if (!double.TryParse(pipeDiameter.Text, out Plant.Pipeline.innerDiameter)) return pipeDiameter;
+            Plant.Pipeline.innerDiameter /= 1000;
+            if (!double.TryParse(insulationLambda.Text, out Plant.Pipeline.insulationLambda)) return insulationLambda;
+            if (!double.TryParse(pipeInsulationDiameter.Text, out Plant.Pipeline.outerDiameter)) return pipeInsulationDiameter;
+            Plant.Pipeline.outerDiameter /= 1000;
+            if (!int.TryParse(numConnections.Text, out Plant.Pipeline.connections)) return numConnections;
             // boreHoleField
             // TODO: Anzahl der Bohrlöcher veränderbar machen!!!
             if (int.TryParse(numBoreHoles.Text.Substring(numBoreHoles.Text.IndexOf('(') + 1, 2).Trim(), out int nb))
