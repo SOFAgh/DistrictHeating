@@ -240,20 +240,41 @@ namespace DistrictHeating
             }
             outTemperature = currentWaterTemperature; // this is the last water temperature afte leaving the last borehole
             // now we need to adapt each temperature point by the influence of its neighbours
-            // first we keep the temperatures unchanged and calculate the deltaT for each point
+            // in a first loop we keep the temperatures unchanged and calculate the deltaT for each point
+            // in a second loop, we add deltaT to the temperature of each point
             double borderdt = 0.0;
+            double parameterToDetermin = Lambda / HeatCapacity; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
+            double dbgf = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
+            // Let the temperature difference between two points be deltaT.
+            // deltaT is shrinking in a time step of the simulation depending on 
+            // - the distance between those two points (which is the same for all points)
+            // - the Lambda (and HeatCapacity?) of the soil
+            // - the duration (time step)
+            // So we need a factor between 0 and 1, which performs that shrinkage (deltaT' = f*delatT). I choose
+            // exp(-duration*s) as this factor, where "s" is some (positive) constant value to be determined
+            // When duration is 0, the factor is 1: No change when time step is 0
+            // When duration goes to infinity, the factor is 0: the temperature of the two points converges to the mean temperature of the two points
+            // When applying a time step of duration1+duration2 the result must be the same as for first applying duration1 and then duration2:
+            // exp(-(duration1+duration2)*s) * deltaT == exp(-duration1*s) * exp(-duration2*s) * deltaT
+            // so using exp(-duration*s) seems to be a reasonable choice
+            double s = 2.0 * grid * (Lambda / (HeatCapacity * Distance)); // Distance is between boreholes, Distance/grid is between grid points
+            // when distance increases, s decreases and exp(-duration*s) gets closer to 1, i.e. less shrinkage of deltaT with increased distance
+            // when Lambda increases, we get more shrinkage of deltaT 
+            // factor 2.0 is experimental
+            double fDt = (1.0 - Math.Exp(-duration * s)) / 2.0; // Math.Exp(-duration * s) is the factor, which shrinkes the deltaT, half of the shrinkage is added to each points temperature
+            double bDt = (1.0 - Math.Exp(-duration * 4.0 * Lambda / (HeatCapacity * Distance))) / 2.0;
+            double dbgorgbdt = parameterToDetermin * duration / (Distance / 2);
             Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
             {
                 double dt = 0.0;
                 TempPoint itemValue = temperatureAtHexCoord[key];
                 double t0 = itemValue.t;
-                double parameterToDetermin = Lambda / HeatCapacity; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
                 double f = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
                 int cnt = itemValue.connectedPoints.Count;
                 // here we assume that all points have the same distance and are regularly distributed around the central point (in 60° steps)
                 for (int l = 0; l < cnt; l++)
                 {
-                    dt += f * (itemValue.connectedPoints[l].t - t0);
+                    dt += fDt * (itemValue.connectedPoints[l].t - t0);
                 }
                 if (cnt < 6)
                 {
@@ -262,7 +283,8 @@ namespace DistrictHeating
                     // at the points where the border of the smaller field would be. then I adaptet the additional parameters here
                     // ((Distance / 2) and (24 * numberOfBorderPoints)) tho get a result with the small field at the border, which is similar to the respective points on the big field.
                     // Maybe we have to experiment with these two arbitrary parameters.
-                    double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
+                    // was before: double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
+                    double bdt = bDt * (borderTemperature - t0);
                     dt += (6 - cnt) * bdt;
                     borderdt += bdt / (24 * numberOfBorderPoints);
                 }
