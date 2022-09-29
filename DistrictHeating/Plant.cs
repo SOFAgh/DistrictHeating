@@ -246,11 +246,11 @@ namespace DistrictHeating
                 if (returnPipeVolume > 0) returnPipeTemp = returnPipeEnergy / returnPipeVolume;
                 if (warmPipeVolume > 0) warmPipeTemp = warmPipeEnergy / warmPipeVolume;
                 if (hotPipeVolume > 0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;
-                
+
                 // change the temperatures according to temperature loss in the pipe system
-                returnPipeTemp = Pipeline.TemperatureChange(returnPipeTemp, step);
-                warmPipeTemp = Pipeline.TemperatureChange(warmPipeTemp, step);
-                hotPipeTemp = Pipeline.TemperatureChange(hotPipeTemp, step);
+                returnPipeTemp = Pipeline.TemperatureChange(returnPipeTemp, returnPipeVolume / step, step);
+                warmPipeTemp = Pipeline.TemperatureChange(warmPipeTemp, warmPipeVolume / step, step);
+                hotPipeTemp = Pipeline.TemperatureChange(hotPipeTemp, hotPipeVolume / step, step);
 
                 // save the current data for the graphical representation
                 int currentSeconds = (int)Math.Round(currentTime);

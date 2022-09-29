@@ -23,20 +23,22 @@ namespace DistrictHeating
             outerDiameter = PipeInsulationDiameter;
         }
         /// <summary>
-        /// Calculates the temperature loos of the water in the pipes. Assuming constant temperature inside and outside of the pipe.
+        /// Calculates the temperature loss of the water in the pipes. Assuming constant temperature inside and outside of the pipe.
         /// The ambient temperature (of the soil) is fixed to 10°C. Temperature gradient in the soil is ignored, as well as pipe material and thickness.
+        /// Only the pipe insulation is considered
         /// </summary>
         /// <param name="waterTemperature"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public double TemperatureChange(double waterTemperature, double duration)
+        public double TemperatureChange(double waterTemperature, double volumeStream, double duration)
         {
-            double volume = innerDiameter * innerDiameter * Math.PI / 4.0; // amount of water in the pipe in m³
+            if (volumeStream == 0.0) return waterTemperature;
+            double waterVolume = Math.Abs(volumeStream * duration); // in m³
             double heatFlow = insulationLambda * 2.0 * Math.PI * length / (Math.Log(outerDiameter) - Math.Log(innerDiameter)) * (waterTemperature - (Plant.ZeroK + 10));
-            // power of the heat flow from the water in the pipes to the surrounding soil
-            double energy = heatFlow * duration; // J
-            double dt = energy / (volume * 4200000); // J / (m³*J/(m³*K)) = J * (m³*K)/ (m³*J) = K
-            return waterTemperature - dt;
+            // power of the heat flow from the water in the pipes to the surrounding soil [W]
+            double energy = heatFlow * duration; // [J]
+            double dt = energy / (waterVolume * 4200000); // J / (m³*J/(m³*K)) = J * m³ * K/ (m³*J) = K, heat capacity of water: 4200000 J/(m³*K)
+            return waterTemperature - dt; // in case of waterTempereature<10°C dt will be negative
         }
     }
 }
