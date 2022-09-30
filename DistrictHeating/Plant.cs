@@ -248,10 +248,11 @@ namespace DistrictHeating
                 if (hotPipeVolume > 0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;
 
                 // change the temperatures according to temperature loss in the pipe system
-                returnPipeTemp = Pipeline.TemperatureChange(returnPipeTemp, returnPipeVolume / step, step);
-                warmPipeTemp = Pipeline.TemperatureChange(warmPipeTemp, warmPipeVolume / step, step);
-                hotPipeTemp = Pipeline.TemperatureChange(hotPipeTemp, hotPipeVolume / step, step);
-
+                double returnPipeLoss, warmPipeLoss, hotPipeLoss;
+                (returnPipeTemp, returnPipeLoss) = Pipeline.TemperatureChange(returnPipeTemp, returnPipeVolume / step, step);
+                (warmPipeTemp, warmPipeLoss) = Pipeline.TemperatureChange(warmPipeTemp, warmPipeVolume / step, step);
+                (hotPipeTemp, hotPipeLoss) = Pipeline.TemperatureChange(hotPipeTemp, hotPipeVolume / step, step);
+                double netLoss = warmPipeLoss + hotPipeLoss + returnPipeLoss;
                 // save the current data for the graphical representation
                 int currentSeconds = (int)Math.Round(currentTime);
                 if (currentSeconds % 3600 == 0) // should always reach exact hours
@@ -268,6 +269,7 @@ namespace DistrictHeating
                     DiagramAdd(currentSeconds, "boreHoleEnergyFlow", JouleToKW(transferredEnergy, step), "kW");
                     DiagramAdd(currentSeconds, "ambientTemperature", GetCurrentTemperature(), "°C");
                     DiagramAdd(currentSeconds, "volumeFlow", volumeFlow * 1000, "l/s"); // m³ -> l
+                    DiagramAdd(currentSeconds, "netLoss", JouleToKW(netLoss, step), "kW");
                     if (hourIndex % 24 == 12) // once a day at 12:00
                     {
                         boreHoleEnergyPerDay.Add(JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)));

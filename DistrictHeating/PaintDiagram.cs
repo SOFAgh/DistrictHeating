@@ -73,6 +73,9 @@ namespace DistrictHeating
         public bool ShowSolarHeat { get { return showSolarHeat; } set { showSolarHeat = value; invalidated = true; } }
         bool showVolumeFlow = false;
         public bool ShowVolumeFlow { get { return showVolumeFlow; } set { showVolumeFlow = value; invalidated = true; } }
+        bool showNetLoss = false;
+        public bool ShowNetLoss { get { return showNetLoss; } set { showNetLoss = value; invalidated = true; } }
+
 
         private float HorLinePosition(int ind)
         {
@@ -290,6 +293,7 @@ namespace DistrictHeating
                     if (ShowSolarHeat) grDiagram.DrawCurve(Pens.Olive, TransformedPoints(paths["solarEnergy"]));
                     if (ShowBoreHoleEnergyFlow) grDiagram.DrawCurve(Pens.Navy, TransformedPoints(paths["boreHoleEnergyFlow"]));
                     if (ShowVolumeFlow) grDiagram.DrawCurve(Pens.Teal, TransformedPoints(paths["volumeFlow"]));
+                    if (ShowNetLoss) grDiagram.DrawCurve(Pens.Indigo, TransformedPoints(paths["netLoss"]));
                     if (showBoreHoleEnergy) grDiagram.DrawCurve(Pens.Brown, TransformedPoints(paths["boreHoleEnergy"]));
                 }
             }

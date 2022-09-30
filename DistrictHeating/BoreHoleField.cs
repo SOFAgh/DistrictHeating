@@ -274,7 +274,8 @@ namespace DistrictHeating
                 // here we assume that all points have the same distance and are regularly distributed around the central point (in 60° steps)
                 for (int l = 0; l < cnt; l++)
                 {
-                    dt += fDt * (itemValue.connectedPoints[l].t - t0);
+                    //dt += fDt * (itemValue.connectedPoints[l].t - t0);
+                    dt += f * (itemValue.connectedPoints[l].t - t0);
                 }
                 if (cnt < 6)
                 {
@@ -283,12 +284,38 @@ namespace DistrictHeating
                     // at the points where the border of the smaller field would be. then I adaptet the additional parameters here
                     // ((Distance / 2) and (24 * numberOfBorderPoints)) tho get a result with the small field at the border, which is similar to the respective points on the big field.
                     // Maybe we have to experiment with these two arbitrary parameters.
-                    // was before: double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
-                    double bdt = bDt * (borderTemperature - t0);
+                    double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
+                    // double bdt = bDt * (borderTemperature - t0);
                     dt += (6 - cnt) * bdt;
                     borderdt += bdt / (24 * numberOfBorderPoints);
                 }
                 itemValue.dt = dt / 6; // save this value, the modification happens for all points simultaneously after this loop
+
+
+                //double dt = 0.0;
+                //TempPoint itemValue = temperatureAtHexCoord[key];
+                //double t0 = itemValue.t;
+                //double parameterToDetermin = Lambda / HeatCapacity; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
+                //double f = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
+                //int cnt = itemValue.connectedPoints.Count;
+                //// here we assume that all points have the same distance and are regularly distributed around the central point (in 60° steps)
+                //for (int l = 0; l < cnt; l++)
+                //{
+                //    dt += f * (itemValue.connectedPoints[l].t - t0);
+                //}
+                //if (cnt < 6)
+                //{
+                //    // this is a point at the border of the field. It is also influenced by the outside temperature. And it influences the outsid temperature
+                //    // I first tried to make the field much bigger (but no extra boreholes) so that the border almost remained unchanged. Then recorded the temperatures
+                //    // at the points where the border of the smaller field would be. then I adaptet the additional parameters here
+                //    // ((Distance / 2) and (24 * numberOfBorderPoints)) tho get a result with the small field at the border, which is similar to the respective points on the big field.
+                //    // Maybe we have to experiment with these two arbitrary parameters.
+                //    double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
+                //    dt += (6 - cnt) * bdt;
+                //    borderdt += bdt / (24 * numberOfBorderPoints);
+                //}
+                //itemValue.dt = dt / 6; // save this value, the modification happens for all points simultaneously after this loop
+
             });
             // now we change all temperatures
             borderTemperature -= borderdt;

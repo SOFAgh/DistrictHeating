@@ -121,6 +121,13 @@ namespace DistrictHeating
             this.readTemperatureData = new System.Windows.Forms.Button();
             this.wetherData = new System.Windows.Forms.ListBox();
             this.tabSimulation = new System.Windows.Forms.TabPage();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.solarPercentage = new System.Windows.Forms.TextBox();
+            this.electricityTotal = new System.Windows.Forms.TextBox();
+            this.heatProduced = new System.Windows.Forms.TextBox();
+            this.solarTotal = new System.Windows.Forms.TextBox();
+            this.boreHoleRemoved = new System.Windows.Forms.TextBox();
+            this.boreHoleAdded = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.startBorderTemperature = new System.Windows.Forms.TextBox();
             this.startCenterTemperature = new System.Windows.Forms.TextBox();
@@ -144,16 +151,10 @@ namespace DistrictHeating
             this.boreHoleEnergyFlow = new System.Windows.Forms.CheckBox();
             this.ambientTemperature = new System.Windows.Forms.CheckBox();
             this.volumeFlow = new System.Windows.Forms.CheckBox();
+            this.netLoss = new System.Windows.Forms.CheckBox();
             this.boreHoleEnergy = new System.Windows.Forms.CheckBox();
             this.openTemperaturFile = new System.Windows.Forms.OpenFileDialog();
             this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.boreHoleAdded = new System.Windows.Forms.TextBox();
-            this.boreHoleRemoved = new System.Windows.Forms.TextBox();
-            this.solarTotal = new System.Windows.Forms.TextBox();
-            this.heatProduced = new System.Windows.Forms.TextBox();
-            this.electricityTotal = new System.Windows.Forms.TextBox();
-            this.solarPercentage = new System.Windows.Forms.TextBox();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -194,9 +195,9 @@ namespace DistrictHeating
             this.tabConsumer.SuspendLayout();
             this.tabWether.SuspendLayout();
             this.tabSimulation.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.tabGraphics.SuspendLayout();
             this.legend.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -432,6 +433,60 @@ namespace DistrictHeating
             label35.TabIndex = 6;
             label35.Text = "Anfangstemperatur am Rand des Speichers (in °C): ";
             label35.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label36
+            // 
+            label36.Location = new System.Drawing.Point(0, 25);
+            label36.Name = "label36";
+            label36.Size = new System.Drawing.Size(320, 15);
+            label36.TabIndex = 8;
+            label36.Text = "Erdsondenspeicher Eintrag (MWh):";
+            label36.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label37
+            // 
+            label37.Location = new System.Drawing.Point(0, 54);
+            label37.Name = "label37";
+            label37.Size = new System.Drawing.Size(320, 15);
+            label37.TabIndex = 8;
+            label37.Text = "Erdsondenspeicher Lieferung (MWh):";
+            label37.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label38
+            // 
+            label38.Location = new System.Drawing.Point(0, 83);
+            label38.Name = "label38";
+            label38.Size = new System.Drawing.Size(320, 15);
+            label38.TabIndex = 8;
+            label38.Text = "Solarthermie Leistung (MWh):";
+            label38.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label39
+            // 
+            label39.Location = new System.Drawing.Point(0, 112);
+            label39.Name = "label39";
+            label39.Size = new System.Drawing.Size(320, 15);
+            label39.TabIndex = 8;
+            label39.Text = "erzeugte Wärme (MWh):";
+            label39.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label40
+            // 
+            label40.Location = new System.Drawing.Point(0, 141);
+            label40.Name = "label40";
+            label40.Size = new System.Drawing.Size(320, 15);
+            label40.TabIndex = 8;
+            label40.Text = "Anteil Elektrizität (MWh):";
+            label40.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label41
+            // 
+            label41.Location = new System.Drawing.Point(0, 170);
+            label41.Name = "label41";
+            label41.Size = new System.Drawing.Size(320, 15);
+            label41.TabIndex = 8;
+            label41.Text = "solarer Deckungsgrad in % und COP:";
+            label41.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // tabPlant
             // 
@@ -966,6 +1021,69 @@ namespace DistrictHeating
             this.tabSimulation.Text = "Simulation";
             this.tabSimulation.UseVisualStyleBackColor = true;
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.solarPercentage);
+            this.groupBox1.Controls.Add(label41);
+            this.groupBox1.Controls.Add(this.electricityTotal);
+            this.groupBox1.Controls.Add(label40);
+            this.groupBox1.Controls.Add(this.heatProduced);
+            this.groupBox1.Controls.Add(label39);
+            this.groupBox1.Controls.Add(this.solarTotal);
+            this.groupBox1.Controls.Add(label38);
+            this.groupBox1.Controls.Add(this.boreHoleRemoved);
+            this.groupBox1.Controls.Add(label37);
+            this.groupBox1.Controls.Add(this.boreHoleAdded);
+            this.groupBox1.Controls.Add(label36);
+            this.groupBox1.Location = new System.Drawing.Point(6, 93);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(436, 434);
+            this.groupBox1.TabIndex = 9;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Ergebnisse";
+            // 
+            // solarPercentage
+            // 
+            this.solarPercentage.Location = new System.Drawing.Point(327, 167);
+            this.solarPercentage.Name = "solarPercentage";
+            this.solarPercentage.Size = new System.Drawing.Size(100, 23);
+            this.solarPercentage.TabIndex = 9;
+            // 
+            // electricityTotal
+            // 
+            this.electricityTotal.Location = new System.Drawing.Point(327, 138);
+            this.electricityTotal.Name = "electricityTotal";
+            this.electricityTotal.Size = new System.Drawing.Size(100, 23);
+            this.electricityTotal.TabIndex = 9;
+            // 
+            // heatProduced
+            // 
+            this.heatProduced.Location = new System.Drawing.Point(327, 109);
+            this.heatProduced.Name = "heatProduced";
+            this.heatProduced.Size = new System.Drawing.Size(100, 23);
+            this.heatProduced.TabIndex = 9;
+            // 
+            // solarTotal
+            // 
+            this.solarTotal.Location = new System.Drawing.Point(327, 80);
+            this.solarTotal.Name = "solarTotal";
+            this.solarTotal.Size = new System.Drawing.Size(100, 23);
+            this.solarTotal.TabIndex = 9;
+            // 
+            // boreHoleRemoved
+            // 
+            this.boreHoleRemoved.Location = new System.Drawing.Point(327, 51);
+            this.boreHoleRemoved.Name = "boreHoleRemoved";
+            this.boreHoleRemoved.Size = new System.Drawing.Size(100, 23);
+            this.boreHoleRemoved.TabIndex = 9;
+            // 
+            // boreHoleAdded
+            // 
+            this.boreHoleAdded.Location = new System.Drawing.Point(327, 22);
+            this.boreHoleAdded.Name = "boreHoleAdded";
+            this.boreHoleAdded.Size = new System.Drawing.Size(100, 23);
+            this.boreHoleAdded.TabIndex = 9;
+            // 
             // progressBar
             // 
             this.progressBar.Location = new System.Drawing.Point(6, 561);
@@ -1079,6 +1197,7 @@ namespace DistrictHeating
             this.legend.Controls.Add(this.boreHoleEnergyFlow);
             this.legend.Controls.Add(this.ambientTemperature);
             this.legend.Controls.Add(this.volumeFlow);
+            this.legend.Controls.Add(this.netLoss);
             this.legend.Controls.Add(this.boreHoleEnergy);
             this.legend.Location = new System.Drawing.Point(4, 24);
             this.legend.Name = "legend";
@@ -1220,6 +1339,18 @@ namespace DistrictHeating
             this.volumeFlow.UseVisualStyleBackColor = true;
             this.volumeFlow.CheckedChanged += new System.EventHandler(this.volumeFlow_CheckedChanged);
             // 
+            // netLoss
+            // 
+            this.netLoss.AutoSize = true;
+            this.netLoss.ForeColor = System.Drawing.Color.Indigo;
+            this.netLoss.Location = new System.Drawing.Point(239, 319);
+            this.netLoss.Name = "netLoss";
+            this.netLoss.Size = new System.Drawing.Size(156, 19);
+            this.netLoss.TabIndex = 0;
+            this.netLoss.Text = "Leitungsverluste im Netz";
+            this.netLoss.UseVisualStyleBackColor = true;
+            this.netLoss.CheckedChanged += new System.EventHandler(this.netLoss_CheckedChanged);
+            // 
             // boreHoleEnergy
             // 
             this.boreHoleEnergy.AutoSize = true;
@@ -1235,123 +1366,6 @@ namespace DistrictHeating
             // openTemperaturFile
             // 
             this.openTemperaturFile.FileName = " ";
-            // 
-            // groupBox1
-            // 
-            this.groupBox1.Controls.Add(this.solarPercentage);
-            this.groupBox1.Controls.Add(label41);
-            this.groupBox1.Controls.Add(this.electricityTotal);
-            this.groupBox1.Controls.Add(label40);
-            this.groupBox1.Controls.Add(this.heatProduced);
-            this.groupBox1.Controls.Add(label39);
-            this.groupBox1.Controls.Add(this.solarTotal);
-            this.groupBox1.Controls.Add(label38);
-            this.groupBox1.Controls.Add(this.boreHoleRemoved);
-            this.groupBox1.Controls.Add(label37);
-            this.groupBox1.Controls.Add(this.boreHoleAdded);
-            this.groupBox1.Controls.Add(label36);
-            this.groupBox1.Location = new System.Drawing.Point(6, 93);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(436, 434);
-            this.groupBox1.TabIndex = 9;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Ergebnisse";
-            // 
-            // boreHoleAdded
-            // 
-            this.boreHoleAdded.Location = new System.Drawing.Point(327, 22);
-            this.boreHoleAdded.Name = "boreHoleAdded";
-            this.boreHoleAdded.Size = new System.Drawing.Size(100, 23);
-            this.boreHoleAdded.TabIndex = 9;
-            // 
-            // label36
-            // 
-            label36.Location = new System.Drawing.Point(0, 25);
-            label36.Name = "label36";
-            label36.Size = new System.Drawing.Size(320, 15);
-            label36.TabIndex = 8;
-            label36.Text = "Erdsondenspeicher Eintrag (MWh):";
-            label36.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // label37
-            // 
-            label37.Location = new System.Drawing.Point(0, 54);
-            label37.Name = "label37";
-            label37.Size = new System.Drawing.Size(320, 15);
-            label37.TabIndex = 8;
-            label37.Text = "Erdsondenspeicher Lieferung (MWh):";
-            label37.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // boreHoleRemoved
-            // 
-            this.boreHoleRemoved.Location = new System.Drawing.Point(327, 51);
-            this.boreHoleRemoved.Name = "boreHoleRemoved";
-            this.boreHoleRemoved.Size = new System.Drawing.Size(100, 23);
-            this.boreHoleRemoved.TabIndex = 9;
-            // 
-            // label38
-            // 
-            label38.Location = new System.Drawing.Point(0, 83);
-            label38.Name = "label38";
-            label38.Size = new System.Drawing.Size(320, 15);
-            label38.TabIndex = 8;
-            label38.Text = "Solarthermie Leistung (MWh):";
-            label38.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // solarTotal
-            // 
-            this.solarTotal.Location = new System.Drawing.Point(327, 80);
-            this.solarTotal.Name = "solarTotal";
-            this.solarTotal.Size = new System.Drawing.Size(100, 23);
-            this.solarTotal.TabIndex = 9;
-            // 
-            // label39
-            // 
-            label39.Location = new System.Drawing.Point(0, 112);
-            label39.Name = "label39";
-            label39.Size = new System.Drawing.Size(320, 15);
-            label39.TabIndex = 8;
-            label39.Text = "erzeugte Wärme (MWh):";
-            label39.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // heatProduced
-            // 
-            this.heatProduced.Location = new System.Drawing.Point(327, 109);
-            this.heatProduced.Name = "heatProduced";
-            this.heatProduced.Size = new System.Drawing.Size(100, 23);
-            this.heatProduced.TabIndex = 9;
-            // 
-            // label40
-            // 
-            label40.Location = new System.Drawing.Point(0, 141);
-            label40.Name = "label40";
-            label40.Size = new System.Drawing.Size(320, 15);
-            label40.TabIndex = 8;
-            label40.Text = "Anteil Elektrizität (MWh):";
-            label40.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // electricityTotal
-            // 
-            this.electricityTotal.Location = new System.Drawing.Point(327, 138);
-            this.electricityTotal.Name = "electricityTotal";
-            this.electricityTotal.Size = new System.Drawing.Size(100, 23);
-            this.electricityTotal.TabIndex = 9;
-            // 
-            // label41
-            // 
-            label41.Location = new System.Drawing.Point(0, 170);
-            label41.Name = "label41";
-            label41.Size = new System.Drawing.Size(320, 15);
-            label41.TabIndex = 8;
-            label41.Text = "solarer Deckungsgrad in % und COP:";
-            label41.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // solarPercentage
-            // 
-            this.solarPercentage.Location = new System.Drawing.Point(327, 167);
-            this.solarPercentage.Name = "solarPercentage";
-            this.solarPercentage.Size = new System.Drawing.Size(100, 23);
-            this.solarPercentage.TabIndex = 9;
             // 
             // DistrictHeating
             // 
@@ -1376,11 +1390,11 @@ namespace DistrictHeating
             this.tabWether.ResumeLayout(false);
             this.tabSimulation.ResumeLayout(false);
             this.tabSimulation.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.tabGraphics.ResumeLayout(false);
             this.legend.ResumeLayout(false);
             this.legend.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1474,5 +1488,6 @@ namespace DistrictHeating
         private TextBox solarTotal;
         private TextBox boreHoleRemoved;
         private TextBox boreHoleAdded;
+        private CheckBox netLoss;
     }
 }

@@ -30,15 +30,15 @@ namespace DistrictHeating
         /// <param name="waterTemperature"></param>
         /// <param name="duration"></param>
         /// <returns></returns>
-        public double TemperatureChange(double waterTemperature, double volumeStream, double duration)
+        public (double newTemperature, double energyLoss) TemperatureChange(double waterTemperature, double volumeStream, double duration)
         {
-            if (volumeStream == 0.0) return waterTemperature;
+            if (volumeStream == 0.0) return (waterTemperature,0.0);
             double waterVolume = Math.Abs(volumeStream * duration); // in m³
             double heatFlow = insulationLambda * 2.0 * Math.PI * length / (Math.Log(outerDiameter) - Math.Log(innerDiameter)) * (waterTemperature - (Plant.ZeroK + 10));
             // power of the heat flow from the water in the pipes to the surrounding soil [W]
             double energy = heatFlow * duration; // [J]
             double dt = energy / (waterVolume * 4200000); // J / (m³*J/(m³*K)) = J * m³ * K/ (m³*J) = K, heat capacity of water: 4200000 J/(m³*K)
-            return waterTemperature - dt; // in case of waterTempereature<10°C dt will be negative
+            return (waterTemperature - dt, energy); // in case of waterTempereature<10°C dt will be negative
         }
     }
 }

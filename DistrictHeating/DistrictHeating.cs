@@ -97,6 +97,7 @@ namespace DistrictHeating
             boreHoleEnergyFlow.Checked = paintDiagram.ShowBoreHoleEnergyFlow;
             ambientTemperature.Checked = paintDiagram.ShowAmbientTemperature;
             volumeFlow.Checked = paintDiagram.ShowVolumeFlow;
+            netLoss.Checked = paintDiagram.ShowNetLoss;
             boreHoleEnergy.Checked = paintDiagram.ShowBoreHoleEnergy;
 
         }
@@ -147,6 +148,7 @@ namespace DistrictHeating
             paintDiagram.ShowBoreHoleEnergyFlow = boreHoleEnergyFlow.Checked;
             paintDiagram.ShowAmbientTemperature = ambientTemperature.Checked;
             paintDiagram.ShowVolumeFlow = volumeFlow.Checked;
+            paintDiagram.ShowNetLoss = netLoss.Checked;
             paintDiagram.ShowBoreHoleEnergy = boreHoleEnergy.Checked;
             return null;
         }
@@ -291,6 +293,10 @@ namespace DistrictHeating
         private void volumeFlow_CheckedChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowVolumeFlow = (sender as CheckBox).Checked;
+        }
+        private void netLoss_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowNetLoss = (sender as CheckBox).Checked;
         }
 
         private void boreHoleEnergy_CheckedChanged(object sender, EventArgs e)
