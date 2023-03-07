@@ -125,10 +125,6 @@ namespace DistrictHeating
                 string unit = parts[1];
                 for (int i = 0; i < item.Value.Count; i++)
                 {
-                    if (item.Value[i].val > 1400)
-                    {
-
-                    }
                     if (!unitMinValue.TryGetValue(unit, out double val)) unitMinValue[unit] = item.Value[i].val;
                     else unitMinValue[unit] = Math.Min(item.Value[i].val, unitMinValue[unit]);
                     if (!unitMaxValue.TryGetValue(unit, out val)) unitMaxValue[unit] = item.Value[i].val;
@@ -395,6 +391,7 @@ namespace DistrictHeating
                     if (clr.ToArgb() == Color.Blue.ToArgb()) toolTip.Show("Außentemperatur (Wetterdaten) (°C)", diagram, ttloc, 2000);
                     if (clr.ToArgb() == Color.Teal.ToArgb()) toolTip.Show("Volumenfluss im Leitungsnetz (l/s)", diagram, ttloc, 2000);
                     if (clr.ToArgb() == Color.Brown.ToArgb()) toolTip.Show("Energie im Erdsondenfeld (bezogen aud 10°C) (in MWh)", diagram, ttloc, 2000);
+                    if (clr.ToArgb() == Color.Indigo.ToArgb()) toolTip.Show("Leitungsverluste im Netz (in kW)", diagram, ttloc, 2000);
                 }
             }
         }

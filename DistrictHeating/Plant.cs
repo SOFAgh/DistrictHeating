@@ -222,22 +222,24 @@ namespace DistrictHeating
                     {   // there was more hot water generated as used. Pump the difference through the boreHoleField
                         if (warmPipeVolume > 0)
                         {
-                            BoreHoleField.TransferEnergie((warmPipeVolume - returnPipeVolume) / step, warmPipeTemp, out double outTemp, step);
-                            transferredEnergy = -(warmPipeVolume - returnPipeVolume) * (outTemp - warmPipeTemp) * 4200000;
+                            double pumpThroughBorehole = (warmPipeVolume - returnPipeVolume); // always positive
+                            BoreHoleField.TransferEnergie(pumpThroughBorehole / step, warmPipeTemp, out double outTemp, step);
+                            transferredEnergy = -pumpThroughBorehole * (outTemp - warmPipeTemp) * 4200000;
                             boreHoleAdded += transferredEnergy; ;
-                            volumeFlow = (warmPipeVolume - returnPipeVolume) / step;
-                            returnPipeVolume += warmPipeVolume;
-                            returnPipeEnergy += warmPipeVolume * outTemp;
+                            volumeFlow = pumpThroughBorehole / step;
+                            returnPipeVolume += pumpThroughBorehole;
+                            returnPipeEnergy += pumpThroughBorehole * outTemp;
                         }
                     }
                     else
                     {   // water from the warm pipe has been used, transfer from return pipe to warm pipe
                         if (returnPipeVolume > 0)
                         {
-                            BoreHoleField.TransferEnergie(-(returnPipeVolume - warmPipeVolume) / step, returnPipeTemp, out double outTemp, step);
-                            transferredEnergy = (warmPipeVolume - returnPipeVolume) * (outTemp - returnPipeTemp) * 4200000;
+                            double pumpThroughBorehole = (returnPipeVolume - warmPipeVolume); // always positive
+                            BoreHoleField.TransferEnergie(-pumpThroughBorehole / step, returnPipeTemp, out double outTemp, step);
+                            transferredEnergy = -pumpThroughBorehole * (outTemp - returnPipeTemp) * 4200000;
                             boreHoleRemoved -= transferredEnergy; ;
-                            volumeFlow = (warmPipeVolume - returnPipeVolume) / step;
+                            volumeFlow = -pumpThroughBorehole / step;
                             warmPipeVolume += returnPipeVolume;
                             warmPipeEnergy += returnPipeVolume * outTemp;
                         }

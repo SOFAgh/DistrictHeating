@@ -38,7 +38,8 @@ namespace DistrictHeating
             // power of the heat flow from the water in the pipes to the surrounding soil [W]
             double energy = heatFlow * duration; // [J]
             double dt = energy / (waterVolume * 4200000); // J / (m³*J/(m³*K)) = J * m³ * K/ (m³*J) = K, heat capacity of water: 4200000 J/(m³*K)
-            return (waterTemperature - dt, energy); // in case of waterTempereature<10°C dt will be negative
+            if (dt>0) return (Math.Max(waterTemperature - dt, Plant.ZeroK + 10), energy); // in case of waterTempereature<10°C dt will be negative
+            else return (Math.Min(waterTemperature - dt, Plant.ZeroK + 10), energy); // in case of waterTempereature<10°C dt will be negative
         }
     }
 }
