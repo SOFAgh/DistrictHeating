@@ -1161,9 +1161,9 @@ namespace DistrictHeating
             // 
             // panelRight
             // 
-            this.panelRight.Location = new System.Drawing.Point(990, 6);
+            this.panelRight.Location = new System.Drawing.Point(974, 6);
             this.panelRight.Name = "panelRight";
-            this.panelRight.Size = new System.Drawing.Size(37, 539);
+            this.panelRight.Size = new System.Drawing.Size(53, 539);
             this.panelRight.TabIndex = 0;
             // 
             // panelLeft
@@ -1177,7 +1177,7 @@ namespace DistrictHeating
             // 
             this.graphicsPanel.Location = new System.Drawing.Point(53, 6);
             this.graphicsPanel.Name = "graphicsPanel";
-            this.graphicsPanel.Size = new System.Drawing.Size(931, 539);
+            this.graphicsPanel.Size = new System.Drawing.Size(915, 539);
             this.graphicsPanel.TabIndex = 0;
             this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
             this.graphicsPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseDown);

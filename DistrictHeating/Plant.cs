@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Security.Principal;
 using System.Globalization;
 using System.IO;
-using System.Windows.Forms;
 
 namespace DistrictHeating
 {
@@ -22,7 +21,6 @@ namespace DistrictHeating
         public static int HoursPerYear = 8760;
         public static double ZeroK = 273.15;
         public static int[] daysPerMonth = new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-        public ProgressBar progressBar;
         //    JsonSerializer serializer = new JsonSerializer();
         //    serializer.Converters.Add(new JavaScriptDateTimeConverter());
         //    serializer.NullValueHandling = NullValueHandling.Ignore;
@@ -127,7 +125,7 @@ namespace DistrictHeating
             }
             return res / numHours;
         }
-        public void StartSimulation()
+        public void StartSimulation(Action<int>  progressBar)
         {
             solarPercentage = 0.0;
             electricityTotal = 0.0;
@@ -161,7 +159,7 @@ namespace DistrictHeating
             int step = 3600; // step with 3600 seconds, i.e. one hour
             for (int i = 0; i < HoursPerYear * 3600 / step; i++)
             {
-                progressBar.Value = (int)(i * 1000.0 / (HoursPerYear * 3600 / step));
+                progressBar((int)(i * 1000.0 / (HoursPerYear * 3600 / step)));
                 currentTime = i * step; // current time is in s
                 // we assume a pool for each pipe, which is at the beginning filled with water at the current temperature of the respective pipe.
                 // in the course of the"step" (i.e. one hour) the pools will grow or shrink, they might even underflow, but this is no problem

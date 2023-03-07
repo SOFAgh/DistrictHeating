@@ -15,7 +15,6 @@ namespace DistrictHeating
         public DistrictHeating()
         {
             InitializeComponent();
-            Plant.progressBar = progressBar;
             paintDiagram = new PaintDiagram(graphicsPanel, panelLeft, panelRight, timeScale, toolTipDiagram, Plant);
             SetPlantData();
         }
@@ -43,7 +42,7 @@ namespace DistrictHeating
             Control? ctrl = GetPlantData();
             if (ctrl == null)
             {
-                Plant.StartSimulation();
+                Plant.StartSimulation(delegate(int d) { progressBar.Value = d; });
                 solarPercentage.Text = (Plant.solarPercentage * 100).ToString("F2") + "% ";
                 electricityTotal.Text = Plant.electricityTotal.ToString("F2");
                 heatProduced.Text = Plant.heatProduced.ToString("F2");
