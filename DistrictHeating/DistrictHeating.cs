@@ -70,7 +70,7 @@ namespace DistrictHeating
                     break;
                 }
             }
-            borHoleDistance.Text = Plant.BoreHoleField.Distance.ToString();
+            borHoleDistance.Text = Plant.BoreHoleField.BoreHoleDistance.ToString();
             boreHoleLength.Text = Plant.BoreHoleField.Length.ToString();
             groundHeatCapacity.Text = Plant.BoreHoleField.HeatCapacity.ToString();
             groundLambda.Text = Plant.BoreHoleField.Lambda.ToString();
@@ -118,7 +118,7 @@ namespace DistrictHeating
             }
             else return numBoreHoles;
             if (!double.TryParse(borHoleDistance.Text, out double bhdist)) return borHoleDistance;
-            Plant.BoreHoleField.Distance = bhdist;
+            Plant.BoreHoleField.BoreHoleDistance = bhdist;
             if (!double.TryParse(boreHoleLength.Text, out Plant.BoreHoleField.Length)) return boreHoleLength;
             if (!double.TryParse(groundHeatCapacity.Text, out Plant.BoreHoleField.HeatCapacity)) return groundHeatCapacity;
             if (!double.TryParse(groundLambda.Text, out Plant.BoreHoleField.Lambda)) return groundLambda;
@@ -329,6 +329,11 @@ namespace DistrictHeating
         private void graphicsPanel_MouseUp(object sender, MouseEventArgs e)
         {
             paintDiagram.OnMouseUp(e);
+        }
+
+        private void boreHoleFieldDisplay_Paint(object sender, PaintEventArgs e)
+        {
+            Plant.BoreHoleField.Paint(sender as Panel);
         }
     }
 }

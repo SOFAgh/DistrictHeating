@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,40 +10,98 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace DistrictHeating
 {
     public class BoreHoleField
     {
-        private class TempPoint
+        /// <summary>
+        /// This class describes a hexagonal prism, which is the finite element for the simulation.
+        /// </summary>
+        private class HexagonPrism
         {
-            public TempPoint(double t, double dt, int i, int j, int k)
+            public HexagonPrism(double t, int i, int j, int k)
             {
                 this.t = t;
-                this.dt = dt;
-                connectedPoints = new List<TempPoint>();
-                connectedAngle = new List<double>();
+                this.dt = 0.0;
+                connectedHexPrisms = new List<HexagonPrism>();
                 this.i = i;
                 this.j = j;
                 this.k = k;
             }
-            public double t;
-            public double dt;
-            public int i, j, k;
-            public List<TempPoint> connectedPoints;
-            public List<double> connectedAngle;
+            public double t; // the temperature
+            public double dt; // the temperature difference, which is added after all hexagonal prism have been modified
+            public int i, j, k; // the "coordinate" of this hexagon
+            public List<HexagonPrism> connectedHexPrisms; // the neighbours
+        }
+        /// <summary>
+        /// This class describes a mantle around the field of hexagonal prisms. It has the form of a hexagonal shell.
+        /// Each mantle can be surrounded by a bigger mantle, the next shell. The deepth (length, height) of the mantle is the same for all
+        /// and specified with the BoreHoleField.Length
+        /// </summary>
+        private class Mantle
+        {
+            public Mantle(double t, double innerRadius, double outerRadius)
+            {
+                this.t = t;
+                this.dt = 0.0;
+                this.innerRadius = innerRadius;
+                this.outerRadius = outerRadius;
+            }
+            public double innerRadius; // radius of the inner hexagon, same as side length
+            public double outerRadius; // radius of the outer hexagon, same as side length
+            public double t; // the temperature
+            public double dt; // the temperature difference, which is added after all hexagonal prism have been modified
+            public double Area
+            {
+                get
+                {
+                    return 3.0 * Math.Sqrt(3) / 2.0 * (outerRadius * outerRadius - innerRadius * innerRadius);
+                }
+            }
+            public double Thickness
+            {
+                get
+                {
+                    return outerRadius - innerRadius;
+                }
+            }
         }
         private double distance = 5;
         /// <summary>
         /// Distance between boreholes
         /// </summary>
-        public double Distance
+        public double BoreHoleDistance
         {
             get { return distance; }
             set
             {
                 distance = value;
-                triangleArea = (distance / 6) * (distance / 6) * Math.Sqrt(3.0) / 4.0;
+            }
+        }
+        /// <summary>
+        /// The distance between the centers of two hexagons, which have a common side or edge. 
+        /// Is also the the smaller diameter of the hexagon.
+        /// </summary>
+        public double HexagonDistance
+        {
+            get { return distance / grid; }
+        }
+        double FaceArea
+        {
+            get
+            {
+                double l = distance / grid / Math.Sqrt(3.0); // length of side of hexagon
+                return l * Length;
+            }
+        }
+        public double HexagonArea
+        {
+            get
+            {
+                return (distance / grid) * (distance / grid) * Math.Sqrt(3.0) / 2.0;
             }
         }
         /// <summary>
@@ -80,16 +139,20 @@ namespace DistrictHeating
         public double startBoreholeFieldBorderTemperature = 10 + 273.15;
 
         // internal representation of the field
-        private Dictionary<Tuple<int, int, int>, TempPoint> temperatureAtHexCoord = new Dictionary<Tuple<int, int, int>, TempPoint>();
-        private List<TempPoint> boreHoles = new List<TempPoint>();
+        private Dictionary<Tuple<int, int, int>, HexagonPrism> temperatureAtHexCoord = new Dictionary<Tuple<int, int, int>, HexagonPrism>();
+        private List<HexagonPrism> boreHoles = new List<HexagonPrism>();
+        private List<HexagonPrism> borderPrisms = new List<HexagonPrism>();
+        private List<Mantle> mantles = new List<Mantle>();
         private const int grid = 6; // the grid segments between boreholes
         private double triangleArea;
         private double borderTemperature; // the mean temperature of a ring surrounding the field. Used to calculate the energy loss.
-        private int numberOfBorderPoints; // number of points on the border
+        private int numberOfBorderFaces; // number of points on the border
         private int maxHexCoordinate;
+        private double size; // the distance of the most outside hexagon from the center (for grapfics display)
         public BoreHoleField(int numRings, double initialTemperature)
         {
             maxHexCoordinate = 0;
+            size = 0;
             triangleArea = (distance / 6) * (distance / 6) * Math.Sqrt(3.0) / 4.0;
             // 1. create the hexagonal array of temperature points
             int dbgmaxi = 0;
@@ -99,12 +162,14 @@ namespace DistrictHeating
                 {
                     int k = -i - j;
                     if (Math.Abs(i) + Math.Abs(j) + Math.Abs(k) > (numRings + 1) * 2 * grid - 1) continue; // outside the hexagon
-                    TempPoint tpijk = new TempPoint(initialTemperature, 0.0, i, j, k);
+                    (double x, double y) p1 = fromHexCoord(i, j, k);
+                    size = Math.Max(size, p1.y);
+                    HexagonPrism tpijk = new HexagonPrism(initialTemperature, i, j, k);
                     temperatureAtHexCoord[new Tuple<int, int, int>(i, j, k)] = tpijk;
                     maxHexCoordinate = Math.Max(Math.Max(maxHexCoordinate, Math.Abs(i)), Math.Max(Math.Abs(j), Math.Abs(k)));
                     if (Math.Abs(i) + Math.Abs(j) + Math.Abs(k) > (numRings + 1) * 2 * grid - 1) continue; // outside the hexagon
                     if ((Math.Abs(i) + Math.Abs(k)) % grid == 0 && (Math.Abs(i) + Math.Abs(j)) % grid == 0 && (Math.Abs(j) + Math.Abs(k)) % grid == 0)
-                    {   // there are 5 temperature points points in between the boreholes
+                    {   // there are (grid-1) temperature points points in between the boreholes
                         boreHoles.Add(tpijk);
                         if (i > dbgmaxi) dbgmaxi = i;
                     }
@@ -112,11 +177,11 @@ namespace DistrictHeating
             }
             borderTemperature = initialTemperature;
 
-            (double x, double y) p1 = fromHexCoord(0, dbgmaxi, -dbgmaxi);
-            (double x, double y) p2 = fromHexCoord(0, -dbgmaxi, dbgmaxi);
+            //(double x, double y) p1 = fromHexCoord(0, dbgmaxi, -dbgmaxi);
+            //(double x, double y) p2 = fromHexCoord(0, -dbgmaxi, dbgmaxi);
 
             // sort the boreholes from inside out and counterclockwise
-            boreHoles.Sort(delegate (TempPoint t1, TempPoint t2)
+            boreHoles.Sort(delegate (HexagonPrism t1, HexagonPrism t2)
             {
                 int c = (Math.Abs(t1.i) + Math.Abs(t1.j) + Math.Abs(t1.k)).CompareTo(Math.Abs(t2.i) + Math.Abs(t2.j) + Math.Abs(t2.k));
                 if (c != 0) return c;
@@ -124,51 +189,59 @@ namespace DistrictHeating
                 (double x, double y) b = fromHexCoord(t2.i, t2.j, t2.k);
                 return Math.Atan2(a.y, a.x).CompareTo(Math.Atan2(b.y, b.x));
             });
-            foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+            foreach (KeyValuePair<Tuple<int, int, int>, HexagonPrism> item in temperatureAtHexCoord)
             {
                 int i = item.Key.Item1;
                 int j = item.Key.Item2;
                 int k = item.Key.Item3;
-                TempPoint? tp;
+                HexagonPrism? tp;
                 if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i, j - 1, k + 1), out tp))
                 {
-                    item.Value.connectedPoints.Add(tp);
-                    item.Value.connectedAngle.Add(0);
+                    item.Value.connectedHexPrisms.Add(tp);
                 }
                 if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i - 1, j, k + 1), out tp))
                 {
-                    item.Value.connectedPoints.Add(tp);
-                    item.Value.connectedAngle.Add(1);
+                    item.Value.connectedHexPrisms.Add(tp);
                 }
                 if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i - 1, j + 1, k), out tp))
                 {
-                    item.Value.connectedPoints.Add(tp); // 6
-                    item.Value.connectedAngle.Add(2);
+                    item.Value.connectedHexPrisms.Add(tp);
                 }
                 if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i, j + 1, k - 1), out tp))
                 {
-                    item.Value.connectedPoints.Add(tp);
-                    item.Value.connectedAngle.Add(3);
+                    item.Value.connectedHexPrisms.Add(tp);
                 }
                 if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i + 1, j, k - 1), out tp))
                 {
-                    item.Value.connectedPoints.Add(tp); // 4
-                    item.Value.connectedAngle.Add(4);
+                    item.Value.connectedHexPrisms.Add(tp);
                 }
                 if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i + 1, j - 1, k), out tp))
                 {
-                    item.Value.connectedPoints.Add(tp); // 5
-                    item.Value.connectedAngle.Add(5);
+                    item.Value.connectedHexPrisms.Add(tp);
                 }
-                numberOfBorderPoints += 6 - item.Value.connectedPoints.Count;
+                numberOfBorderFaces += 6 - item.Value.connectedHexPrisms.Count;
+                if (numberOfBorderFaces < 6) borderPrisms.Add(item.Value); // this is a prism at the outside of the field
             }
+            double width = HexagonDistance;
+            double innerRadius = size + HexagonDistance / 2.0;
+            for (int i = 0; i < 10; i++)
+            {   // we assume a certain amount of mantles, starting with the inner Mantle. Each following has the double width
+                // as the next inner mantle
+                mantles.Add(new Mantle(initialTemperature, innerRadius, innerRadius + width));
+                innerRadius += width;
+                width *= 2.0;
+            }
+
         }
         private (double x, double y) fromHexCoord(int i, int j, int k)
-        {
-            const double a = 0.8660254037844386; // Math.Sqrt(3.0) / 2;
+        {   // hexagons are oriented so that one edge is horizontal
+            // the y-diameter is distance / grid, the x-diameter is distance/grid*2/sqrt(3)
+            double yd = distance / grid;
+            double xd = yd * 2 / Math.Sqrt(3.0);
+            double l = xd / 2; // length of side of hexagon
             Debug.Assert(i + j + k == 0);
-            double x = j * 1.5;
-            double y = (i - k) * a;
+            double x = j * xd * 0.75;
+            double y = (i - k) * yd / 2.0;
             return (x, y);
         }
         /// <summary>
@@ -181,7 +254,7 @@ namespace DistrictHeating
             Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
             {
                 int c = Math.Max(Math.Max(Math.Abs(key.Item1), Math.Abs(key.Item2)), Math.Abs(key.Item3));
-                TempPoint itemValue = temperatureAtHexCoord[key];
+                HexagonPrism itemValue = temperatureAtHexCoord[key];
                 double f = (maxHexCoordinate - c) / (double)maxHexCoordinate; // 1: center, 0: border
                 itemValue.t = startBoreholeFieldBorderTemperature + f * (startBoreholeFieldCenterTemperature - startBoreholeFieldBorderTemperature);
             });
@@ -199,41 +272,30 @@ namespace DistrictHeating
             double waterEnergy = inTemperature * waterVolume * 4200000; // in J relative to 0 K,  4.2 kJ/(kg*K) or 4200000 J/(m³*K)
             double currentWaterTemperature = inTemperature; // will decrease (or increase) from borehole to borehole
             double heatCapacityPerTriangle = triangleArea * HeatCapacity * Length; // to get the energy you have to multiply by deltaT
+            double heatCapacityPerHexPrism = HexagonArea * HeatCapacity * Length; // to get the energy you have to multiply by deltaT
             if (volumeStream != 0.0)
             {
                 for (int i = 0; i < boreHoles.Count; i++)
                 {   // we assume all the water to stay in each borehole for the provided duration. It will be cooled (or heated) by the power (deltaT * TransferPower * Length)
                     // then we pass it on to the next borehole
-                    int index = (volumeStream < 0) ? boreHoles.Count - i - 1 : i; // respecting direction of flow
+                    int index = (volumeStream < 0) ? boreHoles.Count - i - 1 : i; // respecting direction of flow, from center to outside or reverse
                     double deltaT = currentWaterTemperature - boreHoles[index].t;
-                    double power = deltaT * TransferPower * Length;
-                    double meanTemp = 0.0; // 6 times the mean temperature of the surrounding points. There are always 6 triangles around the borehole
-                    for (int j = 0; j < 6; j++)
-                    {
-                        meanTemp += boreHoles[index].connectedPoints[j].t;
-                    }
-                    // prismEnergy is the sum of the 6 triangle_prism_volums * HeatCapacity 
-                    // double prismEnergy = 6 * heatCapacityPerTriangle * (6 * boreHoles[index].t + 2 * meanTemp) / 18;
-                    // 6 * heatCapacityPerTriangle is the sum of the 6 triangles
-                    // (6 * boreHoles[index].t + 2 * meanTemp) / 18 is the leveled temperature (meanTemp is the sum of 6 temperatures, so we have 18 temperatures here)
-                    double prismEnergy = heatCapacityPerTriangle * (6 * boreHoles[index].t + 2 * meanTemp) / 3;
+                    double power = deltaT * TransferPower * Length; // this is the power that will be transferred from the water to the HexPrism (positive or negative)
+                    double hexPrismEnergy = heatCapacityPerHexPrism * boreHoles[index].t; // current energy of the HexPrism relative to absolute 0
                     double energyToTransfer = power * duration;
-                    double minimumWaterEnergy = (6 * boreHoles[index].t + 2 * meanTemp) / 18.0 * waterVolume * 4200000; // in J relative to prism temperature,  4.2 kJ/(kg*K) or 4200000 J/(m³*K)
-                    // if (minimumWaterEnergy > waterEnergy - energyToTransfer) energyToTransfer = waterEnergy - minimumWaterEnergy; // water cannot become colder than the prism temperature
-                    double maximumPrismEnergy = heatCapacityPerTriangle * (6 * currentWaterTemperature + 2 * meanTemp) / 3;
-                    // if (maximumPrismEnergy < prismEnergy + energyToTransfer) energyToTransfer = maximumPrismEnergy - prismEnergy;
-                    if ((minimumWaterEnergy > waterEnergy - energyToTransfer) || (maximumPrismEnergy < prismEnergy + energyToTransfer))
-                    {   // if boundary conditions are not met, we use a intermediate temperature and calculate the energy transfer
-                        // so both the water temperature and the boreHole temperature will be the same at the end, i.e. tm
-                        double tm = (waterVolume * 4200000 * currentWaterTemperature + 2 * heatCapacityPerTriangle * boreHoles[index].t) / (waterVolume * 4200000 + 2 * heatCapacityPerTriangle);
-                        energyToTransfer = heatCapacityPerTriangle * (6 * tm + 2 * meanTemp) / 3 - prismEnergy;
-                        // double dbg = (waterVolume * 4200000 * currentInTemperature) - (waterVolume * 4200000 * tm); // must be the same as energyToTransfer
+                    if (((waterEnergy - energyToTransfer) / (waterVolume * 4200000) - (hexPrismEnergy + energyToTransfer) / heatCapacityPerHexPrism) * deltaT < 0)
+                    {   // with this amount of energyToTransfer we would overshoot the temperatures. Soe we calculate the amount of energy
+                        // which results in a medium temperature, which both the water and the soil will get
+                        double tm = (waterVolume * 4200000 * currentWaterTemperature + heatCapacityPerHexPrism * boreHoles[index].t) / (waterVolume * 4200000 + heatCapacityPerHexPrism);
+                        energyToTransfer = heatCapacityPerHexPrism * tm - hexPrismEnergy;
+                        // double dbg = (waterVolume * 4200000 * currentWaterTemperature) - (waterVolume * 4200000 * tm); // must be the same as energyToTransfer
                     }
-                    prismEnergy += energyToTransfer;
-                    // now we modify the central temperature of the hexagon so that the new prismEnergy represents prismEnergy += energyToTransfer
-                    boreHoles[index].t = (prismEnergy * 3.0 / (heatCapacityPerTriangle) - 2 * meanTemp) / 6.0;
+                    hexPrismEnergy += energyToTransfer;
+                    // now we modify the temperature of the hexagon so that the new prismEnergy represents hexPrismEnergy += energyToTransfer
+                    boreHoles[index].t = hexPrismEnergy / heatCapacityPerHexPrism;
                     waterEnergy -= energyToTransfer;
                     currentWaterTemperature = waterEnergy / (waterVolume * 4200000);
+                    // if ((currentWaterTemperature - boreHoles[index].t) * deltaT < 0) { }
                 }
             }
             outTemperature = currentWaterTemperature; // this is the last water temperature afte leaving the last borehole
@@ -242,7 +304,7 @@ namespace DistrictHeating
             // in a second loop, we add deltaT to the temperature of each point
             double borderdt = 0.0;
             double parameterToDetermin = Lambda / HeatCapacity; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
-            double dbgf = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
+            double dbgf = parameterToDetermin * duration / (BoreHoleDistance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
             // Let the temperature difference between two points be deltaT.
             // deltaT is shrinking in a time step of the simulation depending on 
             // - the distance between those two points (which is the same for all points)
@@ -255,111 +317,88 @@ namespace DistrictHeating
             // When applying a time step of duration1+duration2 the result must be the same as for first applying duration1 and then duration2:
             // exp(-(duration1+duration2)*s) * deltaT == exp(-duration1*s) * exp(-duration2*s) * deltaT
             // so using exp(-duration*s) seems to be a reasonable choice
-            double s = 2.0 * grid * (Lambda / (HeatCapacity * Distance)); // Distance is between boreholes, Distance/grid is between grid points
+            double s = 2.0 * grid * (Lambda / (HeatCapacity * BoreHoleDistance)); // Distance is between boreholes, Distance/grid is between grid points
             // when distance increases, s decreases and exp(-duration*s) gets closer to 1, i.e. less shrinkage of deltaT with increased distance
             // when Lambda increases, we get more shrinkage of deltaT 
             // factor 2.0 is experimental
             double fDt = (1.0 - Math.Exp(-duration * s)) / 2.0; // Math.Exp(-duration * s) is the factor, which shrinkes the deltaT, half of the shrinkage is added to each points temperature
-            double bDt = (1.0 - Math.Exp(-duration * 4.0 * Lambda / (HeatCapacity * Distance))) / 2.0;
-            double dbgorgbdt = parameterToDetermin * duration / (Distance / 2);
+            double bDt = (1.0 - Math.Exp(-duration * 4.0 * Lambda / (HeatCapacity * BoreHoleDistance))) / 2.0;
+            double dbgorgbdt = parameterToDetermin * duration / (BoreHoleDistance / 2);
+            double capacity = Lambda * FaceArea * duration / HexagonDistance;
+            double f = capacity / heatCapacityPerHexPrism;
+            // Q = k * A * (T1 - T2) * t / d
+            // where:
+            // Q is the energy transferred(in Joules)
+            // k is the thermal conductivity(in W / (m * K))
+            // A is the area of the contacting faces(in m²)
+            // T1 and T2 are the temperatures of the two adjacent hexagonal prisms(in K)
+            // t is the duration of the time step(in seconds)
+            // d is the distance between the center axis of the two hexagonal prisms(in meters)
+
             Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
             {
                 double dt = 0.0;
-                TempPoint itemValue = temperatureAtHexCoord[key];
+                HexagonPrism itemValue = temperatureAtHexCoord[key];
                 double t0 = itemValue.t;
-                double f = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
-                int cnt = itemValue.connectedPoints.Count;
+
+                int cnt = itemValue.connectedHexPrisms.Count;
                 // here we assume that all points have the same distance and are regularly distributed around the central point (in 60° steps)
                 for (int l = 0; l < cnt; l++)
                 {
                     //dt += fDt * (itemValue.connectedPoints[l].t - t0);
-                    dt += f * (itemValue.connectedPoints[l].t - t0);
+                    dt += f * (itemValue.connectedHexPrisms[l].t - t0);
                 }
                 if (cnt < 6)
                 {
-                    // this is a point at the border of the field. It is also influenced by the outside temperature. And it influences the outsid temperature
-                    // I first tried to make the field much bigger (but no extra boreholes) so that the border almost remained unchanged. Then recorded the temperatures
-                    // at the points where the border of the smaller field would be. then I adaptet the additional parameters here
-                    // ((Distance / 2) and (24 * numberOfBorderPoints)) tho get a result with the small field at the border, which is similar to the respective points on the big field.
-                    // Maybe we have to experiment with these two arbitrary parameters.
-                    double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
-                    // double bdt = bDt * (borderTemperature - t0);
-                    dt += (6 - cnt) * bdt;
-                    borderdt += bdt / (24 * numberOfBorderPoints);
+                    dt += f * (mantles[0].t - t0); // an outer prism is also affected by the surrounding mantle
+                    mantles[0].dt += (6 - cnt) * capacity / (mantles[0].Area * HeatCapacity * Length) * (t0 - mantles[0].t);
+                    // the mantle beeing affected by this prism, capacity already respects one face area of the prism, but we have two or 3 faces as contact here
+                    // The HexagonDistance in capacity is correct, since the first mantle has this thickness
                 }
-                itemValue.dt = dt / 6; // save this value, the modification happens for all points simultaneously after this loop
-
-
-                //double dt = 0.0;
-                //TempPoint itemValue = temperatureAtHexCoord[key];
-                //double t0 = itemValue.t;
-                //double parameterToDetermin = Lambda / HeatCapacity; // maybe it should be: Lambda / HeatCapacity, which is 1.5*1e-6  // this parameter will depend on Lambda and maybe also on HeatCapacity
-                //double f = parameterToDetermin * duration / (Distance / grid); // is this linear to the inverse of the distance? Distance / grid is the point distance, Distance ist the borehole distance
-                //int cnt = itemValue.connectedPoints.Count;
-                //// here we assume that all points have the same distance and are regularly distributed around the central point (in 60° steps)
-                //for (int l = 0; l < cnt; l++)
-                //{
-                //    dt += f * (itemValue.connectedPoints[l].t - t0);
-                //}
-                //if (cnt < 6)
-                //{
-                //    // this is a point at the border of the field. It is also influenced by the outside temperature. And it influences the outsid temperature
-                //    // I first tried to make the field much bigger (but no extra boreholes) so that the border almost remained unchanged. Then recorded the temperatures
-                //    // at the points where the border of the smaller field would be. then I adaptet the additional parameters here
-                //    // ((Distance / 2) and (24 * numberOfBorderPoints)) tho get a result with the small field at the border, which is similar to the respective points on the big field.
-                //    // Maybe we have to experiment with these two arbitrary parameters.
-                //    double bdt = parameterToDetermin * duration * (borderTemperature - t0) / (Distance / 2);
-                //    dt += (6 - cnt) * bdt;
-                //    borderdt += bdt / (24 * numberOfBorderPoints);
-                //}
-                //itemValue.dt = dt / 6; // save this value, the modification happens for all points simultaneously after this loop
+                itemValue.dt = dt; // save this value, the modification happens for all points simultaneously after this loop
 
             });
+            // now update the mantle temperature changes (dt)
+            // the innermost mantle has already been affected byt 
+            for (int i = 0; i < mantles.Count; i++)
+            {
+                if (i > 0)
+                {   // what we get from the next inner mantle
+                    double contactArea = mantles[i].innerRadius * 6 * Length;
+                    double distance = (mantles[i].Thickness + mantles[i - 1].Thickness) / 2.0;
+                    double ff = Lambda * contactArea * duration / distance / (mantles[i].Area * HeatCapacity * Length);
+                    mantles[i].dt += ff * (mantles[i - 1].t - mantles[i].t);
+                }
+                if (i < mantles.Count - 1)
+                {   // what we get from the next outer mantle
+                    double contactArea = mantles[i].outerRadius * 6 * Length;
+                    double distance = (mantles[i].Thickness + mantles[i + 1].Thickness) / 2.0;
+                    double ff = Lambda * contactArea * duration / distance / (mantles[i].Area * HeatCapacity * Length);
+                    mantles[i].dt += ff * (mantles[i + 1].t - mantles[i].t);
+                }
+            }
             // now we change all temperatures
             borderTemperature -= borderdt;
             Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
             {
-                TempPoint itemValue = temperatureAtHexCoord[key];
+                HexagonPrism itemValue = temperatureAtHexCoord[key];
                 itemValue.t += itemValue.dt;
                 itemValue.dt = 0;
             });
-        }
-        private double TriangleArea((double x, double y) p1, (double x, double y) p2, (double x, double y) p3)
-        {
-            double x1 = p1.x;
-            double y1 = p1.y;
-            double x2 = p2.x;
-            double y2 = p2.y;
-            double x3 = p3.x;
-            double y3 = p3.y;
-            return Math.Abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0);
-        }
-        private double GetVolume(double baseTemperature)
-        {
-            double volume = 0.0;
-            double dbgTotalArea = 0.0;
-            foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+            for (int i = 0; i < mantles.Count; i++)
             {
-                int i = item.Key.Item1;
-                int j = item.Key.Item2;
-                int k = item.Key.Item3;
-                TempPoint? t1, t2;
-                if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i, j - 1, k + 1), out t1) && temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i - 1, j, k + 1), out t2))
-                {
-                    volume += triangleArea * ((item.Value.t + t1.t + t2.t) / 3 - baseTemperature);
-                    dbgTotalArea += triangleArea;
-                }
-                if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i, j - 1, k + 1), out t1) && temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i + 1, j - 1, k), out t2))
-                {
-                    volume += triangleArea * ((item.Value.t + t1.t + t2.t) / 3 - baseTemperature);
-                    dbgTotalArea += triangleArea;
-                }
+                mantles[i].t += mantles[i].dt;
+                mantles[i].dt = 0.0;
             }
-            return volume;
         }
         public double GetTotalEnergy(double baseTemperature)
         {
-            return GetVolume(baseTemperature) * HeatCapacity * Length;
+            double res = 0.0;
+            foreach (KeyValuePair<Tuple<int, int, int>, HexagonPrism> item in temperatureAtHexCoord)
+            {
+                res += HexagonArea * (item.Value.t - baseTemperature);
+            }
+            return res * Length * HeatCapacity;
         }
         /// <summary>
         ///  Dumps the values to a text file in a simple csv format
@@ -374,7 +413,7 @@ namespace DistrictHeating
                 int counter = 0;
                 using (StreamWriter sw = new StreamWriter(fs))
                 {
-                    foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+                    foreach (KeyValuePair<Tuple<int, int, int>, HexagonPrism> item in temperatureAtHexCoord)
                     {
                         hexIndexToLinearIndex[item.Key] = counter++;
                         (double x, double y) = fromHexCoord(item.Key.Item1, item.Key.Item2, item.Key.Item3);
@@ -383,7 +422,7 @@ namespace DistrictHeating
                         if (item.Value.t < mintemp) mintemp = item.Value.t;
                     }
                     sw.WriteLine(""); // the triangle indices:
-                    foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+                    foreach (KeyValuePair<Tuple<int, int, int>, HexagonPrism> item in temperatureAtHexCoord)
                     {
                         int i = item.Key.Item1;
                         int j = item.Key.Item2;
@@ -412,7 +451,7 @@ namespace DistrictHeating
             double maxdist = 0.0;
             double maxTemp = 0.0, minTemp = double.MaxValue;
             double res = 0.0;
-            foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+            foreach (KeyValuePair<Tuple<int, int, int>, HexagonPrism> item in temperatureAtHexCoord)
             {
                 int i = item.Key.Item1;
                 int j = item.Key.Item2;
@@ -433,14 +472,14 @@ namespace DistrictHeating
         {
             double volume = 0.0;
             double dbgTotalArea = 0.0;
-            foreach (KeyValuePair<Tuple<int, int, int>, TempPoint> item in temperatureAtHexCoord)
+            foreach (KeyValuePair<Tuple<int, int, int>, HexagonPrism> item in temperatureAtHexCoord)
             {
                 int i = item.Key.Item1;
                 int j = item.Key.Item2;
                 int k = item.Key.Item3;
                 if (Math.Abs(i) + Math.Abs(k) + Math.Abs(k) > outside)
                 {
-                    TempPoint? t1, t2;
+                    HexagonPrism? t1, t2;
                     if (temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i, j - 1, k + 1), out t1) && temperatureAtHexCoord.TryGetValue(new Tuple<int, int, int>(i - 1, j, k + 1), out t2))
                     {
                         volume += triangleArea * ((item.Value.t + t1.t + t2.t) / 3 - baseTemperature);
@@ -465,6 +504,30 @@ namespace DistrictHeating
         {
             // no rings yet
             return boreHoles[0].t;
+        }
+
+        internal void Paint(Panel? panel)
+        {
+            if (panel == null) return;
+            using (Graphics gr = panel.CreateGraphics())
+            {
+                gr.Clear(Color.White);
+                int cntx = panel.Width / 2;
+                int cnty = panel.Height / 2;
+                double scaleFactor = Math.Min(panel.Width, panel.Height) / 2 / size;
+                foreach (Tuple<int, int, int> pnt in temperatureAtHexCoord.Keys)
+                {
+                    (double x, double y) = fromHexCoord(pnt.Item1, pnt.Item2, pnt.Item3);
+                    gr.DrawEllipse(Pens.Black, cntx + (float)(scaleFactor * x) - 2, cnty + (float)(scaleFactor * y) - 2, 4, 4);
+                    // gr.DrawLine(Pens.Black, cntx + (float)(scaleFactor * x), cnty + (float)(scaleFactor * y), cntx + (float)(scaleFactor * x)+1, cnty + (float)(scaleFactor * y));
+                }
+                foreach (HexagonPrism tp in boreHoles)
+                {
+                    (double x, double y) = fromHexCoord(tp.i, tp.j, tp.k);
+                    gr.FillEllipse(Brushes.Red, cntx + (float)(scaleFactor * x) - 3, cnty + (float)(scaleFactor * y) - 3, 6, 6);
+                }
+
+            }
         }
     }
 }
