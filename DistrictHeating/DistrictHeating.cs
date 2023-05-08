@@ -127,9 +127,9 @@ namespace DistrictHeating
             if (!double.TryParse(startBorderTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldBorderTemperature)) return startBorderTemperature;
             Plant.BoreHoleField.startBoreholeFieldBorderTemperature += Plant.ZeroK;
             //// bufferStorage
-            //bufferStorageEnergyTransfer.Text = Plant.BufferStorage.EnergyTransfer.ToString();
-            //bufferStroageSize.Text = Plant.BufferStorage.Volume.ToString();
-            //bufferStorageInstances.Text = Plant.BufferStorage.NumberOfStorages.ToString();
+            if (!double.TryParse(bufferStorageEnergyTransfer.Text, out Plant.BufferStorage.EnergyTransfer)) return bufferStorageEnergyTransfer;
+            if (!double.TryParse(bufferStroageSize.Text, out Plant.BufferStorage.Volume)) return bufferStroageSize;
+            if (!int.TryParse(bufferStorageInstances.Text, out Plant.BufferStorage.NumberOfStorages)) return bufferStorageInstances;
             //// solar
             if (!double.TryParse(solarFieldSize.Text, out Plant.SolarThermalCollector.Area)) return solarFieldSize;
             if (!double.TryParse(solarEfficiency.Text, out Plant.SolarThermalCollector.Efficiency)) return solarEfficiency;
@@ -296,6 +296,18 @@ namespace DistrictHeating
         private void netLoss_CheckedChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowNetLoss = (sender as CheckBox).Checked;
+        }
+        private void bufferEnergy_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowBufferEnergy = (sender as CheckBox).Checked;
+        }
+        private void bufferTopTemperature_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowBufferTopTemperature = (sender as CheckBox).Checked;
+        }
+        private void bufferBottomTemperature_CheckedChanged(object sender, EventArgs e)
+        {
+            paintDiagram.ShowBufferBottomTemperature = (sender as CheckBox).Checked;
         }
 
         private void boreHoleEnergy_CheckedChanged(object sender, EventArgs e)

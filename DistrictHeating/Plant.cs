@@ -42,7 +42,7 @@ namespace DistrictHeating
             currentTime = 0;
             UseThreePipes = false;
             Climate = new Climate();
-            SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
+            SolarThermalCollector = new SolarThermalCollector() { Area = 3500 };
             Heating = new List<HeatingConsumer>();
             Heating.Add(HeatingConsumer.RadiatorHeating);
             Heating.Add(HeatingConsumer.UnderFloorHeating);
@@ -125,7 +125,7 @@ namespace DistrictHeating
             }
             return res / numHours;
         }
-        public void StartSimulation(Action<int>  progressBar)
+        public void StartSimulation(Action<int> progressBar)
         {
             solarPercentage = 0.0;
             electricityTotal = 0.0;
@@ -144,6 +144,7 @@ namespace DistrictHeating
                 Heating[j].Initialize(this); // calculate scaling factors
             }
             BoreHoleField.Initialize();
+            BufferStorage.Initialize();
 
             // in the following loop we consider for each time step (one hour) how much energy the solar collectors will deliver and how much energy the heaters will require
             // wich both depend on whether data. The difference will be stored in or must be provided by the boreholefield. Now the question is the temperature level
@@ -172,10 +173,18 @@ namespace DistrictHeating
                 double heatConsumption = 0.0;
                 double electricityConsumption = 0.0;
                 // let the solar collectors do their work
+                if (i == 2700)
+                { // use as a breakpoint
+
+                }
                 SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
                 double solarVolume = volumetricFlowRate * step; // this much water was pumped through the collectors fromPipe->toPipe
                 double solarEnergy = solarVolume * deltaT * 4200000;
                 solarTotal += solarEnergy;
+                if (JouleToKW(solarEnergy, step)>1000)
+                {
+
+                }
                 if (solarVolume > 0)
                 {
                     if (fromPipe == Pipe.returnPipe) // which it always should be
@@ -217,11 +226,13 @@ namespace DistrictHeating
                 else
                 {
                     if (warmPipeVolume > returnPipeVolume)
-                    {   // there was more hot water generated as used. Pump the difference through the boreHoleField
+                    {   // there was more hot water generated than used. Pump the difference through the boreHoleField
                         if (warmPipeVolume > 0)
                         {
                             double pumpThroughBorehole = (warmPipeVolume - returnPipeVolume); // always positive
-                            BoreHoleField.TransferEnergie(pumpThroughBorehole / step, warmPipeTemp, out double outTemp, step);
+                            // pump the water first through the buffer storage (if any) then through the borehole field
+                            BufferStorage.TransferEnergie(pumpThroughBorehole / step, warmPipeTemp, out double outTemp, step);
+                            BoreHoleField.TransferEnergie(pumpThroughBorehole / step, outTemp, out outTemp, step);
                             transferredEnergy = -pumpThroughBorehole * (outTemp - warmPipeTemp) * 4200000;
                             boreHoleAdded += transferredEnergy; ;
                             volumeFlow = pumpThroughBorehole / step;
@@ -234,7 +245,9 @@ namespace DistrictHeating
                         if (returnPipeVolume > 0)
                         {
                             double pumpThroughBorehole = (returnPipeVolume - warmPipeVolume); // always positive
+                            // pump the water first through the borehole field then through the buffer storage (if any) 
                             BoreHoleField.TransferEnergie(-pumpThroughBorehole / step, returnPipeTemp, out double outTemp, step);
+                            BufferStorage.TransferEnergie(-pumpThroughBorehole / step, outTemp, out outTemp, step);
                             transferredEnergy = -pumpThroughBorehole * (outTemp - returnPipeTemp) * 4200000;
                             boreHoleRemoved -= transferredEnergy; ;
                             volumeFlow = -pumpThroughBorehole / step;
@@ -270,6 +283,9 @@ namespace DistrictHeating
                     DiagramAdd(currentSeconds, "ambientTemperature", GetCurrentTemperature(), "°C");
                     DiagramAdd(currentSeconds, "volumeFlow", volumeFlow * 1000, "l/s"); // m³ -> l
                     DiagramAdd(currentSeconds, "netLoss", JouleToKW(netLoss, step), "kW");
+                    DiagramAdd(currentSeconds, "bufferEnergy", JouleToKWh(BufferStorage.GetTotalEnergy(ZeroK + 10)) / 1000, "MWh");
+                    DiagramAdd(currentSeconds, "bufferTopTemperature", BufferStorage.TopTemperature - ZeroK, "°C");
+                    DiagramAdd(currentSeconds, "bufferBottomTemperature", BufferStorage.BottomTemperature - ZeroK, "°C");
                     if (hourIndex % 24 == 12) // once a day at 12:00
                     {
                         boreHoleEnergyPerDay.Add(JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)));
@@ -311,7 +327,7 @@ namespace DistrictHeating
 
         public void CheckBoreHoleFieldAndSolarConsistency()
         {
-            SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
+            SolarThermalCollector = new SolarThermalCollector() { Area = 3500 };
             SolarThermalCollector.Initialize(this);
             this.returnPipeTemp = 10 + ZeroK;
             double totalEnergy = 0.0; // accumulate thermal energy
@@ -373,7 +389,7 @@ namespace DistrictHeating
         }
         public void CheckSolarHeatConsitency()
         {
-            SolarThermalCollector = new SolarThermalCollector() { Area = 3000 };
+            SolarThermalCollector = new SolarThermalCollector() { Area = 3500 };
             SolarThermalCollector.Initialize(this);
             this.returnPipeTemp = 20 + ZeroK;
 

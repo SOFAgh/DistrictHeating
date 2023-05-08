@@ -75,6 +75,12 @@ namespace DistrictHeating
         public bool ShowVolumeFlow { get { return showVolumeFlow; } set { showVolumeFlow = value; invalidated = true; } }
         bool showNetLoss = false;
         public bool ShowNetLoss { get { return showNetLoss; } set { showNetLoss = value; invalidated = true; } }
+        bool showBufferEnergy = false;
+        public bool ShowBufferEnergy { get { return showBufferEnergy; } set { showBufferEnergy = value; invalidated = true; } }
+        bool showBufferTopTemperature = false;
+        public bool ShowBufferTopTemperature { get { return showBufferTopTemperature; } set { showBufferTopTemperature = value; invalidated = true; } }
+        bool showBufferBottomTemperature = false;
+        public bool ShowBufferBottomTemperature { get { return showBufferBottomTemperature; } set { showBufferBottomTemperature = value; invalidated = true; } }
 
 
         private float HorLinePosition(int ind)
@@ -129,6 +135,10 @@ namespace DistrictHeating
                     else unitMinValue[unit] = Math.Min(item.Value[i].val, unitMinValue[unit]);
                     if (!unitMaxValue.TryGetValue(unit, out val)) unitMaxValue[unit] = item.Value[i].val;
                     else unitMaxValue[unit] = Math.Max(item.Value[i].val, unitMaxValue[unit]);
+                    if (unit == "°C" && unitMaxValue[unit] > 100)
+                    {
+
+                    }
                     minSeconds = Math.Min(item.Value[i].timeStamp, minSeconds);
                     maxSeconds = Math.Max(item.Value[i].timeStamp, maxSeconds);
                     names.Add(name);
@@ -238,7 +248,7 @@ namespace DistrictHeating
                     {
                         for (int j = 0; j < Plant.daysPerMonth[i]; j++)
                         {
-                            gr.DrawLine(Pens.Black, (daynum+j) * horizontalScale + horizontalOffset, 0.0f, (daynum + j) * horizontalScale + horizontalOffset, h / 4);
+                            gr.DrawLine(Pens.Black, (daynum + j) * horizontalScale + horizontalOffset, 0.0f, (daynum + j) * horizontalScale + horizontalOffset, h / 4);
                         }
                         daynum += Plant.daysPerMonth[i];
                     }
@@ -290,6 +300,9 @@ namespace DistrictHeating
                     if (ShowBoreHoleEnergyFlow) grDiagram.DrawCurve(Pens.Navy, TransformedPoints(paths["boreHoleEnergyFlow"]));
                     if (ShowVolumeFlow) grDiagram.DrawCurve(Pens.Teal, TransformedPoints(paths["volumeFlow"]));
                     if (ShowNetLoss) grDiagram.DrawCurve(Pens.Indigo, TransformedPoints(paths["netLoss"]));
+                    if (ShowBufferEnergy) grDiagram.DrawCurve(Pens.LawnGreen, TransformedPoints(paths["bufferEnergy"]));
+                    if (ShowBufferTopTemperature) grDiagram.DrawCurve(Pens.YellowGreen, TransformedPoints(paths["bufferTopTemperature"]));
+                    if (ShowBufferBottomTemperature) grDiagram.DrawCurve(Pens.Gold, TransformedPoints(paths["bufferBottomTemperature"]));
                     if (showBoreHoleEnergy) grDiagram.DrawCurve(Pens.Brown, TransformedPoints(paths["boreHoleEnergy"]));
                 }
             }
@@ -392,6 +405,9 @@ namespace DistrictHeating
                     if (clr.ToArgb() == Color.Teal.ToArgb()) toolTip.Show("Volumenfluss im Leitungsnetz (l/s)", diagram, ttloc, 2000);
                     if (clr.ToArgb() == Color.Brown.ToArgb()) toolTip.Show("Energie im Erdsondenfeld (bezogen aud 10°C) (in MWh)", diagram, ttloc, 2000);
                     if (clr.ToArgb() == Color.Indigo.ToArgb()) toolTip.Show("Leitungsverluste im Netz (in kW)", diagram, ttloc, 2000);
+                    if (clr.ToArgb() == Color.LawnGreen.ToArgb()) toolTip.Show("Energie im Pufferspeicher (bezogen aud 10°C) (in MWh)", diagram, ttloc, 2000);
+                    if (clr.ToArgb() == Color.YellowGreen.ToArgb()) toolTip.Show("Obere Temperatur im Pufferspeicher (in °C)", diagram, ttloc, 2000);
+                    if (clr.ToArgb() == Color.Gold.ToArgb()) toolTip.Show("Untere Temperatur im Pufferspeicher (in °C)", diagram, ttloc, 2000);
                 }
             }
         }
