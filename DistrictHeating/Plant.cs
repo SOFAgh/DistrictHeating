@@ -173,7 +173,7 @@ namespace DistrictHeating
                 double heatConsumption = 0.0;
                 double electricityConsumption = 0.0;
                 // let the solar collectors do their work
-                if (i == 2700)
+                if (i == Climate.DateToHourNumber(8,28,1))
                 { // use as a breakpoint
 
                 }
@@ -256,6 +256,8 @@ namespace DistrictHeating
                         }
                     }
                 }
+                double dbgtebo = JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)) / 1000;
+                double dbgtebu = JouleToKWh(BufferStorage.GetTotalEnergy(ZeroK + 10)) / 1000;
                 if (returnPipeVolume > 0) returnPipeTemp = returnPipeEnergy / returnPipeVolume;
                 if (warmPipeVolume > 0) warmPipeTemp = warmPipeEnergy / warmPipeVolume;
                 if (hotPipeVolume > 0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;

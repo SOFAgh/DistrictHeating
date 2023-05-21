@@ -115,7 +115,7 @@ namespace DistrictHeating
         /// <param name="day"></param>
         /// <param name="hour"></param>
         /// <returns></returns>
-        private static int DateToHourNumber(int month, int day, int hour)
+        internal static int DateToHourNumber(int month, int day, int hour)
         {   // don't care about leap year
             int[] months = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
             int res = 0;

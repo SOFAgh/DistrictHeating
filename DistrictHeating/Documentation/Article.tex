@@ -48,7 +48,7 @@ Die Simulation fragt alle Komponenten der Reihe nach ab, mit welcher Leistung si
 \subsection{Die Heizung (\texttt{class HeatingConsumer})}
 Die Heizung (\texttt{class HeatingConsumer}) ist der typische Wärmeverbraucher. In ihrer Definition sind folgende Eigenschaften gesetzt:
 \begin{description}
-\item[Vorlauftemperatur (\texttt{double[] SupplyTemp}):] acht Werte, die die Vorlauftemperatur zwischen -20°C und +20°C in 5° Schritten definieren. Zwischenwerte werden interpoliert.
+\item[Vorlauftemperatur (\texttt{double[] SupplyTemp}):] acht Werte, die die Vorlauftemperatur zwischen -20°C und +20°C in 5° Schritten definieren. Zwischenwerte werden linear interpoliert.
 \item[Gesamtverbrauch pro Jahr (\texttt{double PowerConsumptionPerYear}) in $J$.]
 \item[Die Temperaturen (\texttt{double DayTemperature, double NightTemperature}):] die gewünschte Raumtemperatur.
 \item[Nachtabsenkung (\texttt{int DayStartHour, int DayEndHour}):]
