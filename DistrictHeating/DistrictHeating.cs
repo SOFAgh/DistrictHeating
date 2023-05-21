@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
@@ -42,7 +43,7 @@ namespace DistrictHeating
             Control? ctrl = GetPlantData();
             if (ctrl == null)
             {
-                Plant.StartSimulation(delegate(int d) { progressBar.Value = d; });
+                Plant.StartSimulation(delegate (int d) { progressBar.Value = d; });
                 solarPercentage.Text = (Plant.solarPercentage * 100).ToString("F2") + "% ";
                 electricityTotal.Text = Plant.electricityTotal.ToString("F2");
                 heatProduced.Text = Plant.heatProduced.ToString("F2");
@@ -346,6 +347,26 @@ namespace DistrictHeating
         private void boreHoleFieldDisplay_Paint(object sender, PaintEventArgs e)
         {
             Plant.BoreHoleField.Paint(sender as Panel);
+        }
+
+        private void graphicsPanel_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                Point p = graphicsPanel.PointToScreen(e.Location);
+                contextMenuSaveImage.Show(p.X, p.Y);
+            }
+
+        }
+
+        private void contextMenuSaveImage_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private void saveImage_Click(object sender, EventArgs e)
+        {
+            paintDiagram.saveImage();
         }
     }
 }

@@ -152,13 +152,15 @@ namespace DistrictHeating
             this.boreHoleEnergyFlow = new System.Windows.Forms.CheckBox();
             this.ambientTemperature = new System.Windows.Forms.CheckBox();
             this.volumeFlow = new System.Windows.Forms.CheckBox();
+            this.bufferBottomTemperature = new System.Windows.Forms.CheckBox();
+            this.bufferTopTemperature = new System.Windows.Forms.CheckBox();
+            this.bufferEnergy = new System.Windows.Forms.CheckBox();
             this.netLoss = new System.Windows.Forms.CheckBox();
             this.boreHoleEnergy = new System.Windows.Forms.CheckBox();
             this.openTemperaturFile = new System.Windows.Forms.OpenFileDialog();
             this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
-            this.bufferEnergy = new System.Windows.Forms.CheckBox();
-            this.bufferTopTemperature = new System.Windows.Forms.CheckBox();
-            this.bufferBottomTemperature = new System.Windows.Forms.CheckBox();
+            this.contextMenuSaveImage = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.bildSpeichernToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -202,6 +204,7 @@ namespace DistrictHeating
             this.groupBox1.SuspendLayout();
             this.tabGraphics.SuspendLayout();
             this.legend.SuspendLayout();
+            this.contextMenuSaveImage.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -508,7 +511,7 @@ namespace DistrictHeating
             this.tabPlant.Controls.Add(label1);
             this.tabPlant.Location = new System.Drawing.Point(4, 24);
             this.tabPlant.Name = "tabPlant";
-            this.tabPlant.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPlant.Padding = new System.Windows.Forms.Padding(3);
             this.tabPlant.Size = new System.Drawing.Size(1033, 590);
             this.tabPlant.TabIndex = 3;
             this.tabPlant.Text = "Anlage";
@@ -603,7 +606,7 @@ namespace DistrictHeating
             this.tabBHTES.Controls.Add(label2);
             this.tabBHTES.Location = new System.Drawing.Point(4, 24);
             this.tabBHTES.Name = "tabBHTES";
-            this.tabBHTES.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabBHTES.Padding = new System.Windows.Forms.Padding(3);
             this.tabBHTES.Size = new System.Drawing.Size(1033, 590);
             this.tabBHTES.TabIndex = 0;
             this.tabBHTES.Text = "Erdsondenspeicher";
@@ -673,7 +676,7 @@ namespace DistrictHeating
             this.tabBufferStorage.Controls.Add(label29);
             this.tabBufferStorage.Location = new System.Drawing.Point(4, 24);
             this.tabBufferStorage.Name = "tabBufferStorage";
-            this.tabBufferStorage.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabBufferStorage.Padding = new System.Windows.Forms.Padding(3);
             this.tabBufferStorage.Size = new System.Drawing.Size(1033, 590);
             this.tabBufferStorage.TabIndex = 7;
             this.tabBufferStorage.Text = "Pufferspeicher";
@@ -708,7 +711,7 @@ namespace DistrictHeating
             this.tabSolar.Controls.Add(label32);
             this.tabSolar.Location = new System.Drawing.Point(4, 24);
             this.tabSolar.Name = "tabSolar";
-            this.tabSolar.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabSolar.Padding = new System.Windows.Forms.Padding(3);
             this.tabSolar.Size = new System.Drawing.Size(1033, 590);
             this.tabSolar.TabIndex = 1;
             this.tabSolar.Text = "Solarthermie";
@@ -767,7 +770,7 @@ namespace DistrictHeating
             this.tabConsumer.Controls.Add(label8);
             this.tabConsumer.Location = new System.Drawing.Point(4, 24);
             this.tabConsumer.Name = "tabConsumer";
-            this.tabConsumer.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabConsumer.Padding = new System.Windows.Forms.Padding(3);
             this.tabConsumer.Size = new System.Drawing.Size(1033, 590);
             this.tabConsumer.TabIndex = 6;
             this.tabConsumer.Text = "Verbraucher";
@@ -984,7 +987,7 @@ namespace DistrictHeating
             this.tabWether.Controls.Add(this.wetherData);
             this.tabWether.Location = new System.Drawing.Point(4, 24);
             this.tabWether.Name = "tabWether";
-            this.tabWether.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabWether.Padding = new System.Windows.Forms.Padding(3);
             this.tabWether.Size = new System.Drawing.Size(1033, 590);
             this.tabWether.TabIndex = 2;
             this.tabWether.Text = "Wetterdaten";
@@ -1029,7 +1032,7 @@ namespace DistrictHeating
             this.tabSimulation.Controls.Add(this.startSimulation);
             this.tabSimulation.Location = new System.Drawing.Point(4, 24);
             this.tabSimulation.Name = "tabSimulation";
-            this.tabSimulation.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabSimulation.Padding = new System.Windows.Forms.Padding(3);
             this.tabSimulation.Size = new System.Drawing.Size(1033, 590);
             this.tabSimulation.TabIndex = 4;
             this.tabSimulation.Text = "Simulation";
@@ -1140,7 +1143,7 @@ namespace DistrictHeating
             this.tabGraphics.Controls.Add(this.graphicsPanel);
             this.tabGraphics.Location = new System.Drawing.Point(4, 24);
             this.tabGraphics.Name = "tabGraphics";
-            this.tabGraphics.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabGraphics.Padding = new System.Windows.Forms.Padding(3);
             this.tabGraphics.Size = new System.Drawing.Size(1033, 590);
             this.tabGraphics.TabIndex = 5;
             this.tabGraphics.Text = "Grafik";
@@ -1194,6 +1197,7 @@ namespace DistrictHeating
             this.graphicsPanel.Size = new System.Drawing.Size(915, 539);
             this.graphicsPanel.TabIndex = 0;
             this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
+            this.graphicsPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseClick);
             this.graphicsPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseDown);
             this.graphicsPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseMove);
             this.graphicsPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseUp);
@@ -1218,7 +1222,7 @@ namespace DistrictHeating
             this.legend.Controls.Add(this.boreHoleEnergy);
             this.legend.Location = new System.Drawing.Point(4, 24);
             this.legend.Name = "legend";
-            this.legend.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.legend.Padding = new System.Windows.Forms.Padding(3);
             this.legend.Size = new System.Drawing.Size(1033, 590);
             this.legend.TabIndex = 8;
             this.legend.Text = "Legende";
@@ -1356,6 +1360,42 @@ namespace DistrictHeating
             this.volumeFlow.UseVisualStyleBackColor = true;
             this.volumeFlow.CheckedChanged += new System.EventHandler(this.volumeFlow_CheckedChanged);
             // 
+            // bufferBottomTemperature
+            // 
+            this.bufferBottomTemperature.AutoSize = true;
+            this.bufferBottomTemperature.ForeColor = System.Drawing.Color.Gold;
+            this.bufferBottomTemperature.Location = new System.Drawing.Point(239, 394);
+            this.bufferBottomTemperature.Name = "bufferBottomTemperature";
+            this.bufferBottomTemperature.Size = new System.Drawing.Size(199, 19);
+            this.bufferBottomTemperature.TabIndex = 0;
+            this.bufferBottomTemperature.Text = "Pufferspeicher Temperatur unten";
+            this.bufferBottomTemperature.UseVisualStyleBackColor = true;
+            this.bufferBottomTemperature.CheckedChanged += new System.EventHandler(this.bufferBottomTemperature_CheckedChanged);
+            // 
+            // bufferTopTemperature
+            // 
+            this.bufferTopTemperature.AutoSize = true;
+            this.bufferTopTemperature.ForeColor = System.Drawing.Color.YellowGreen;
+            this.bufferTopTemperature.Location = new System.Drawing.Point(239, 369);
+            this.bufferTopTemperature.Name = "bufferTopTemperature";
+            this.bufferTopTemperature.Size = new System.Drawing.Size(195, 19);
+            this.bufferTopTemperature.TabIndex = 0;
+            this.bufferTopTemperature.Text = "Pufferspeicher Temperatur oben";
+            this.bufferTopTemperature.UseVisualStyleBackColor = true;
+            this.bufferTopTemperature.CheckedChanged += new System.EventHandler(this.bufferTopTemperature_CheckedChanged);
+            // 
+            // bufferEnergy
+            // 
+            this.bufferEnergy.AutoSize = true;
+            this.bufferEnergy.ForeColor = System.Drawing.Color.LawnGreen;
+            this.bufferEnergy.Location = new System.Drawing.Point(239, 344);
+            this.bufferEnergy.Name = "bufferEnergy";
+            this.bufferEnergy.Size = new System.Drawing.Size(203, 19);
+            this.bufferEnergy.TabIndex = 0;
+            this.bufferEnergy.Text = "Puffersepeicher Energie (in MWh)";
+            this.bufferEnergy.UseVisualStyleBackColor = true;
+            this.bufferEnergy.CheckedChanged += new System.EventHandler(this.bufferEnergy_CheckedChanged);
+            // 
             // netLoss
             // 
             this.netLoss.AutoSize = true;
@@ -1384,41 +1424,20 @@ namespace DistrictHeating
             // 
             this.openTemperaturFile.FileName = " ";
             // 
-            // bufferEnergy
+            // contextMenuSaveImage
             // 
-            this.bufferEnergy.AutoSize = true;
-            this.bufferEnergy.ForeColor = System.Drawing.Color.LawnGreen;
-            this.bufferEnergy.Location = new System.Drawing.Point(239, 344);
-            this.bufferEnergy.Name = "bufferEnergy";
-            this.bufferEnergy.Size = new System.Drawing.Size(203, 19);
-            this.bufferEnergy.TabIndex = 0;
-            this.bufferEnergy.Text = "Puffersepeicher Energie (in MWh)";
-            this.bufferEnergy.UseVisualStyleBackColor = true;
-            this.bufferEnergy.CheckedChanged += new System.EventHandler(this.bufferEnergy_CheckedChanged);
+            this.contextMenuSaveImage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.bildSpeichernToolStripMenuItem});
+            this.contextMenuSaveImage.Name = "contextMenuStrip1";
+            this.contextMenuSaveImage.Size = new System.Drawing.Size(181, 48);
+            this.contextMenuSaveImage.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuSaveImage_Opening);
             // 
-            // bufferTopTemperature
+            // bildSpeichernToolStripMenuItem
             // 
-            this.bufferTopTemperature.AutoSize = true;
-            this.bufferTopTemperature.ForeColor = System.Drawing.Color.YellowGreen;
-            this.bufferTopTemperature.Location = new System.Drawing.Point(239, 369);
-            this.bufferTopTemperature.Name = "bufferTopTemperature";
-            this.bufferTopTemperature.Size = new System.Drawing.Size(195, 19);
-            this.bufferTopTemperature.TabIndex = 0;
-            this.bufferTopTemperature.Text = "Pufferspeicher Temperatur oben";
-            this.bufferTopTemperature.UseVisualStyleBackColor = true;
-            this.bufferTopTemperature.CheckedChanged += new System.EventHandler(this.bufferTopTemperature_CheckedChanged);
-            // 
-            // bufferBottomTemperature
-            // 
-            this.bufferBottomTemperature.AutoSize = true;
-            this.bufferBottomTemperature.ForeColor = System.Drawing.Color.Gold;
-            this.bufferBottomTemperature.Location = new System.Drawing.Point(239, 394);
-            this.bufferBottomTemperature.Name = "bufferBottomTemperature";
-            this.bufferBottomTemperature.Size = new System.Drawing.Size(199, 19);
-            this.bufferBottomTemperature.TabIndex = 0;
-            this.bufferBottomTemperature.Text = "Pufferspeicher Temperatur unten";
-            this.bufferBottomTemperature.UseVisualStyleBackColor = true;
-            this.bufferBottomTemperature.CheckedChanged += new System.EventHandler(this.bufferBottomTemperature_CheckedChanged);
+            this.bildSpeichernToolStripMenuItem.Name = "bildSpeichernToolStripMenuItem";
+            this.bildSpeichernToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.bildSpeichernToolStripMenuItem.Text = "Bild speichern";
+            this.bildSpeichernToolStripMenuItem.Click += new System.EventHandler(this.saveImage_Click);
             // 
             // DistrictHeating
             // 
@@ -1448,6 +1467,7 @@ namespace DistrictHeating
             this.tabGraphics.ResumeLayout(false);
             this.legend.ResumeLayout(false);
             this.legend.PerformLayout();
+            this.contextMenuSaveImage.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1546,5 +1566,7 @@ namespace DistrictHeating
         private CheckBox bufferBottomTemperature;
         private CheckBox bufferTopTemperature;
         private CheckBox bufferEnergy;
+        private ContextMenuStrip contextMenuSaveImage;
+        private ToolStripMenuItem bildSpeichernToolStripMenuItem;
     }
 }

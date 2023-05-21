@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,14 +14,56 @@ using System.Windows.Forms;
 
 namespace DistrictHeating
 {
+
     public class PaintDiagram
     {
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+        private const int WM_PRINT = 791;
+        /// <summary>
+        /// The WM_PRINT drawing options
+        /// </summary>
+        [Flags]
+        private enum DrawingOptions
+        {
+            /// <summary>
+            /// Draws the window only if it is visible.
+            /// </summary>
+            PRF_CHECKVISIBLE = 1,
+
+            /// <summary>
+            /// Draws the nonclient area of the window.
+            /// </summary>
+            PRF_NONCLIENT = 2,
+            /// <summary>
+
+            /// Draws the client area of the window.
+            /// </summary>
+            PRF_CLIENT = 4,
+
+            /// <summary>
+            /// Erases the background before drawing the window.
+            /// </summary>
+            PRF_ERASEBKGND = 8,
+
+            /// <summary>
+            /// Draws all visible children windows.
+            /// </summary>
+            PRF_CHILDREN = 16,
+
+            /// <summary>
+            /// Draws all owned windows.
+            /// </summary>
+            PRF_OWNED = 32
+        }
+
         Panel diagram;
         Panel left;
         Panel right;
         Panel timeScale;
         Plant plant;
         ToolTip toolTip;
+        Bitmap leftScale, rightScale;
 
         Dictionary<string, List<PointF>> paths = new Dictionary<string, List<PointF>>();
         float horLineDiff; // distance of the horizontal lines
@@ -96,6 +140,35 @@ namespace DistrictHeating
             Graphics toDrawOn;
             if (leftSide) toDrawOn = left.CreateGraphics();
             else toDrawOn = right.CreateGraphics();
+            using (toDrawOn)
+            {
+                toDrawOn.Clear(Color.White);
+                for (int i = 0; i < 12; i++)
+                {
+                    if (step2 == 0)
+                    {
+                        int val = lowestValue1 + i * step1;
+                        toDrawOn.DrawString(val.ToString() + suffix1, SystemFonts.DefaultFont, Brushes.Black, new PointF(left.Width / 2.0f, HorLinePosition(i)), centerFormat);
+                    }
+                    else
+                    {
+                        int val1 = lowestValue1 + i * step1;
+                        int val2 = lowestValue2 + i * step2;
+                        toDrawOn.DrawString(val1.ToString() + suffix1 + "\n" + val2.ToString() + suffix2, SystemFonts.DefaultFont, Brushes.Black, new PointF(left.Width / 2.0f, HorLinePosition(i)), centerFormat);
+                    }
+                }
+            }
+
+            if (leftSide)
+            {
+                leftScale = new Bitmap(left.Width, left.Height);
+                toDrawOn = Graphics.FromImage(leftScale);
+            }
+            else
+            {
+                rightScale = new Bitmap(right.Width, right.Height);
+                toDrawOn = Graphics.FromImage(rightScale);
+            }
             using (toDrawOn)
             {
                 toDrawOn.Clear(Color.White);
@@ -444,6 +517,112 @@ namespace DistrictHeating
         internal void OnMouseUp(MouseEventArgs e)
         {
 
+        }
+        internal void OnMouseClick(MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+            }
+        }
+
+        internal void saveImage()
+        {
+            int scaleWidth = left.Width;
+            int bottom = 150;
+            int height = diagram.Size.Height;
+            Bitmap toSave = new Bitmap(diagram.Size.Width + scaleWidth + right.Width, diagram.Size.Height + bottom);
+            if (paths.Count > 0)
+            {
+                using (Graphics grDiagram = Graphics.FromImage(toSave))
+                {
+                    horizontalOffset += scaleWidth;
+                    grDiagram.Clear(Color.White);
+                    for (int i = 0; i < 12; i++)
+                    {
+                        grDiagram.DrawLine(Pens.LightGray, scaleWidth, HorLinePosition(i), diagram.Width, HorLinePosition(i));
+                    }
+                    if (ShowWarmPipeTemperature) grDiagram.DrawCurve(Pens.DarkOrange, TransformedPoints(paths["warmPipe"]));
+                    if (ShowAmbientTemperature) grDiagram.DrawCurve(Pens.Blue, TransformedPoints(paths["ambientTemperature"]));
+                    if (ShowReturnPipeTemperature) grDiagram.DrawCurve(Pens.Black, TransformedPoints(paths["returnPipe"]));
+                    if (ShowHotPipeTemperature) grDiagram.DrawCurve(Pens.Maroon, TransformedPoints(paths["hotPipe"]));
+                    if (ShowBoreHoleTempCenter) grDiagram.DrawCurve(Pens.Red, TransformedPoints(paths["boreHoleCenter"]));
+                    if (ShowBoreHoleTempBorder) grDiagram.DrawCurve(Pens.Purple, TransformedPoints(paths["boreHoleBorder"]));
+                    if (ShowHeatConsumption) grDiagram.DrawCurve(Pens.Fuchsia, TransformedPoints(paths["heatConsumption"]));
+                    if (ShowElectricityConsumption) grDiagram.DrawCurve(Pens.DeepPink, TransformedPoints(paths["electricityConsumption"]));
+                    if (ShowSolarHeat) grDiagram.DrawCurve(Pens.Olive, TransformedPoints(paths["solarEnergy"]));
+                    if (ShowBoreHoleEnergyFlow) grDiagram.DrawCurve(Pens.Navy, TransformedPoints(paths["boreHoleEnergyFlow"]));
+                    if (ShowVolumeFlow) grDiagram.DrawCurve(Pens.Teal, TransformedPoints(paths["volumeFlow"]));
+                    if (ShowNetLoss) grDiagram.DrawCurve(Pens.Indigo, TransformedPoints(paths["netLoss"]));
+                    if (ShowBufferEnergy) grDiagram.DrawCurve(Pens.LawnGreen, TransformedPoints(paths["bufferEnergy"]));
+                    if (ShowBufferTopTemperature) grDiagram.DrawCurve(Pens.YellowGreen, TransformedPoints(paths["bufferTopTemperature"]));
+                    if (ShowBufferBottomTemperature) grDiagram.DrawCurve(Pens.Gold, TransformedPoints(paths["bufferBottomTemperature"]));
+                    if (showBoreHoleEnergy) grDiagram.DrawCurve(Pens.Brown, TransformedPoints(paths["boreHoleEnergy"]));
+
+                    int h = timeScale.Height;
+                    StringFormat centerFormat = new StringFormat();
+                    centerFormat.Alignment = StringAlignment.Center;
+                    centerFormat.LineAlignment = StringAlignment.Center;
+                    string[] monthName = new string[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
+                    // day mode:
+                    int daynum = 0;
+                    for (int i = 0; i < Plant.daysPerMonth.Length; i++)
+                    {
+                        grDiagram.DrawLine(Pens.Black, daynum * horizontalScale + horizontalOffset, height, daynum * horizontalScale + horizontalOffset, height + h / 2);
+                        grDiagram.DrawString(monthName[i], SystemFonts.DefaultFont, Brushes.Black, new PointF(daynum * horizontalScale + horizontalOffset + horizontalScale * Plant.daysPerMonth[i] / 2, height + h / 2), centerFormat);
+                        daynum += Plant.daysPerMonth[i];
+                    }
+                    if (!dayMode)
+                    {
+                        daynum = 0;
+                        for (int i = 0; i < Plant.daysPerMonth.Length; i++)
+                        {
+                            for (int j = 0; j < Plant.daysPerMonth[i]; j++)
+                            {
+                                grDiagram.DrawLine(Pens.Black, (daynum + j) * horizontalScale + horizontalOffset, height, (daynum + j) * horizontalScale + horizontalOffset, height + h / 4);
+                            }
+                            daynum += Plant.daysPerMonth[i];
+                        }
+                    }
+
+                    if (leftScale!=null)
+                    {
+                        grDiagram.DrawImageUnscaled(leftScale,new Point(0,0));
+                    }
+                    if (rightScale != null)
+                    {
+                        grDiagram.DrawImageUnscaled(rightScale, new Point(left.Width+diagram.Width, 0));
+                    }
+
+                    int dy = 0;
+                    if (ShowWarmPipeTemperature) grDiagram.DrawString("Vorlauf (warm) Netzleitung (°C)", SystemFonts.DefaultFont, Brushes.DarkOrange, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowReturnPipeTemperature) grDiagram.DrawString("Rücklauf Netzleitung (°C)", SystemFonts.DefaultFont, Brushes.Black, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowHotPipeTemperature) grDiagram.DrawString("Vorlauf (heiß) Netzleitung (°C)", SystemFonts.DefaultFont, Brushes.Maroon, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowBoreHoleTempCenter) grDiagram.DrawString("Erdsondenfeld Mitte (°C)", SystemFonts.DefaultFont, Brushes.Red, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowBoreHoleTempBorder) grDiagram.DrawString("Erdsondenfeld Rand (°C)", SystemFonts.DefaultFont, Brushes.Purple, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowHeatConsumption) grDiagram.DrawString("Wärmeverbrauch Heizung (kW)", SystemFonts.DefaultFont, Brushes.Fuchsia, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowElectricityConsumption) grDiagram.DrawString("Stromverbrauch Heizung (Wärmepumpe) (kW)", SystemFonts.DefaultFont, Brushes.DeepPink, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowSolarHeat) grDiagram.DrawString("Leistung Solarthermie (kW)", SystemFonts.DefaultFont, Brushes.Olive, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowBoreHoleEnergyFlow) grDiagram.DrawString("Energiefluss Erdsondenfeld (kW)", SystemFonts.DefaultFont, Brushes.Navy, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowAmbientTemperature) grDiagram.DrawString("Außentemperatur (Wetterdaten) (°C)", SystemFonts.DefaultFont, Brushes.Blue, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowVolumeFlow) grDiagram.DrawString("Volumenfluss im Leitungsnetz (l/s)", SystemFonts.DefaultFont, Brushes.Teal, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowNetLoss) grDiagram.DrawString("Leitungsverluste im Netz (in kW)", SystemFonts.DefaultFont, Brushes.Indigo, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowBufferEnergy) grDiagram.DrawString("Energie im Pufferspeicher (bezogen aud 10°C) (in MWh)", SystemFonts.DefaultFont, Brushes.LawnGreen, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowBufferTopTemperature) grDiagram.DrawString("Obere Temperatur im Pufferspeicher (in °C)", SystemFonts.DefaultFont, Brushes.YellowGreen, new Point(left.Width, height + h + (dy++) * 20));
+                    if (ShowBufferBottomTemperature) grDiagram.DrawString("Untere Temperatur im Pufferspeicher (in °C)", SystemFonts.DefaultFont, Brushes.Gold, new Point(left.Width, height + h + (dy++) * 20));
+                    if (showBoreHoleEnergy) grDiagram.DrawString("Energie im Erdsondenfeld (bezogen aud 10°C) (in MWh)", SystemFonts.DefaultFont, Brushes.Brown, new Point(left.Width, height + h + (dy++) * 20));
+
+                    horizontalOffset -= scaleWidth;
+                }
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "png files (*.png)|*.png|All files (*.*)|*.*";
+                saveFileDialog.FilterIndex = 2;
+                saveFileDialog.RestoreDirectory = true;
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    toSave.Save(saveFileDialog.FileName);
+                }
+            }
         }
     }
 }
