@@ -96,17 +96,17 @@ namespace DistrictHeating
         public BoreHoleField BoreHoleField;
         public Pipeline Pipeline;
         public BufferStorage BufferStorage;
-        public int CurrentHourIndex { get { return (int)Math.Floor(currentTime / 3600); } }
+        public int CurrentHourIndex { get { return (int)Math.Floor((currentTime / 3600) % HoursPerYear); } }
         internal double GetCurrentTemperature()
         {
-            double currentHour = currentTime / 3600;
+            double currentHour = (currentTime / 3600) % HoursPerYear;
             int hourIndex = (int)Math.Floor(currentHour);
             return Climate.Temperature[hourIndex];
         }
         internal double GetMeanTemperature(int numHours)
         {
             if (numHours <= 0) return GetCurrentTemperature();
-            double currentHour = currentTime / 3600;
+            double currentHour = (currentTime / 3600) % HoursPerYear;
             int hourIndex = (int)Math.Floor(currentHour);
             double res = 0;
             if (hourIndex < numHours)
@@ -158,9 +158,10 @@ namespace DistrictHeating
             // the temperatures of the pipes (returnPipeTemp, warmPipeTemp, hotPipeTemp) stay constant over the period 'step'. Each device consumes fron one pip and delivers
             // to another pipe. This water is collected and determins the temperatures of the next period.
             int step = 3600; // step with 3600 seconds, i.e. one hour
-            for (int i = 0; i < HoursPerYear * 3600 / step; i++)
+            // for (int i = 0; i < HoursPerYear * 3600 / step; i++)
+            for (int i = 0; i < 2 * HoursPerYear * 3600 / step; i++)
             {
-                progressBar((int)(i * 1000.0 / (HoursPerYear * 3600 / step)));
+                progressBar((int)(i * 1000.0 / (2 * HoursPerYear * 3600 / step)));
                 currentTime = i * step; // current time is in s
                 // we assume a pool for each pipe, which is at the beginning filled with water at the current temperature of the respective pipe.
                 // in the course of the"step" (i.e. one hour) the pools will grow or shrink, they might even underflow, but this is no problem
@@ -173,7 +174,7 @@ namespace DistrictHeating
                 double heatConsumption = 0.0;
                 double electricityConsumption = 0.0;
                 // let the solar collectors do their work
-                if (i == Climate.DateToHourNumber(8,28,1))
+                if (i == Climate.DateToHourNumber(8, 28, 1))
                 { // use as a breakpoint
 
                 }
@@ -181,7 +182,7 @@ namespace DistrictHeating
                 double solarVolume = volumetricFlowRate * step; // this much water was pumped through the collectors fromPipe->toPipe
                 double solarEnergy = solarVolume * deltaT * 4200000;
                 solarTotal += solarEnergy;
-                if (JouleToKW(solarEnergy, step)>1000)
+                if (JouleToKW(solarEnergy, step) > 1000)
                 {
 
                 }

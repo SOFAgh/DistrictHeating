@@ -11,52 +11,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
+using static DistrictHeating.Plant;
 
 namespace DistrictHeating
 {
 
     public class PaintDiagram
     {
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-        private const int WM_PRINT = 791;
-        /// <summary>
-        /// The WM_PRINT drawing options
-        /// </summary>
-        [Flags]
-        private enum DrawingOptions
-        {
-            /// <summary>
-            /// Draws the window only if it is visible.
-            /// </summary>
-            PRF_CHECKVISIBLE = 1,
-
-            /// <summary>
-            /// Draws the nonclient area of the window.
-            /// </summary>
-            PRF_NONCLIENT = 2,
-            /// <summary>
-
-            /// Draws the client area of the window.
-            /// </summary>
-            PRF_CLIENT = 4,
-
-            /// <summary>
-            /// Erases the background before drawing the window.
-            /// </summary>
-            PRF_ERASEBKGND = 8,
-
-            /// <summary>
-            /// Draws all visible children windows.
-            /// </summary>
-            PRF_CHILDREN = 16,
-
-            /// <summary>
-            /// Draws all owned windows.
-            /// </summary>
-            PRF_OWNED = 32
-        }
-
         Panel diagram;
         Panel left;
         Panel right;
@@ -73,6 +34,7 @@ namespace DistrictHeating
         bool invalidated = false;
         bool initialized = false;
         int mouseDownPosX;
+        float numDays;
         public PaintDiagram(Panel diagram, Panel left, Panel right, Panel timeScale, ToolTip toolTip, Plant plant)
         {
             this.diagram = diagram;
@@ -89,7 +51,6 @@ namespace DistrictHeating
             showHeatConsumption = true;
             showElectricityConsumption = true;
             invalidated = true;
-            horizontalScale = diagram.Width / 365.0f;
         }
 
 
@@ -339,6 +300,12 @@ namespace DistrictHeating
         }
         private void Repaint()
         {
+            if (plant.Diagrams.Count > 0)
+            {
+                List<DiagramEntry> firstDiagram = plant.Diagrams.First().Value;
+                numDays = (firstDiagram[firstDiagram.Count - 1].timeStamp - firstDiagram[0].timeStamp) / 3600f / 24f;
+                horizontalScale = diagram.Width / numDays;
+            }
             PaintTimeScale();
             using (Graphics grDiagram = diagram.CreateGraphics())
             {
