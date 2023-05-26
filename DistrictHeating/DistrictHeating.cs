@@ -77,6 +77,7 @@ namespace DistrictHeating
             groundLambda.Text = Plant.BoreHoleField.Lambda.ToString();
             startCenterTemperature.Text = (Plant.BoreHoleField.startBoreholeFieldCenterTemperature - Plant.ZeroK).ToString();
             startBorderTemperature.Text = (Plant.BoreHoleField.startBoreholeFieldBorderTemperature - Plant.ZeroK).ToString();
+            startDate.Text = Plant.GetStartTime();
             // bufferStorage
             bufferStorageEnergyTransfer.Text = Plant.BufferStorage.EnergyTransfer.ToString();
             bufferStroageSize.Text = Plant.BufferStorage.Volume.ToString();
@@ -124,6 +125,11 @@ namespace DistrictHeating
             if (!double.TryParse(groundHeatCapacity.Text, out Plant.BoreHoleField.HeatCapacity)) return groundHeatCapacity;
             if (!double.TryParse(groundLambda.Text, out Plant.BoreHoleField.Lambda)) return groundLambda;
             if (!double.TryParse(startCenterTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldCenterTemperature)) return startCenterTemperature;
+            string[] dateParts = startDate.Text.Split('.',StringSplitOptions.RemoveEmptyEntries);
+            if (dateParts.Length ==2) 
+            {
+                Plant.SetStartTime(dateParts[0], dateParts[1]);
+            }
             Plant.BoreHoleField.startBoreholeFieldCenterTemperature += Plant.ZeroK;
             if (!double.TryParse(startBorderTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldBorderTemperature)) return startBorderTemperature;
             Plant.BoreHoleField.startBoreholeFieldBorderTemperature += Plant.ZeroK;

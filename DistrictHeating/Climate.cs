@@ -136,6 +136,27 @@ namespace DistrictHeating
             }
             return 11;
         }
+        public static (int month, int day, int hour) HourNumberToDate(int hour)
+        {
+            int[] months = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+            int m = 11;
+            int d = 0;
+            int h = 0;
+            for (int i = 0; i < 12; i++)
+            {
+                hour -= months[i] * 24;
+                if (hour < 0)
+                {
+                    m = i;
+                    hour += months[i] * 24;
+                    break;
+                }
+            }
+            // now hour contains number of hours in this month
+            d = hour / 24;
+            h = hour % 24;
+            return (m+1,d+1,h);
+        }
         public double GetTempBelow(double threshold)
         {   // TODO: use cache
             double res = 0.0;

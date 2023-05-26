@@ -76,7 +76,7 @@ namespace DistrictHeating
                 }
             }
             outTemperature = inTemperature;
-
+            if (temperature[0] < temperature[temperature.Length - 1]) { }
         }
 
         /// <summary>

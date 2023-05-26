@@ -30,9 +30,10 @@ namespace DistrictHeating
         float horLineDiff; // distance of the horizontal lines
         float horizontalScale = 1.0f;
         float horizontalOffset = 0.0f;
+        float minScale = 0.0f, firstDate, lastDate;
         bool dayMode = true; // per day or per hour
-        bool invalidated = false;
         bool initialized = false;
+        bool invalidated = false;
         int mouseDownPosX;
         float numDays;
         public PaintDiagram(Panel diagram, Panel left, Panel right, Panel timeScale, ToolTip toolTip, Plant plant)
@@ -50,7 +51,6 @@ namespace DistrictHeating
             showBoreHoleEnergy = true;
             showHeatConsumption = true;
             showElectricityConsumption = true;
-            invalidated = true;
         }
 
 
@@ -152,7 +152,16 @@ namespace DistrictHeating
 
         private void calcDisplay()
         {
-            initialized = true;
+            if (plant.Diagrams.Count > 0 && minScale == 0.0f)
+            {
+                List<DiagramEntry> firstDiagram = plant.Diagrams.First().Value;
+                lastDate = firstDiagram[firstDiagram.Count - 1].timeStamp;
+                firstDate = firstDiagram[0].timeStamp;
+                numDays = (lastDate - firstDate) / 3600f / 24f;
+                minScale = horizontalScale = diagram.Width / numDays;
+                horizontalOffset = -firstDate / 3600f / 24f * horizontalScale;
+                initialized = true;
+            }
             // calculate the minima and maxima for all units
             Dictionary<string, double> unitMinValue = new Dictionary<string, double>();
             Dictionary<string, double> unitMaxValue = new Dictionary<string, double>();
@@ -225,7 +234,7 @@ namespace DistrictHeating
                     string unit = parts[1];
                     float sum = 0.0f;
                     int num = 0;
-                    int currentDay = 0;
+                    int currentDay = item.Value[0].timeStamp / (3600 * 24);
                     paths[name] = new List<PointF>();
                     for (int i = 0; i < item.Value.Count; i++)
                     {
@@ -269,22 +278,26 @@ namespace DistrictHeating
                 string[] monthName = new string[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
                 // day mode:
                 int daynum = 0;
-                for (int i = 0; i < Plant.daysPerMonth.Length; i++)
+                int i = 0;
+                while (daynum * horizontalScale + horizontalOffset < timeScale.Width)
                 {
                     gr.DrawLine(Pens.Black, daynum * horizontalScale + horizontalOffset, 0.0f, daynum * horizontalScale + horizontalOffset, h / 2);
-                    gr.DrawString(monthName[i], SystemFonts.DefaultFont, Brushes.Black, new PointF(daynum * horizontalScale + horizontalOffset + horizontalScale * Plant.daysPerMonth[i] / 2, h / 2), centerFormat);
-                    daynum += Plant.daysPerMonth[i];
+                    gr.DrawString(monthName[i % 12], SystemFonts.DefaultFont, Brushes.Black, new PointF(daynum * horizontalScale + horizontalOffset + horizontalScale * Plant.daysPerMonth[i % 12] / 2, h / 2), centerFormat);
+                    daynum += Plant.daysPerMonth[i % 12];
+                    ++i;
                 }
                 if (!dayMode)
                 {
                     daynum = 0;
-                    for (int i = 0; i < Plant.daysPerMonth.Length; i++)
+                    i = 0;
+                    while (daynum * horizontalScale + horizontalOffset < timeScale.Width)
                     {
-                        for (int j = 0; j < Plant.daysPerMonth[i]; j++)
+                        for (int j = 0; j < Plant.daysPerMonth[i % 12]; j++)
                         {
                             gr.DrawLine(Pens.Black, (daynum + j) * horizontalScale + horizontalOffset, 0.0f, (daynum + j) * horizontalScale + horizontalOffset, h / 4);
                         }
-                        daynum += Plant.daysPerMonth[i];
+                        daynum += Plant.daysPerMonth[i % 12];
+                        ++i;
                     }
                 }
             }
@@ -300,12 +313,6 @@ namespace DistrictHeating
         }
         private void Repaint()
         {
-            if (plant.Diagrams.Count > 0)
-            {
-                List<DiagramEntry> firstDiagram = plant.Diagrams.First().Value;
-                numDays = (firstDiagram[firstDiagram.Count - 1].timeStamp - firstDiagram[0].timeStamp) / 3600f / 24f;
-                horizontalScale = diagram.Width / numDays;
-            }
             PaintTimeScale();
             using (Graphics grDiagram = diagram.CreateGraphics())
             {
@@ -420,7 +427,7 @@ namespace DistrictHeating
             {
                 horizontalOffset -= (mouseDownPosX - e.X);
                 mouseDownPosX = e.X;
-                horizontalOffset = Math.Max(Math.Min(0, horizontalOffset), diagram.Width - 365.0f * horizontalScale);
+                horizontalOffset = Math.Max(Math.Min(-firstDate / 3600f / 24f * horizontalScale, horizontalOffset), diagram.Width - numDays * horizontalScale);
                 diagram.Invalidate();
             }
             else
@@ -454,8 +461,9 @@ namespace DistrictHeating
 
         internal void ZoomPlus()
         {
+            float x = (diagram.Width / 2 - horizontalOffset) / horizontalScale;
             horizontalScale *= 2;
-            horizontalOffset *= 2;
+            horizontalOffset = diagram.Width / 2 - x * horizontalScale;
             if (dayMode && horizontalScale > 10)
             {
                 dayMode = false;
@@ -465,10 +473,10 @@ namespace DistrictHeating
         }
         internal void ZoomMinus()
         {
-            horizontalScale /= 2;
-            if (horizontalScale < diagram.Width / 365.0f) horizontalScale = diagram.Width / 365.0f;
-            horizontalOffset /= 2;
-            horizontalOffset = Math.Max(Math.Min(0, horizontalOffset), diagram.Width - 365.0f * horizontalScale);
+            float x = (diagram.Width / 2 - horizontalOffset) / horizontalScale;
+            horizontalScale = Math.Max(diagram.Width / numDays, horizontalScale / 2); ;
+            horizontalOffset = diagram.Width / 2 - x * horizontalScale;
+            horizontalOffset = Math.Max(Math.Min(-firstDate / 3600f / 24f * horizontalScale, horizontalOffset), diagram.Width - lastDate / 3600f / 24f * horizontalScale);
             if (!dayMode && horizontalScale < 10)
             {
                 dayMode = true;
@@ -504,9 +512,9 @@ namespace DistrictHeating
                 {
                     horizontalOffset += scaleWidth;
                     grDiagram.Clear(Color.White);
-                    for (int i = 0; i < 12; i++)
+                    for (int ii = 0; ii < 12; ii++)
                     {
-                        grDiagram.DrawLine(Pens.LightGray, scaleWidth, HorLinePosition(i), diagram.Width, HorLinePosition(i));
+                        grDiagram.DrawLine(Pens.LightGray, scaleWidth, HorLinePosition(ii), diagram.Width + scaleWidth, HorLinePosition(ii));
                     }
                     if (ShowWarmPipeTemperature) grDiagram.DrawCurve(Pens.DarkOrange, TransformedPoints(paths["warmPipe"]));
                     if (ShowAmbientTemperature) grDiagram.DrawCurve(Pens.Blue, TransformedPoints(paths["ambientTemperature"]));
@@ -532,32 +540,36 @@ namespace DistrictHeating
                     string[] monthName = new string[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
                     // day mode:
                     int daynum = 0;
-                    for (int i = 0; i < Plant.daysPerMonth.Length; i++)
+                    int i = 0;
+                    while (daynum * horizontalScale + horizontalOffset < timeScale.Width)
                     {
                         grDiagram.DrawLine(Pens.Black, daynum * horizontalScale + horizontalOffset, height, daynum * horizontalScale + horizontalOffset, height + h / 2);
-                        grDiagram.DrawString(monthName[i], SystemFonts.DefaultFont, Brushes.Black, new PointF(daynum * horizontalScale + horizontalOffset + horizontalScale * Plant.daysPerMonth[i] / 2, height + h / 2), centerFormat);
-                        daynum += Plant.daysPerMonth[i];
+                        grDiagram.DrawString(monthName[i%12], SystemFonts.DefaultFont, Brushes.Black, new PointF(daynum * horizontalScale + horizontalOffset + horizontalScale * Plant.daysPerMonth[i%12] / 2, height + h / 2), centerFormat);
+                        daynum += Plant.daysPerMonth[i%12];
+                        ++i;
                     }
                     if (!dayMode)
                     {
                         daynum = 0;
-                        for (int i = 0; i < Plant.daysPerMonth.Length; i++)
+                        i = 0;
+                        while (daynum * horizontalScale + horizontalOffset < timeScale.Width)
                         {
-                            for (int j = 0; j < Plant.daysPerMonth[i]; j++)
+                            for (int j = 0; j < Plant.daysPerMonth[i % 12]; j++)
                             {
                                 grDiagram.DrawLine(Pens.Black, (daynum + j) * horizontalScale + horizontalOffset, height, (daynum + j) * horizontalScale + horizontalOffset, height + h / 4);
                             }
-                            daynum += Plant.daysPerMonth[i];
+                            daynum += Plant.daysPerMonth[i % 12];
+                            ++i;
                         }
                     }
 
-                    if (leftScale!=null)
+                    if (leftScale != null)
                     {
-                        grDiagram.DrawImageUnscaled(leftScale,new Point(0,0));
+                        grDiagram.DrawImageUnscaled(leftScale, new Point(0, 0));
                     }
                     if (rightScale != null)
                     {
-                        grDiagram.DrawImageUnscaled(rightScale, new Point(left.Width+diagram.Width, 0));
+                        grDiagram.DrawImageUnscaled(rightScale, new Point(left.Width + diagram.Width, 0));
                     }
 
                     int dy = 0;

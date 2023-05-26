@@ -132,7 +132,7 @@ namespace DistrictHeating
         /// <summary>
         /// Start temperature in the center for the simulation
         /// </summary>
-        public double startBoreholeFieldCenterTemperature = 40 + 273.15;
+        public double startBoreholeFieldCenterTemperature = 10 + 273.15;
         /// <summary>
         /// Start temperature at the border for the simulation
         /// </summary>
@@ -153,7 +153,7 @@ namespace DistrictHeating
         {
             maxHexCoordinate = 0;
             size = 0;
-            triangleArea = (distance / 6) * (distance / 6) * Math.Sqrt(3.0) / 4.0;
+            triangleArea = (distance / grid) * (distance / grid) * Math.Sqrt(3.0) / 4.0;
             // 1. create the hexagonal array of temperature points
             int dbgmaxi = 0;
             for (int i = -(numRings + 1) * 2 * grid; i <= (numRings + 1) * 2 * grid; i++)

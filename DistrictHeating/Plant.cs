@@ -55,6 +55,7 @@ namespace DistrictHeating
         public double returnPipeTemp; // current temperature of the return pipe [K]
         public double warmPipeTemp; // current temperature of the warm pipe [K]
         public double hotPipeTemp; // current temperature of the hot pipe [K]
+        public int startSimulationHour = 0;
         // diagrams
         public struct DiagramEntry
         {
@@ -162,7 +163,7 @@ namespace DistrictHeating
             for (int i = 0; i < 2 * HoursPerYear * 3600 / step; i++)
             {
                 progressBar((int)(i * 1000.0 / (2 * HoursPerYear * 3600 / step)));
-                currentTime = i * step; // current time is in s
+                currentTime = startSimulationHour * 3600 + i * step; // current time is in s
                 // we assume a pool for each pipe, which is at the beginning filled with water at the current temperature of the respective pipe.
                 // in the course of the"step" (i.e. one hour) the pools will grow or shrink, they might even underflow, but this is no problem
                 double returnPipeVolume = 0.0;
@@ -174,10 +175,11 @@ namespace DistrictHeating
                 double heatConsumption = 0.0;
                 double electricityConsumption = 0.0;
                 // let the solar collectors do their work
-                if (i == Climate.DateToHourNumber(8, 28, 1))
+                if (i + startSimulationHour == Climate.DateToHourNumber(5, 25, 1))
                 { // use as a breakpoint
 
                 }
+                (int dbgMonth, int dbgDay, int dbgHour) = Climate.HourNumberToDate(i + startSimulationHour);
                 SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
                 double solarVolume = volumetricFlowRate * step; // this much water was pumped through the collectors fromPipe->toPipe
                 double solarEnergy = solarVolume * deltaT * 4200000;
@@ -257,6 +259,8 @@ namespace DistrictHeating
                         }
                     }
                 }
+                if (BufferStorage.TopTemperature< BufferStorage.BottomTemperature)
+                { }
                 double dbgtebo = JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)) / 1000;
                 double dbgtebu = JouleToKWh(BufferStorage.GetTotalEnergy(ZeroK + 10)) / 1000;
                 if (returnPipeVolume > 0) returnPipeTemp = returnPipeEnergy / returnPipeVolume;
@@ -307,6 +311,7 @@ namespace DistrictHeating
 
         private void DiagramAdd(int currentSeconds, string name, double value, string unit)
         {
+            if (double.IsNaN(value)) { return; }
             string key = name + "|" + unit;
             if (!Diagrams.TryGetValue(key, out List<DiagramEntry>? diagram))
             {
@@ -488,6 +493,35 @@ Durchschnitt & 16.1 & 13 & 12.5 & 8.1 & 3.5 & 2.2 & 1.7 & 1.6 & 5.2 & 8.4 & 12.2
 2021 & 14.2\% & 13.8\% & 12.2\% & 11.1\% & 7.2\% & 1.2\% & 0.9\% & 2.2\% & 3.6\% & 8.8\% & 11.8\% & 12.9\% \\
 
              */
+        }
+
+        internal void SetStartTime(string day, string month)
+        {
+            try
+            {
+                int nMonth = int.Parse(month);
+                int nDay = int.Parse(day);
+                int days = 0;
+                for (int i = 0; i < nMonth - 1; i++) days += daysPerMonth[i];
+                days += nDay - 1;
+                startSimulationHour = days * 24;
+            }
+            catch { }
+        }
+        internal string GetStartTime()
+        {
+            int simDay = (int)(startSimulationHour / 24) + 1;
+            int simMonth = 1;
+            for (int i = 0; i < 12; i++)
+            {
+                if (daysPerMonth[i] < simDay)
+                {
+                    simDay -= daysPerMonth[i];
+                    simMonth++;
+                }
+                else break;
+            }
+            return (simDay).ToString() + "." + simMonth.ToString() + ".";
         }
     }
 }

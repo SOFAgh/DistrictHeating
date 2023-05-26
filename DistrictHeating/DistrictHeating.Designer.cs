@@ -67,6 +67,7 @@ namespace DistrictHeating
             System.Windows.Forms.Label label39;
             System.Windows.Forms.Label label40;
             System.Windows.Forms.Label label41;
+            System.Windows.Forms.Label label42;
             this.tabPlant = new System.Windows.Forms.TabPage();
             this.threePipes = new System.Windows.Forms.RadioButton();
             this.twoPipes = new System.Windows.Forms.RadioButton();
@@ -161,6 +162,7 @@ namespace DistrictHeating
             this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuSaveImage = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.bildSpeichernToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startDate = new System.Windows.Forms.TextBox();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -193,6 +195,7 @@ namespace DistrictHeating
             label39 = new System.Windows.Forms.Label();
             label40 = new System.Windows.Forms.Label();
             label41 = new System.Windows.Forms.Label();
+            label42 = new System.Windows.Forms.Label();
             this.tabPlant.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabBHTES.SuspendLayout();
@@ -1025,6 +1028,8 @@ namespace DistrictHeating
             // 
             this.tabSimulation.Controls.Add(this.groupBox1);
             this.tabSimulation.Controls.Add(this.progressBar);
+            this.tabSimulation.Controls.Add(this.startDate);
+            this.tabSimulation.Controls.Add(label42);
             this.tabSimulation.Controls.Add(this.startBorderTemperature);
             this.tabSimulation.Controls.Add(label35);
             this.tabSimulation.Controls.Add(this.startCenterTemperature);
@@ -1052,9 +1057,9 @@ namespace DistrictHeating
             this.groupBox1.Controls.Add(label37);
             this.groupBox1.Controls.Add(this.boreHoleAdded);
             this.groupBox1.Controls.Add(label36);
-            this.groupBox1.Location = new System.Drawing.Point(6, 93);
+            this.groupBox1.Location = new System.Drawing.Point(6, 137);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(436, 434);
+            this.groupBox1.Size = new System.Drawing.Size(436, 390);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ergebnisse";
@@ -1429,15 +1434,31 @@ namespace DistrictHeating
             this.contextMenuSaveImage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.bildSpeichernToolStripMenuItem});
             this.contextMenuSaveImage.Name = "contextMenuStrip1";
-            this.contextMenuSaveImage.Size = new System.Drawing.Size(181, 48);
+            this.contextMenuSaveImage.Size = new System.Drawing.Size(149, 26);
             this.contextMenuSaveImage.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuSaveImage_Opening);
             // 
             // bildSpeichernToolStripMenuItem
             // 
             this.bildSpeichernToolStripMenuItem.Name = "bildSpeichernToolStripMenuItem";
-            this.bildSpeichernToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.bildSpeichernToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.bildSpeichernToolStripMenuItem.Text = "Bild speichern";
             this.bildSpeichernToolStripMenuItem.Click += new System.EventHandler(this.saveImage_Click);
+            // 
+            // label42
+            // 
+            label42.Location = new System.Drawing.Point(6, 96);
+            label42.Name = "label42";
+            label42.Size = new System.Drawing.Size(320, 15);
+            label42.TabIndex = 6;
+            label42.Text = "Startzeitpunkt:";
+            label42.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // startDate
+            // 
+            this.startDate.Location = new System.Drawing.Point(333, 93);
+            this.startDate.Name = "startDate";
+            this.startDate.Size = new System.Drawing.Size(100, 23);
+            this.startDate.TabIndex = 7;
             // 
             // DistrictHeating
             // 
@@ -1568,5 +1589,6 @@ namespace DistrictHeating
         private CheckBox bufferEnergy;
         private ContextMenuStrip contextMenuSaveImage;
         private ToolStripMenuItem bildSpeichernToolStripMenuItem;
+        private TextBox startDate;
     }
 }
