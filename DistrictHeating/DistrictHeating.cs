@@ -78,6 +78,9 @@ namespace DistrictHeating
             startCenterTemperature.Text = (Plant.BoreHoleField.startBoreholeFieldCenterTemperature - Plant.ZeroK).ToString();
             startBorderTemperature.Text = (Plant.BoreHoleField.startBoreholeFieldBorderTemperature - Plant.ZeroK).ToString();
             startDate.Text = Plant.GetStartTime();
+            timeStep.Text = Plant.TimeStep.ToString();
+            numYears.Text = Plant.NumYears.ToString();
+            numGrid.Text = Plant.BoreHoleField.Grid.ToString();
             // bufferStorage
             bufferStorageEnergyTransfer.Text = Plant.BufferStorage.EnergyTransfer.ToString();
             bufferStroageSize.Text = Plant.BufferStorage.Volume.ToString();
@@ -121,6 +124,8 @@ namespace DistrictHeating
             else return numBoreHoles;
             if (!double.TryParse(borHoleDistance.Text, out double bhdist)) return borHoleDistance;
             Plant.BoreHoleField.BoreHoleDistance = bhdist;
+            if (!int.TryParse(numGrid.Text, out int grid)) return numGrid;
+            if (grid > 1 && grid < 50) Plant.BoreHoleField.Grid = grid; ;
             if (!double.TryParse(boreHoleLength.Text, out Plant.BoreHoleField.Length)) return boreHoleLength;
             if (!double.TryParse(groundHeatCapacity.Text, out Plant.BoreHoleField.HeatCapacity)) return groundHeatCapacity;
             if (!double.TryParse(groundLambda.Text, out Plant.BoreHoleField.Lambda)) return groundLambda;
@@ -130,6 +135,11 @@ namespace DistrictHeating
             {
                 Plant.SetStartTime(dateParts[0], dateParts[1]);
             }
+            if (!double.TryParse(numYears.Text, out double ny)) return numYears;
+            Plant.NumYears = ny;
+            if (!int.TryParse(timeStep.Text, out int ts)) return timeStep;
+            Plant.TimeStep = ts;
+
             Plant.BoreHoleField.startBoreholeFieldCenterTemperature += Plant.ZeroK;
             if (!double.TryParse(startBorderTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldBorderTemperature)) return startBorderTemperature;
             Plant.BoreHoleField.startBoreholeFieldBorderTemperature += Plant.ZeroK;

@@ -55,7 +55,9 @@ namespace DistrictHeating
         public double returnPipeTemp; // current temperature of the return pipe [K]
         public double warmPipeTemp; // current temperature of the warm pipe [K]
         public double hotPipeTemp; // current temperature of the hot pipe [K]
-        public int startSimulationHour = 0;
+        public int startSimulationHour = 2880;
+        public double numYears = 1;
+        public int timeStep = 3600;
         // diagrams
         public struct DiagramEntry
         {
@@ -158,11 +160,11 @@ namespace DistrictHeating
             // different approach:
             // the temperatures of the pipes (returnPipeTemp, warmPipeTemp, hotPipeTemp) stay constant over the period 'step'. Each device consumes fron one pip and delivers
             // to another pipe. This water is collected and determins the temperatures of the next period.
-            int step = 3600; // step with 3600 seconds, i.e. one hour
+            int step = timeStep; // step with 3600 seconds, i.e. one hour
             // for (int i = 0; i < HoursPerYear * 3600 / step; i++)
-            for (int i = 0; i < 2 * HoursPerYear * 3600 / step; i++)
+            for (int i = 0; i < numYears * HoursPerYear * 3600 / step; i++)
             {
-                progressBar((int)(i * 1000.0 / (2 * HoursPerYear * 3600 / step)));
+                progressBar((int)(i * 1000.0 / (numYears * HoursPerYear * 3600 / step)));
                 currentTime = startSimulationHour * 3600 + i * step; // current time is in s
                 // we assume a pool for each pipe, which is at the beginning filled with water at the current temperature of the respective pipe.
                 // in the course of the"step" (i.e. one hour) the pools will grow or shrink, they might even underflow, but this is no problem
@@ -522,6 +524,16 @@ Durchschnitt & 16.1 & 13 & 12.5 & 8.1 & 3.5 & 2.2 & 1.7 & 1.6 & 5.2 & 8.4 & 12.2
                 else break;
             }
             return (simDay).ToString() + "." + simMonth.ToString() + ".";
+        }
+        internal double NumYears
+        {
+            get { return numYears; }
+            set { numYears = value; }
+        }
+        internal int TimeStep
+        {
+            get { return timeStep / 60; }
+            set { timeStep =value* 60; }
         }
     }
 }

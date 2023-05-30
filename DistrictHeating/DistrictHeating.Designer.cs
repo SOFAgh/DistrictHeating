@@ -68,6 +68,9 @@ namespace DistrictHeating
             System.Windows.Forms.Label label40;
             System.Windows.Forms.Label label41;
             System.Windows.Forms.Label label42;
+            System.Windows.Forms.Label label43;
+            System.Windows.Forms.Label label44;
+            System.Windows.Forms.Label label45;
             this.tabPlant = new System.Windows.Forms.TabPage();
             this.threePipes = new System.Windows.Forms.RadioButton();
             this.twoPipes = new System.Windows.Forms.RadioButton();
@@ -131,6 +134,9 @@ namespace DistrictHeating
             this.boreHoleRemoved = new System.Windows.Forms.TextBox();
             this.boreHoleAdded = new System.Windows.Forms.TextBox();
             this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.timeStep = new System.Windows.Forms.TextBox();
+            this.numYears = new System.Windows.Forms.TextBox();
+            this.startDate = new System.Windows.Forms.TextBox();
             this.startBorderTemperature = new System.Windows.Forms.TextBox();
             this.startCenterTemperature = new System.Windows.Forms.TextBox();
             this.startSimulation = new System.Windows.Forms.Button();
@@ -162,7 +168,7 @@ namespace DistrictHeating
             this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuSaveImage = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.bildSpeichernToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startDate = new System.Windows.Forms.TextBox();
+            this.numGrid = new System.Windows.Forms.TextBox();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -196,6 +202,9 @@ namespace DistrictHeating
             label40 = new System.Windows.Forms.Label();
             label41 = new System.Windows.Forms.Label();
             label42 = new System.Windows.Forms.Label();
+            label43 = new System.Windows.Forms.Label();
+            label44 = new System.Windows.Forms.Label();
+            label45 = new System.Windows.Forms.Label();
             this.tabPlant.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabBHTES.SuspendLayout();
@@ -498,6 +507,33 @@ namespace DistrictHeating
             label41.Text = "solarer Deckungsgrad in % und COP:";
             label41.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // label42
+            // 
+            label42.Location = new System.Drawing.Point(6, 96);
+            label42.Name = "label42";
+            label42.Size = new System.Drawing.Size(320, 15);
+            label42.TabIndex = 6;
+            label42.Text = "Startzeitpunkt (TT.MM,):";
+            label42.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label43
+            // 
+            label43.Location = new System.Drawing.Point(6, 125);
+            label43.Name = "label43";
+            label43.Size = new System.Drawing.Size(320, 15);
+            label43.TabIndex = 6;
+            label43.Text = "Anzahl der Jahre";
+            label43.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label44
+            // 
+            label44.Location = new System.Drawing.Point(6, 154);
+            label44.Name = "label44";
+            label44.Size = new System.Drawing.Size(320, 15);
+            label44.TabIndex = 6;
+            label44.Text = "Zeitschritte für die Simulation (in min)";
+            label44.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // tabPlant
             // 
             this.tabPlant.Controls.Add(this.threePipes);
@@ -515,7 +551,7 @@ namespace DistrictHeating
             this.tabPlant.Location = new System.Drawing.Point(4, 24);
             this.tabPlant.Name = "tabPlant";
             this.tabPlant.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPlant.Size = new System.Drawing.Size(1033, 590);
+            this.tabPlant.Size = new System.Drawing.Size(1057, 606);
             this.tabPlant.TabIndex = 3;
             this.tabPlant.Text = "Anlage";
             this.tabPlant.UseVisualStyleBackColor = true;
@@ -588,15 +624,18 @@ namespace DistrictHeating
             this.tabMain.Controls.Add(this.tabSimulation);
             this.tabMain.Controls.Add(this.tabGraphics);
             this.tabMain.Controls.Add(this.legend);
-            this.tabMain.Location = new System.Drawing.Point(12, 12);
+            this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabMain.Location = new System.Drawing.Point(0, 0);
             this.tabMain.Name = "tabMain";
             this.tabMain.SelectedIndex = 0;
-            this.tabMain.Size = new System.Drawing.Size(1041, 618);
+            this.tabMain.Size = new System.Drawing.Size(1065, 634);
             this.tabMain.TabIndex = 0;
             // 
             // tabBHTES
             // 
             this.tabBHTES.Controls.Add(this.boreHoleFieldDisplay);
+            this.tabBHTES.Controls.Add(this.numGrid);
+            this.tabBHTES.Controls.Add(label45);
             this.tabBHTES.Controls.Add(this.groundHeatCapacity);
             this.tabBHTES.Controls.Add(label6);
             this.tabBHTES.Controls.Add(this.groundLambda);
@@ -610,7 +649,7 @@ namespace DistrictHeating
             this.tabBHTES.Location = new System.Drawing.Point(4, 24);
             this.tabBHTES.Name = "tabBHTES";
             this.tabBHTES.Padding = new System.Windows.Forms.Padding(3);
-            this.tabBHTES.Size = new System.Drawing.Size(1033, 590);
+            this.tabBHTES.Size = new System.Drawing.Size(1057, 606);
             this.tabBHTES.TabIndex = 0;
             this.tabBHTES.Text = "Erdsondenspeicher";
             this.tabBHTES.UseVisualStyleBackColor = true;
@@ -680,7 +719,7 @@ namespace DistrictHeating
             this.tabBufferStorage.Location = new System.Drawing.Point(4, 24);
             this.tabBufferStorage.Name = "tabBufferStorage";
             this.tabBufferStorage.Padding = new System.Windows.Forms.Padding(3);
-            this.tabBufferStorage.Size = new System.Drawing.Size(1033, 590);
+            this.tabBufferStorage.Size = new System.Drawing.Size(1057, 606);
             this.tabBufferStorage.TabIndex = 7;
             this.tabBufferStorage.Text = "Pufferspeicher";
             this.tabBufferStorage.UseVisualStyleBackColor = true;
@@ -715,7 +754,7 @@ namespace DistrictHeating
             this.tabSolar.Location = new System.Drawing.Point(4, 24);
             this.tabSolar.Name = "tabSolar";
             this.tabSolar.Padding = new System.Windows.Forms.Padding(3);
-            this.tabSolar.Size = new System.Drawing.Size(1033, 590);
+            this.tabSolar.Size = new System.Drawing.Size(1057, 606);
             this.tabSolar.TabIndex = 1;
             this.tabSolar.Text = "Solarthermie";
             this.tabSolar.UseVisualStyleBackColor = true;
@@ -774,7 +813,7 @@ namespace DistrictHeating
             this.tabConsumer.Location = new System.Drawing.Point(4, 24);
             this.tabConsumer.Name = "tabConsumer";
             this.tabConsumer.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConsumer.Size = new System.Drawing.Size(1033, 590);
+            this.tabConsumer.Size = new System.Drawing.Size(1057, 606);
             this.tabConsumer.TabIndex = 6;
             this.tabConsumer.Text = "Verbraucher";
             this.tabConsumer.UseVisualStyleBackColor = true;
@@ -991,7 +1030,7 @@ namespace DistrictHeating
             this.tabWether.Location = new System.Drawing.Point(4, 24);
             this.tabWether.Name = "tabWether";
             this.tabWether.Padding = new System.Windows.Forms.Padding(3);
-            this.tabWether.Size = new System.Drawing.Size(1033, 590);
+            this.tabWether.Size = new System.Drawing.Size(1057, 606);
             this.tabWether.TabIndex = 2;
             this.tabWether.Text = "Wetterdaten";
             this.tabWether.UseVisualStyleBackColor = true;
@@ -1028,6 +1067,10 @@ namespace DistrictHeating
             // 
             this.tabSimulation.Controls.Add(this.groupBox1);
             this.tabSimulation.Controls.Add(this.progressBar);
+            this.tabSimulation.Controls.Add(this.timeStep);
+            this.tabSimulation.Controls.Add(label44);
+            this.tabSimulation.Controls.Add(this.numYears);
+            this.tabSimulation.Controls.Add(label43);
             this.tabSimulation.Controls.Add(this.startDate);
             this.tabSimulation.Controls.Add(label42);
             this.tabSimulation.Controls.Add(this.startBorderTemperature);
@@ -1038,7 +1081,7 @@ namespace DistrictHeating
             this.tabSimulation.Location = new System.Drawing.Point(4, 24);
             this.tabSimulation.Name = "tabSimulation";
             this.tabSimulation.Padding = new System.Windows.Forms.Padding(3);
-            this.tabSimulation.Size = new System.Drawing.Size(1033, 590);
+            this.tabSimulation.Size = new System.Drawing.Size(1057, 606);
             this.tabSimulation.TabIndex = 4;
             this.tabSimulation.Text = "Simulation";
             this.tabSimulation.UseVisualStyleBackColor = true;
@@ -1057,9 +1100,9 @@ namespace DistrictHeating
             this.groupBox1.Controls.Add(label37);
             this.groupBox1.Controls.Add(this.boreHoleAdded);
             this.groupBox1.Controls.Add(label36);
-            this.groupBox1.Location = new System.Drawing.Point(6, 137);
+            this.groupBox1.Location = new System.Drawing.Point(6, 276);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(436, 390);
+            this.groupBox1.Size = new System.Drawing.Size(436, 251);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ergebnisse";
@@ -1114,6 +1157,27 @@ namespace DistrictHeating
             this.progressBar.Size = new System.Drawing.Size(886, 23);
             this.progressBar.TabIndex = 8;
             // 
+            // timeStep
+            // 
+            this.timeStep.Location = new System.Drawing.Point(333, 151);
+            this.timeStep.Name = "timeStep";
+            this.timeStep.Size = new System.Drawing.Size(100, 23);
+            this.timeStep.TabIndex = 7;
+            // 
+            // numYears
+            // 
+            this.numYears.Location = new System.Drawing.Point(333, 122);
+            this.numYears.Name = "numYears";
+            this.numYears.Size = new System.Drawing.Size(100, 23);
+            this.numYears.TabIndex = 7;
+            // 
+            // startDate
+            // 
+            this.startDate.Location = new System.Drawing.Point(333, 93);
+            this.startDate.Name = "startDate";
+            this.startDate.Size = new System.Drawing.Size(100, 23);
+            this.startDate.TabIndex = 7;
+            // 
             // startBorderTemperature
             // 
             this.startBorderTemperature.Location = new System.Drawing.Point(333, 64);
@@ -1149,7 +1213,7 @@ namespace DistrictHeating
             this.tabGraphics.Location = new System.Drawing.Point(4, 24);
             this.tabGraphics.Name = "tabGraphics";
             this.tabGraphics.Padding = new System.Windows.Forms.Padding(3);
-            this.tabGraphics.Size = new System.Drawing.Size(1033, 590);
+            this.tabGraphics.Size = new System.Drawing.Size(1057, 606);
             this.tabGraphics.TabIndex = 5;
             this.tabGraphics.Text = "Grafik";
             this.tabGraphics.UseVisualStyleBackColor = true;
@@ -1176,30 +1240,34 @@ namespace DistrictHeating
             // 
             // timeScale
             // 
-            this.timeScale.Location = new System.Drawing.Point(53, 551);
+            this.timeScale.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.timeScale.Location = new System.Drawing.Point(44, 570);
             this.timeScale.Name = "timeScale";
-            this.timeScale.Size = new System.Drawing.Size(931, 33);
+            this.timeScale.Size = new System.Drawing.Size(957, 33);
             this.timeScale.TabIndex = 2;
             // 
             // panelRight
             // 
-            this.panelRight.Location = new System.Drawing.Point(974, 6);
+            this.panelRight.Dock = System.Windows.Forms.DockStyle.Right;
+            this.panelRight.Location = new System.Drawing.Point(1001, 3);
             this.panelRight.Name = "panelRight";
-            this.panelRight.Size = new System.Drawing.Size(53, 539);
+            this.panelRight.Size = new System.Drawing.Size(53, 600);
             this.panelRight.TabIndex = 0;
             // 
             // panelLeft
             // 
-            this.panelLeft.Location = new System.Drawing.Point(6, 6);
+            this.panelLeft.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelLeft.Location = new System.Drawing.Point(3, 3);
             this.panelLeft.Name = "panelLeft";
-            this.panelLeft.Size = new System.Drawing.Size(41, 539);
+            this.panelLeft.Size = new System.Drawing.Size(41, 600);
             this.panelLeft.TabIndex = 1;
             // 
             // graphicsPanel
             // 
-            this.graphicsPanel.Location = new System.Drawing.Point(53, 6);
+            this.graphicsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.graphicsPanel.Location = new System.Drawing.Point(3, 3);
             this.graphicsPanel.Name = "graphicsPanel";
-            this.graphicsPanel.Size = new System.Drawing.Size(915, 539);
+            this.graphicsPanel.Size = new System.Drawing.Size(1051, 600);
             this.graphicsPanel.TabIndex = 0;
             this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
             this.graphicsPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseClick);
@@ -1228,7 +1296,7 @@ namespace DistrictHeating
             this.legend.Location = new System.Drawing.Point(4, 24);
             this.legend.Name = "legend";
             this.legend.Padding = new System.Windows.Forms.Padding(3);
-            this.legend.Size = new System.Drawing.Size(1033, 590);
+            this.legend.Size = new System.Drawing.Size(1057, 606);
             this.legend.TabIndex = 8;
             this.legend.Text = "Legende";
             this.legend.UseVisualStyleBackColor = true;
@@ -1431,6 +1499,7 @@ namespace DistrictHeating
             // 
             // contextMenuSaveImage
             // 
+            this.contextMenuSaveImage.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuSaveImage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.bildSpeichernToolStripMenuItem});
             this.contextMenuSaveImage.Name = "contextMenuStrip1";
@@ -1444,27 +1513,27 @@ namespace DistrictHeating
             this.bildSpeichernToolStripMenuItem.Text = "Bild speichern";
             this.bildSpeichernToolStripMenuItem.Click += new System.EventHandler(this.saveImage_Click);
             // 
-            // label42
+            // label45
             // 
-            label42.Location = new System.Drawing.Point(6, 96);
-            label42.Name = "label42";
-            label42.Size = new System.Drawing.Size(320, 15);
-            label42.TabIndex = 6;
-            label42.Text = "Startzeitpunkt:";
-            label42.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            label45.Location = new System.Drawing.Point(6, 208);
+            label45.Name = "label45";
+            label45.Size = new System.Drawing.Size(320, 15);
+            label45.TabIndex = 5;
+            label45.Text = "Anzahl Zwischenpunkte für Simulation:";
+            label45.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // startDate
+            // numGrid
             // 
-            this.startDate.Location = new System.Drawing.Point(333, 93);
-            this.startDate.Name = "startDate";
-            this.startDate.Size = new System.Drawing.Size(100, 23);
-            this.startDate.TabIndex = 7;
+            this.numGrid.Location = new System.Drawing.Point(332, 205);
+            this.numGrid.Name = "numGrid";
+            this.numGrid.Size = new System.Drawing.Size(100, 23);
+            this.numGrid.TabIndex = 6;
             // 
             // DistrictHeating
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1065, 642);
+            this.ClientSize = new System.Drawing.Size(1065, 634);
             this.Controls.Add(this.tabMain);
             this.Name = "DistrictHeating";
             this.Text = "Simulation einer Anlage mit Solarthermie, Erdsonden-Wärmespeicher und Wärmeverbra" +
@@ -1590,5 +1659,8 @@ namespace DistrictHeating
         private ContextMenuStrip contextMenuSaveImage;
         private ToolStripMenuItem bildSpeichernToolStripMenuItem;
         private TextBox startDate;
+        private TextBox timeStep;
+        private TextBox numYears;
+        private TextBox numGrid;
     }
 }
