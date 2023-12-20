@@ -82,6 +82,7 @@ namespace DistrictHeating
             this.tabMain = new System.Windows.Forms.TabControl();
             this.tabBHTES = new System.Windows.Forms.TabPage();
             this.boreHoleFieldDisplay = new System.Windows.Forms.Panel();
+            this.numGrid = new System.Windows.Forms.TextBox();
             this.groundHeatCapacity = new System.Windows.Forms.TextBox();
             this.groundLambda = new System.Windows.Forms.TextBox();
             this.borHoleDistance = new System.Windows.Forms.TextBox();
@@ -168,7 +169,7 @@ namespace DistrictHeating
             this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuSaveImage = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.bildSpeichernToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.numGrid = new System.Windows.Forms.TextBox();
+            this.debug = new System.Windows.Forms.Button();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -534,8 +535,18 @@ namespace DistrictHeating
             label44.Text = "Zeitschritte für die Simulation (in min)";
             label44.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // label45
+            // 
+            label45.Location = new System.Drawing.Point(6, 208);
+            label45.Name = "label45";
+            label45.Size = new System.Drawing.Size(320, 15);
+            label45.TabIndex = 5;
+            label45.Text = "Anzahl Zwischenpunkte für Simulation:";
+            label45.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // tabPlant
             // 
+            this.tabPlant.Controls.Add(this.debug);
             this.tabPlant.Controls.Add(this.threePipes);
             this.tabPlant.Controls.Add(this.twoPipes);
             this.tabPlant.Controls.Add(this.numConnections);
@@ -662,6 +673,13 @@ namespace DistrictHeating
             this.boreHoleFieldDisplay.Size = new System.Drawing.Size(477, 409);
             this.boreHoleFieldDisplay.TabIndex = 7;
             this.boreHoleFieldDisplay.Paint += new System.Windows.Forms.PaintEventHandler(this.boreHoleFieldDisplay_Paint);
+            // 
+            // numGrid
+            // 
+            this.numGrid.Location = new System.Drawing.Point(332, 205);
+            this.numGrid.Name = "numGrid";
+            this.numGrid.Size = new System.Drawing.Size(100, 23);
+            this.numGrid.TabIndex = 6;
             // 
             // groundHeatCapacity
             // 
@@ -1513,21 +1531,15 @@ namespace DistrictHeating
             this.bildSpeichernToolStripMenuItem.Text = "Bild speichern";
             this.bildSpeichernToolStripMenuItem.Click += new System.EventHandler(this.saveImage_Click);
             // 
-            // label45
+            // debug
             // 
-            label45.Location = new System.Drawing.Point(6, 208);
-            label45.Name = "label45";
-            label45.Size = new System.Drawing.Size(320, 15);
-            label45.TabIndex = 5;
-            label45.Text = "Anzahl Zwischenpunkte für Simulation:";
-            label45.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // numGrid
-            // 
-            this.numGrid.Location = new System.Drawing.Point(332, 205);
-            this.numGrid.Name = "numGrid";
-            this.numGrid.Size = new System.Drawing.Size(100, 23);
-            this.numGrid.TabIndex = 6;
+            this.debug.Location = new System.Drawing.Point(931, 553);
+            this.debug.Name = "debug";
+            this.debug.Size = new System.Drawing.Size(75, 23);
+            this.debug.TabIndex = 3;
+            this.debug.Text = "Debug";
+            this.debug.UseVisualStyleBackColor = true;
+            this.debug.Click += new System.EventHandler(this.debug_Click);
             // 
             // DistrictHeating
             // 
@@ -1662,5 +1674,6 @@ namespace DistrictHeating
         private TextBox timeStep;
         private TextBox numYears;
         private TextBox numGrid;
+        private Button debug;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -30,11 +31,15 @@ namespace DistrictHeating
                 this.i = i;
                 this.j = j;
                 this.k = k;
+                ts = new double[1]; // normally a single value for the temperature, should later replace t. Multiple values for prisms with boreholes
+                dts = new double[1]; // normally a single value, should later replace dt. Multiple values for prisms with boreholes
             }
             public double t; // the temperature
             public double dt; // the temperature difference, which is added after all hexagonal prism have been modified
             public int i, j, k; // the "coordinate" of this hexagon
             public List<HexagonPrism> connectedHexPrisms; // the neighbours
+            public double[] dts; // one value for inner hexagonal prisms, multiple values for the hexagonal conentric rings of prisms with boreholes inside
+            public double[] ts; // temperature: one value for inner hexagonal prisms, multiple values for the hexagonal conentric rings of prisms with boreholes inside
         }
         /// <summary>
         /// This class describes a mantle around the field of hexagonal prisms. It has the form of a hexagonal shell.
@@ -133,7 +138,7 @@ namespace DistrictHeating
         /// <summary>
         /// The power (W) which will be transferred at a given temperature difference between the water in the pipe and the soil in W/K
         /// </summary>
-        public double TransferPower { get; set; } = 5; // i.e. 50 W/m at deltaT 10K
+        public double TransferPower { get; set; } = 5; // i.e. 50 W/m at deltaT 10K in W/(m*K)
         /// <summary>
         /// Start temperature in the center for the simulation
         /// </summary>
@@ -242,8 +247,8 @@ namespace DistrictHeating
 
         }
         private (double x, double y) fromHexCoord(int i, int j, int k)
-        {   // hexagons are oriented so that one edge is horizontal
-            // the y-diameter is distance / grid, the x-diameter is distance/grid*2/sqrt(3)
+        {   // hexagons are oriented so that two of the edges are horizontal
+            // the (smaller) y-diameter is distance / grid, the (bigger) x-diameter is distance/grid*2/sqrt(3)
             double yd = distance / grid;
             double xd = yd * 2 / Math.Sqrt(3.0);
             double l = xd / 2; // length of side of hexagon
@@ -573,6 +578,271 @@ namespace DistrictHeating
                 }
 
             }
+        }
+        internal void InitializeNew(int n)
+        {
+            Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
+            {
+                int c = Math.Max(Math.Max(Math.Abs(key.Item1), Math.Abs(key.Item2)), Math.Abs(key.Item3));
+                HexagonPrism itemValue = temperatureAtHexCoord[key];
+                double f = (maxHexCoordinate - c) / (double)maxHexCoordinate; // 1: center, 0: border
+                itemValue.ts[0] = startBoreholeFieldBorderTemperature + f * (startBoreholeFieldCenterTemperature - startBoreholeFieldBorderTemperature);
+            });
+            // hier später alle boreholes
+            HexagonPrism centerPrism = temperatureAtHexCoord[new Tuple<int, int, int>(0, 0, 0)];
+            centerPrism.dts = new double[n];
+            centerPrism.ts = new double[n];
+            for (int i = 0; i < centerPrism.dts.Length; i++)
+            {
+                centerPrism.ts[i] = centerPrism.t;
+            }
+        }
+
+        public void SomeDebugCode()
+        {
+            const int len = 81; // must be odd to have a center
+            double[,] T = new double[len, len];
+            double[,] dT = new double[len, len];
+            for (int i = 0; i < len; i++)
+            {
+                for (int j = 0; j < len; j++)
+                {
+                    T[i, j] = 283.15; // all elements at 10°
+                    dT[i, j] = 0.0;
+                }
+            }
+            T[(len - 1) / 2, (len - 1) / 2] = 303.15; // the center element at 30°
+            /*
+                Δt: time step
+                T(x,y,t): temperature at grid point and current time
+                d, Δx, Δy: grid step, equal value
+                α: thermal diffusivity, Lambda/HeatCapacity
+                (T(x,y,t+Δt)−T(x,y,t))/Δt =α( T(x+Δx,y,t)−2T(x,y,t)+T(x−Δx,y,t) + T(x,y+Δy,t)−2T(x,y,t)+T(x,y−Δy,t) )/d² //finite difference method
+                T(x,y,t+Δt)=α( T(x+Δx,y,t)−2T(x,y,t)+T(x−Δx,y,t) + T(x,y+Δy,t)−2T(x,y,t)+T(x,y−Δy,t) )/d²* Δt + T(x,y,t) 
+                dT = α * (T(x+Δx,y,t)−2T(x,y,t)+T(x−Δx,y,t) + T(x,y+Δy,t)−2T(x,y,t)+T(x,y−Δy,t))/d² * Δt
+                dT = α * (T(x+Δx,y,t) + T(x−Δx,y,t) + T(x,y+Δy,t) + T(x,y−Δy,t) − 4T(x,y,t))/d² * Δt
+                dT = α * (T[i+1,j] + T[i-1,j] + T[i,j+1] + T[i,j-1] − 4*T[i,j])/d² * Δt
+             */
+            double d = 1.0; // grid distanc 1m
+            double alpha = Lambda / HeatCapacity;
+            double timeStep = 3600; // seconds
+
+            double totEnergy = 0.0;
+            for (int i = 0; i < len; i++)
+            {
+                for (int j = 0; j < len; j++)
+                {
+                    totEnergy += (T[i, j] - 283.15) * d * d;
+                }
+            }
+            totEnergy *= Length * HeatCapacity;
+
+            for (int k = 0; k < 1000; k++)
+            {
+                for (int i = 0; i < len; i++)
+                {
+                    for (int j = 0; j < len; j++)
+                    {
+                        double n1 = 283.15;
+                        double n2 = 283.15;
+                        double n3 = 283.15;
+                        double n4 = 283.15;
+                        if (i > 0) n1 = T[i - 1, j];
+                        if (i < len - 1) n2 = T[i + 1, j];
+                        if (j > 0) n3 = T[i, j - 1];
+                        if (j < len - 1) n4 = T[i, j + 1];
+                        dT[i, j] = alpha * (n1 + n2 + n3 + n4 - 4 * T[i, j]) / (d * d) * timeStep;
+                    }
+                }
+                for (int i = 0; i < len; i++)
+                {
+                    for (int j = 0; j < len; j++)
+                    {
+                        T[i, j] += dT[i, j];
+                        dT[i, j] = 0.0;
+                    }
+                }
+            }
+
+            totEnergy = 0.0;
+            for (int i = 0; i < len; i++)
+            {
+                for (int j = 0; j < len; j++)
+                {
+                    totEnergy += (T[i, j] - 283.15) * d * d;
+                }
+            }
+            totEnergy *= Length * HeatCapacity;
+
+        }
+        public void TransferEnergieTest(double volumeStream, double inTemperature, out double outTemperature, double duration)
+        {
+            // return (distance / grid) * (distance / grid) * Math.Sqrt(3.0) / 2.0;
+            double s3 = Math.Sqrt(3);
+            double smallDiameter = distance / grid;
+            double hexagonSide = smallDiameter / s3;
+            double hexagonArea = 3 * hexagonSide * hexagonSide * s3 / 2;
+            double hexagonArea1 = smallDiameter * smallDiameter * s3 / 2;
+
+            int numConcentricRings = 6;
+            HexagonPrism centerPrism = temperatureAtHexCoord[new Tuple<int, int, int>(0, 0, 0)];
+            numConcentricRings = centerPrism.dts.Length;
+            // we subdevide the hexagon into n (=numConcentricRings) evenly spaced concentric rings, with a small hexagon in the center.
+            // The central hexagon represents the borehole pipes containing the water, the remaining rings have different temperatures
+            // The area of ring i is: ((i+1)*(sd/n))^2*sqrt(3)/2 - (i*(sd/n))^2*sqrt(3)/2
+            // == ((i^2+2*i+1)*(sd/n)^2 - i^2*(sd/n)^2)*sqrt(3)/2 == (2*i+1)*(sd/n)^2*sqrt(3)/2
+            double sai = 0.0; // debug the area
+            // the following could be calculated once for this BoreHoleField
+            double[] r = new double[numConcentricRings]; // small outer radii of hexagonal rings (inner is r[i-1]), maybe not evenly distributed
+            double[] a = new double[numConcentricRings]; // area of rings
+            double[] c = new double[numConcentricRings]; // outer circumference of the ring
+            double[] hc = new double[numConcentricRings]; // heat capacity of the ring
+
+            for (int i = 0; i < numConcentricRings; i++)
+            {
+                r[i] = (i + 1) * (smallDiameter / 2.0) / numConcentricRings;
+                double innerRadius = 0.0;
+                if (i > 0) innerRadius = r[i - 1];
+                a[i] = 2 * r[i] * r[i] * s3 - 2 * innerRadius * innerRadius * s3;
+                c[i] = 6 * 2 * r[i] / s3;
+                hc[i] = a[i] * Length * HeatCapacity; // m³ * J / (m³*K) == J / K
+                sai += a[i];
+            }
+            // The outer circumference of ring i is: 6 * (i+1)*(sd/n)/sqrt(3)
+            double waterVolume = Math.Abs(volumeStream * duration); // in m³
+            double waterEnergy = inTemperature * waterVolume * 4200000; // in J relative to 0 K,  4.2 kJ/(kg*K) or 4200000 J/(m³*K)
+            double currentWaterTemperature = inTemperature; // will decrease (or increase) from borehole to borehole
+
+            // first calculate temperature changes within the boreholes: the inner core is affected by the water in the pipe
+            // parallel and serial must be considered
+            // if the temperature difference is too big do it in several steps
+            int numSteps = (int)Math.Ceiling((currentWaterTemperature - centerPrism.ts[0]) / 10);
+            for (int k = 0; k < numSteps; k++)
+            {
+                double q0 = TransferPower * Length * (currentWaterTemperature - (centerPrism.ts[0] + centerPrism.dts[0])); // some magical TransferPower for the borehole, shape and geometry of the borehole is not respected
+                                                                                                                           // q0 is the power in J
+                double tre = q0 * duration / numSteps; // the amount of energy that goes from the water pipe of the borehole to the soil of the hexagonal prism
+                centerPrism.dts[0] += tre / hc[0]; // for the temperature change devide the energy by volume*heat capacity
+                waterEnergy -= tre;
+                currentWaterTemperature = waterEnergy / (waterVolume * 4200000); // the new energy of the water defines the new water temperature
+                                                                                 // now from the core of the borehole to the outer shell the energy is distributed
+                                                                                 //double toten = 0.0; // debug total energy in the hex prism
+                                                                                 //for (int i = 0; i < numConcentricRings; i++)
+                                                                                 //{
+                                                                                 //    toten += hc[i] * centerPrism.dts[i];
+                                                                                 //}
+
+                for (int i = 1; i < numConcentricRings; i++)
+                {
+                    double faceArea = c[i - 1] * Length; // size of the face area between the two shells
+                    double dT = (centerPrism.ts[i - 1] + centerPrism.dts[i - 1] - centerPrism.ts[i] - centerPrism.dts[i]); // tempearure difference between the shells
+                    double dist = (r[i] - r[i - 1]); // distance between the shells centers
+                    double tr = Lambda * faceArea * dT * duration / numSteps / dist; // transferred energy (J) defined by contact area temp. difference duration and distance
+                    centerPrism.dts[i] += tr / hc[i]; // J / (J/K) == K
+                    centerPrism.dts[i - 1] -= tr / hc[i - 1];
+                }
+
+                //toten = 0.0;
+                //for (int i = 0; i < numConcentricRings; i++)
+                //{
+                //    toten += hc[i] * centerPrism.dts[i];
+                //}
+            }
+            // now we adjust the temperature of the rings
+            for (int i = 0; i < numConcentricRings; i++)
+            {
+                centerPrism.ts[i] += centerPrism.dts[i];
+                centerPrism.dts[i] = 0.0;
+            }
+
+            outTemperature = currentWaterTemperature; // this is the last water temperature after leaving the last borehole
+
+
+            double heatCapacityPerHexPrism = HexagonArea * HeatCapacity * Length; // to get the energy you have to multiply by deltaT
+            double heatCapacityPerOuterRing = a[numConcentricRings - 1] * HeatCapacity * Length; // to get the energy you have to multiply by deltaT
+
+            // now we need to adapt each temperature point by the influence of its neighbours
+            // in a first loop we keep the temperatures unchanged and calculate the deltaT for each point
+            // in a second loop, we add deltaT to the temperature of each point
+            // now distribute the energy between all hexagonal prisms for the given period of time
+            double borderdt = 0.0;
+            double energyToTransfer = Lambda * FaceArea * duration / HexagonDistance;
+            double f = energyToTransfer / heatCapacityPerHexPrism;
+            double fOuter = energyToTransfer / heatCapacityPerOuterRing;
+            // Q = k * A * (T1 - T2) * t / d
+            // where:
+            // Q is the energy transferred(in Joules)
+            // k is the thermal conductivity(in W / (m * K))
+            // A is the area of the contacting faces(in m²)
+            // T1 and T2 are the temperatures of the two adjacent hexagonal prisms(in K)
+            // t is the duration of the time step(in seconds)
+            // d is the distance between the center axis of the two hexagonal prisms(in meters)
+            // foreach (Tuple<int,int,int> key in temperatureAtHexCoord.Keys) // seriel to debug
+            Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
+            {
+                HexagonPrism itemValue = temperatureAtHexCoord[key];
+                double t0 = itemValue.ts.Last(); // outer ring or total hexagon
+
+                foreach (Tuple<int, int, int> item in shell(key, 1))
+                {
+                    if (temperatureAtHexCoord.TryGetValue(item, out HexagonPrism? found))
+                    {
+                        if (itemValue.ts.Length > 1) itemValue.dts[^1] += fOuter * (found.ts.Last() - t0);
+                        else itemValue.dts[0] += f * (found.ts.Last() - t0);
+                    }
+                    else
+                    {
+                        int outside = (Math.Abs(item.Item1) + Math.Abs(item.Item2) + Math.Abs(item.Item3) - ((numRings + 1) * 2 * grid - 1));
+                    }
+                }
+            });
+            // now for the borehole hex prism we distribute the energy from the outer ring into the middle
+            for (int i = numConcentricRings - 1; i > 0; --i)
+            {
+                double faceArea = c[i - 1] * Length; // size of the face area between the two shells
+                double dT = (centerPrism.ts[i - 1] + centerPrism.dts[i - 1] - centerPrism.ts[i] - centerPrism.dts[i]); // tempearure difference between the shells
+                double dist = (r[i] - r[i - 1]); // distance between the shells centers
+                double tr = Lambda * faceArea * dT * duration / numSteps / dist; // transferred energy (J) defined by contact area temp. difference duration and distance
+                centerPrism.dts[i] += tr / hc[i]; // J / (J/K) == K
+                centerPrism.dts[i - 1] -= tr / hc[i - 1];
+            }
+            // now update the mantle temperature changes (dt)
+            // the innermost mantle has already been affected byt 
+            //for (int i = 0; i < mantles.Count; i++)
+            //{
+            //    if (i > 0)
+            //    {   // what we get from the next inner mantle
+            //        double contactArea = mantles[i].innerRadius * 6 * Length;
+            //        double distance = (mantles[i].Thickness + mantles[i - 1].Thickness) / 2.0;
+            //        double ff = Lambda * contactArea * duration / distance / (mantles[i].Area * HeatCapacity * Length);
+            //        mantles[i].dt += ff * (mantles[i - 1].t - mantles[i].t);
+            //    }
+            //    if (i < mantles.Count - 1)
+            //    {   // what we get from the next outer mantle
+            //        double contactArea = mantles[i].outerRadius * 6 * Length;
+            //        double distance = (mantles[i].Thickness + mantles[i + 1].Thickness) / 2.0;
+            //        double ff = Lambda * contactArea * duration / distance / (mantles[i].Area * HeatCapacity * Length);
+            //        mantles[i].dt += ff * (mantles[i + 1].t - mantles[i].t);
+            //    }
+            //}
+            // now we change all temperatures
+            borderTemperature -= borderdt;
+            Parallel.ForEach(temperatureAtHexCoord.Keys, (Tuple<int, int, int> key) =>
+            {
+                HexagonPrism itemValue = temperatureAtHexCoord[key];
+                for (int i = 0; i < itemValue.ts.Length; i++)
+                {
+                    itemValue.ts[i] += itemValue.dts[i];
+                    itemValue.dts[i] = 0.0;
+                }
+                //itemValue.t += itemValue.dt;
+                //itemValue.dt = 0;
+            });
+            //for (int i = 0; i < mantles.Count; i++)
+            //{
+            //    mantles[i].t += mantles[i].dt;
+            //    mantles[i].dt = 0.0;
+            //}
         }
     }
 }
