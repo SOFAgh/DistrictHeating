@@ -384,5 +384,16 @@ namespace DistrictHeating
         {
             paintDiagram.saveImage();
         }
+
+        private void debug_Click(object sender, EventArgs e)
+        {
+            BoreHoleField bhf = new BoreHoleField(1, Plant.ZeroK + 10);
+            bhf.BoreHoleDistance = 5.2;
+            bhf.Grid = 6;
+            bhf.Initialize();
+            bhf.InitializeNew(6);
+            bhf.SomeDebugCode();
+            bhf.TransferEnergieTest(0.1/1000, 363.15, out double outTemp, 300);
+        }
     }
 }
