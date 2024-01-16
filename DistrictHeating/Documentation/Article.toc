@@ -7,3 +7,9 @@
 \contentsline {subsection}{\numberline {3.3}Die Heizung (\texttt {class HeatingConsumer})}{3}{subsection.3.3}%
 \contentsline {subsection}{\numberline {3.4}Das Sonnenkollektor Feld (\texttt {class SolarThermalCollector})}{4}{subsection.3.4}%
 \contentsline {subsection}{\numberline {3.5}Der Erdsonden-Wärmespeicher (\texttt {class ThermalStorage})}{5}{subsection.3.5}%
+\contentsline {subsubsection}{\numberline {3.5.1}Grundlage der Simulation}{5}{subsubsection.3.5.1}%
+\contentsline {subsubsection}{\numberline {3.5.2}Hexagonale Aufteilung des Erdsondenfeldes}{6}{subsubsection.3.5.2}%
+\contentsline {subsubsection}{\numberline {3.5.3}Verfeinerung der Aufteilung an kritischen Stellen}{7}{subsubsection.3.5.3}%
+\contentsline {subsubsection}{\numberline {3.5.4}Randbedingungen}{7}{subsubsection.3.5.4}%
+\contentsline {subsubsection}{\numberline {3.5.5}Grundwasserfluss}{7}{subsubsection.3.5.5}%
+\contentsline {subsubsection}{\numberline {3.5.6}Verhalten bei Wärmezufuhr bzw. Wärmeentnahme}{8}{subsubsection.3.5.6}%

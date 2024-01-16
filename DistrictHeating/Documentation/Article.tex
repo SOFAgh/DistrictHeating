@@ -5,8 +5,10 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{wrapfig}
 \usepackage{graphicx}
-\usepackage{hyperref}\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{hyperref}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \usepackage[dvipsnames]{xcolor}
 \author{Gerhard Hofmann}
 \title{Simulation eines Nahwärmesystems mit solarthermischer Energiequelle und Erdsonden-Wärmespeicher}
@@ -118,26 +120,66 @@ Die Steuerung kann automatisch von statten gehen und ist durch die Werte für di
 Der Volumenstrom kann auch von der zentralen Steuerung eingestellt (überschrieben) werden, die die Belange der gesamten Anlage berücksichtigt.
 
 \subsection{Der Erdsonden-Wärmespeicher (\texttt{class ThermalStorage})}
-Ziel der Simulation des Erdsondenfelds ist es nicht, die physikalischen Gegebenheiten naturgetreu zu simulieren, sondern ein Modell zu schaffen, welches sich nach außen hin so verhält, wie die Erdsondensimulation aus der erwähnten Arbeit von Dr. Formhals. Dazu sollen verschiedene Szenarien in der Modelica Simulation dargestellt werden (mit verschiedenen Abständen, Bohrtiefen, Wärmeleitfähigkeite und Wärmekapazitäten der Untergrunds u.s.w.) und durch Anpassen einiger Parameter in dem Simulationsmodel von \texttt{DistrictHeating} das gleiche Verhalten erzeugt werden. Gleichzeitig soll die Simulation damit wesentlich schneller laufen. Eine Jahressimulation im Stundenraster benötig bei der aktuellen Implementierung nur wenige Sekunden.\\
-Das Erdsondenfeld wird als zweidimensionales hexagonales Gitter von Temperaturpunkten dargestellt. Diese Temperaturpunkte stellen den Mittelwert der Temperatur im Erdboden dar. Die Temperaturdaten der Punkt werden im Zeitraster aktualisiert. Die Erdsonden liegen auf solchen Punkte, dazwischen sind weitere Punkte, die nur die Bodentemperatur repräsentieren. Durch eine geschickte Indizierung sind die sechs Punkte, die einen Punkt umgeben leicht zu finden.\\
-\begin{figure}[h]
-    \begin{minipage}[t]{.4\linewidth} % [b] => Ausrichtung an \caption
-       \includegraphics[width=1.1\linewidth]{HexCoord.png}
-       \caption{Hexagonale Indizierung}
-    \end{minipage}
-    \hspace{.1\linewidth}% Abstand zwischen Bilder
-    \begin{minipage}[t]{.4\linewidth} % [b] => Ausrichtung an \caption
-       \includegraphics[width=\linewidth]{BoreHoleNet.png}
-       \caption{Verteilung der Temperaturpunkte und der Erdsonden}
-    \end{minipage}
- \end{figure}
- \textbf{Verhalten ohne Wärmezufuhr bzw. Wärmeentnahme:} Die Temperatur $T'$ im nächsten Zeitschritt wird durch die aktuelle Temperatur $T$ und die Temperaturdifferenzen zu den Nachbarpunkten $T_n$ bestimmt ($P$ und $P_n$ sind die Positionen der Punkte)
+Der Erdsonden-Wärmespeicher ist das zentrale und zugleich komplexeste Element der Simulation. Ziel ist es, das Verhalten des Erdsondenspeichers möglichst realitätsnah zu simulieren. D.h. bei gegebenem Volumenstrom und Temperatur die Temperaturzunahme bzw. Abnahme zu berechnen, wobei natürlich der Ladezustand des Speichers wesentlichen Einfluss nimmt. Der Ladezustand ist natürlich kein einfacher Wert, sondern durch räumliche Temperaturverteilung im Speicher gegeben.
+\subsubsection{Grundlage der Simulation}
+Im Wesentlichen wird die Temperaturverteilung als zweidimensionales Problem behandelt gemäß der Wärmeleitungsgleichung:
  \begin{align}
-    T' = T + f\cdot \frac{\sum_{n=1}^{6} \frac{T-T_n}{|P,P_n|} }{6} 
+ \frac{\partial T}{\partial t} = \alpha \left( \frac{\partial^2 T}{\partial x^2} + \frac{\partial^2 T}{\partial y^2} \right)
  \end{align}
-Der Faktor $f$ in obiger Formel sollte im wesentlichen von der Wärmeleitfähigkeit und Wärmekapazität abhängen und muss empirisch bestimmt werden. Der Abstand der Punkte ist bereits durch $\frac{1}{|P,P_n|}$ berücksichtigt.\\
-Bei Punkten am Rand (weniger als 6 Nachbarn) wird die Umgebungstemperatur entsprechend berücksichtigt. Damit werden die Wärmeverluste des Erdsondenfelds nach außen simuliert, ebenso wie die Wärmeverluste nach oben und unten mit einer Temperaturabnahme der Temperaturpunkte selbst simuliert werden. $T'=T-f_v\cdot (T-T_{amb})$, wobei $f_v$ wieder empirisch bestimmt wird. Wenn der äußere Ring der Erdwärmesonden durch die Arbeit einer Wärmepumpe unter die Temperatur des umgebenden Erdreichs gesenkt wird, wird aus dem Wärmeverlust automatisch ein Wärmegewinn.\\
-\textbf{Verhalten bei Wärmezufuhr bzw. Wärmeentnahme:} Die Temperaturänderung soll durch einen empirisch gewonnenen Faktor, der Sondenlänge und der Temperaturdifferenz zwischen der Erdsonde und dem die Sonde durchströmenden Wasser bestimmt werden. Für die nächste Sonde bei serieller Verbindung wird die durch die Energiezufuhr oder -entnahme veränderte Wassertemperatur verwendet.\\
+Dabei steht $T$ für die Temperatur, $t$ für die Zeit, $\alpha$ für die thermische Diffusivitätskonstante ($\alpha=\frac{\lambda}{\rho c}$, wobei $\lambda$ die Wärmeleitfähigkeit, $c$ die spezifischen Wärmekapazität und $\rho$ die Dichte darstellt) und $x$ und $y$ für die räumlichen Koordinaten in der Ebene.
+Mit Hilfe des impliziten \href{https://de.wikipedia.org/wiki/Crank-Nicolson-Verfahren#Beispiel:_Zweidimensionale_Diffusion}{Crank-Nicolson-Verfahrens} kann dann die Temperaturverteilung in der aufgerasterten Ebene in Zeitschritten berechnet werden.
+ \begin{align}
+ \begin{split}
+\frac{T_{i,j}^{n+1} - T_{i,j}^n}{\Delta t} = \frac{\alpha}{2} \left[ \frac{T_{i+1,j}^{n+1} - 2T_{i,j}^{n+1} + T_{i-1,j}^{n+1}}{\Delta x^2} + \frac{T_{i,j+1}^{n+1} - 2T_{i,j}^{n+1} + T_{i,j-1}^{n+1}}{\Delta y^2} \right. \\
+\left. + \frac{T_{i+1,j}^n - 2T_{i,j}^n + T_{i-1,j}^n}{\Delta x^2} + \frac{T_{i,j+1}^n - 2T_{i,j}^n + T_{i,j-1}^n}{\Delta y^2} \right]
+\end{split}
+\end{align}
+$T_{i,j}^{n+1}$ ist die Temperatur an der Stelle $(i,j)$ zum Zeitpunkt $n+1$. Das ist recht aufwendig, da für jede Stelle eine lineare Gleichung mit 5 Unbekannten zu lösen ist, insgesamt also ein großes lineares Gleichungssystem.\\
+Einfacher wird es mit dem expliziten Verfahren: hierbei berücksichtigt man für jede Stelle nur die aktuellen Temperaturen der Nachbarzellen und nicht die Temperaturen des nächsten Zeitschritts. Die Gleichung lautet dann 
+\begin{align}
+T_{i,j}^{n+1}  = \alpha \Delta t \left[ 
+\frac{T_{i+1,j}^n - 2T_{i,j}^n + T_{i-1,j}^n}{\Delta x^2} + \frac{T_{i,j+1}^n - 2T_{i,j}^n + T_{i,j-1}^n}{\Delta y^2} \right] + T_{i,j}^n
+\end{align}
+Somit sind alle Temperaturen für den nächsten Zeitschritt direkt und unabhängig voneinander aus den Temperaturen des aktuellen Zeitschritts zu berechnen.\\
+Diese explizite Methode liefert bei den Gegebenheiten, wie wir sie in einem Erdsondenfeld wiederfinden, sehr genau das gleiche Ergebnis wie die implizite Methode aber um Größenordnungen schneller. \\
+\begin{sloppypar}
+In einem Testbeispiel waren die Zeitschritte $\Delta t = 3600s$ und die Diffusivitätskonstante \mbox{$\alpha = \frac{\lambda}{c\rho} = \frac{2.3\frac{W}{m \cdot K}}{700\frac{J}{kg \cdot K} \cdot 2200\frac{kg}{m^3}} \approx 1.5\cdot 10^{-6}\frac{s}{m^2}$} (das sind Werte für Sandstein). Das räumliche Raster betrug \mbox{$\Delta x = \Delta y = 1m$}. Das ganze Feld wurde mit $100 \cdot 100$ Feldern simuliert, wobei fast alle Felder auf $10$~°C eingestellt wurden und einzelne Felder mit $50$~°C angenommen wurden. Es wurden 1000 Schritte berechnet. Die Unterschiede zwischen der expliziten und der impliziten Methode betrugen weniger als $10^{-3}K$.
+\end{sloppypar}
+Des Weiteren wurde überprüft, dass die Gesamtenergie des Feldes während der Simulation unverändert bleibt. Auch Verkürzung der Zeitschritte auf $360s$ oder feinere Rasteraufteilung auf $25cm$ brachten die gleichen Ergebnisse.
+\subsubsection{Hexagonale Aufteilung des Erdsondenfeldes}
+\begin{wrapfigure}{r}{0.35\textwidth}
+  \centering
+  \includegraphics[width=0.34\textwidth]{HexagonIndices.png}
+  \caption{Indizierung im \mbox{hexagonalen} Raster}
+  \label{fig:hexindex}
+\end{wrapfigure}
+Da für eine effiziente Nutzung der Fläche des Erdsondenfeldes die einzelnen Erdsonden am besten in einem hexagonalen Raster platziert werden, ist es auch reizvoll, die Simulation der zweidimensionalen Wärmegleichung in einem hexagonalen Raster vorzunehmen. Ein hexagonales Raster stellt auch eine homogenere Aufteilung der Ebene dar.\\
+Der Mittelpunkt oder Ursprung des hexagonalen Rasters hat den Index $(0,0)$. Die einzelnen Felder sind wie in Abbildung \ref{fig:hexindex} dargestellt indiziert. Die sechs Nachbarn des Feldes mit Index $(i,j)$ sind damit $(i-1,j+1)$, $(i,j+1)$, $(i+1,j)$, $(i+1,j-1)$, $(i,j-1)$ und $(i-1,j)$. Der kleine Durchmesser der Sechsecke sei $d$, was auch den Abstand der Mittelpunkte benachbarter Sechsecke definiert. Da ich keine Beschreibung eines solchen Verfahrens finden konnte, habe ich durch Ausprobieren und Vergleichen mit dem quadratischen Verfahren herausgefunden, dass die Temperaturdifferenz mit einem Faktor von $\frac{2}{3}$ ersehen werden muss, um das selbe Ergebnis zu liefern, wie das quadratische Verfahren. Somit ergibt sich für die explizite Form des Crank-Nicolson Verfahrens im hexagonalen Raster die folgende Form:
+\begin{align}
+T_{i,j}^{n+1}  = \frac{2}{3} \cdot \alpha \Delta t \cdot
+\frac{T_{i-1,j+1}^n + T_{i,j+1}^n+ T_{i+1,j}^n+ T_{i+1,j-1}^n+ T_{i,j-1}^n+ T_{i-1,j}^n - 6T_{i,j}^n }{d^2}  + T_{i,j}^n
+\end{align} 
+Das Verfahren besteht auch alle Prüfungen wie oben beim quadratischen Verfahren beschrieben: Invarianz der Energie und gleiches Ergebnis bei feinerer Aufteilung der Zeitschritte und Sechseckgröße.
+\subsubsection{Verfeinerung der Aufteilung an kritischen Stellen}
+\begin{wrapfigure}{r}{0.35\textwidth}
+  \centering
+  \includegraphics[width=0.34\textwidth]{HexagonSubdevide.png}
+  \caption{Aufteilung eines Sechsecks in kleinere Sechsecke mit Indizierung}
+  \label{fig:hexsubdevision}
+\end{wrapfigure}
+Die Stellen im Erdsondenfeld, an denen sich die Erdsonden befinden, stellen höhere Anforderungen an die Simulation als die Zwischenräume zwischen den Erdsonden. Für die räumliche Auflösung ist die Rasterung typischerweise so gewählt, dass in jeder Richtung fünf bis acht Sechsecke zwischen den mit Erdsonden bestückten Sechsecken liegen. Damit hat ein Sechseck einen Durchmesser in der Größenordnung von einem halben bis einen Meter. Die Erdsonden werden nicht im Detail so nachgebildet, dass die einzelnen Rohre und der umgebende Betonkern getrennt simuliert werden. Vielmehr soll das innerste Sechseck einer Unterteilung in etwa 15~cm groß sein, was in etwa dem Durchmesser einer Erdsondenbohrung entspricht. Die Leistung, mit der die Wärme vom durch die Erdsonde fließenden Wasser an den Bohrkern abgegeben wird, hängt von der Tiefe der Bohrung und dem Temperaturunterschied zwischen dem Wasser und dem Betonkern ab. Es ist eine Konstante mit der Einheit $\frac{W}{m \cdot K}$ Diese muss letztlich für jede Bauart abgeschätzt bzw. bestimmt werden.\\
+Durch eine feinere Aufteilung des Sechsecks, welches eine Erdsonde enthält, kann das Verhalten in der Nähe der Erdsonde genauer simuliert werden.
+\subsubsection{Randbedingungen}
+Das Erdsondenfeld liegt natürlich nicht im luftleeren Raum, sondern ist seitlich, unten und oben im Kontakt mit der umgebenden Erdmasse.\\
+Für die seitliche Randbedingung eignet sich ganz gut die Dirichlet Randbedingung: die Temperaturwerte am Rand werden auf einen bestimmten Wert "festgenagelt". Das macht weiter kein Problem, wenn man nur das zu simulierende Feld weit genug über die äußeren Erdsonden hinaus ausdehnt. Nach vielleich 50m außerhalb des Erdsondenfelds kann eine konstante Temperatur von 10~°C angenommen werden. Solange wir im Erdsondenfeld über dieser Temperatur liegen, rechnen wir damit mit größeren Verlusten als in Wirklichkeit.\\
+Nach oben wird der Verlust dagegen ignoriert, da wir hier von einer Isolierung mit Schaumglas ausgehen, so dass die Verluste sehr gering ausfallen werden.\\
+Bislang haben wir die Simualtion nur im zweidimensionaen betrachtet. In Wirklichkeit haben wir ja dreidimensionale Volumenelemente, in unserem Fall hexagonale Prismen, die typischerweise weniger als 1~m Durchmesser haben aber eine Länge von 100~m. Verdoppeln wir das Erdsondenfeld nach unten, so können wir den Wärmefluss von einem vertikalen Prisma in das zugehörige darunterliegende berechnen. Auch hier halten wir die Temperatur im "2. Untergeschoss" gemäß Dirichlet konstant, diesmal vielleicht bei 13~°C, da wir uns ja etwas tiefer in der Erde befinden.
+\subsubsection{Grundwasserfluss}
+Eine Bewegung des Grundwassers wird zur Zeit nicht berücksichtigt. Das ist sicherlich die größte Schwachstelle der Simulation. Letztlich bräuchte man den Volumenstrom des Grundwassers durch das Erdsondenfeld und ein Maß für die Wärmeübertragung zwischen Grundwasser und Erdmasse. Experimentell könnte man einen solchen Wert bestimmen, wenn wenigstens drei Bohrungen in einem gleichseitigen Dreieck vorliegen und man einen langen Thermal Response Test macht. 
+
+
+\subsubsection{Verhalten bei Wärmezufuhr bzw. Wärmeentnahme} 
+Die Temperaturänderung soll durch einen empirisch gewonnenen Faktor, der Sondenlänge und der Temperaturdifferenz zwischen der Erdsonde und dem die Sonde durchströmenden Wasser bestimmt werden. Für die nächste Sonde bei serieller Verbindung wird die durch die Energiezufuhr oder -entnahme veränderte Wassertemperatur verwendet.\\
 Ein vorläufiger Test liefert zumindest anschaulich ansprechende Ergebnisse. Ob es gelingt, auf diese Art der gestellten Aufgabe gerecht zu werden, wird sich zeigen müssen.
 \begin{figure}[h]
     \begin{minipage}[t]{.4\linewidth} % [b] => Ausrichtung an \caption
