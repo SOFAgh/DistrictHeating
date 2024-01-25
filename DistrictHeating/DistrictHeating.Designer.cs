@@ -72,6 +72,7 @@ namespace DistrictHeating
             System.Windows.Forms.Label label44;
             System.Windows.Forms.Label label45;
             this.tabPlant = new System.Windows.Forms.TabPage();
+            this.debug = new System.Windows.Forms.Button();
             this.threePipes = new System.Windows.Forms.RadioButton();
             this.twoPipes = new System.Windows.Forms.RadioButton();
             this.numConnections = new System.Windows.Forms.TextBox();
@@ -169,7 +170,7 @@ namespace DistrictHeating
             this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuSaveImage = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.bildSpeichernToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.debug = new System.Windows.Forms.Button();
+            this.saveSimulationData = new System.Windows.Forms.Button();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -222,324 +223,324 @@ namespace DistrictHeating
             // 
             // label1
             // 
-            label1.Location = new System.Drawing.Point(6, 35);
+            label1.Location = new System.Drawing.Point(7, 47);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(320, 15);
+            label1.Size = new System.Drawing.Size(366, 20);
             label1.TabIndex = 0;
             label1.Text = "Gesamtlänge des Nahwärmenetzes (m):";
             label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label2
             // 
-            label2.Location = new System.Drawing.Point(6, 63);
+            label2.Location = new System.Drawing.Point(7, 84);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(320, 15);
+            label2.Size = new System.Drawing.Size(366, 20);
             label2.TabIndex = 2;
             label2.Text = "Anzahl der Sonden:";
             label2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label3
             // 
-            label3.Location = new System.Drawing.Point(6, 92);
+            label3.Location = new System.Drawing.Point(7, 123);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(320, 15);
+            label3.Size = new System.Drawing.Size(366, 20);
             label3.TabIndex = 5;
             label3.Text = "Bohrtiefe (m):";
             label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label4
             // 
-            label4.Location = new System.Drawing.Point(6, 121);
+            label4.Location = new System.Drawing.Point(7, 161);
             label4.Name = "label4";
-            label4.Size = new System.Drawing.Size(320, 15);
+            label4.Size = new System.Drawing.Size(366, 20);
             label4.TabIndex = 5;
             label4.Text = "Abstand der Sonden (m):";
             label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label5
             // 
-            label5.Location = new System.Drawing.Point(6, 150);
+            label5.Location = new System.Drawing.Point(7, 200);
             label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(320, 15);
+            label5.Size = new System.Drawing.Size(366, 20);
             label5.TabIndex = 5;
             label5.Text = "Wärmeleitfähigkeit des Erdreichs (W/(m·K)):";
             label5.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label6
             // 
-            label6.Location = new System.Drawing.Point(6, 179);
+            label6.Location = new System.Drawing.Point(7, 239);
             label6.Name = "label6";
-            label6.Size = new System.Drawing.Size(320, 15);
+            label6.Size = new System.Drawing.Size(366, 20);
             label6.TabIndex = 5;
             label6.Text = "Wärmekapazität (J/(m³·K)):";
             label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label7
             // 
-            label7.Location = new System.Drawing.Point(6, 64);
+            label7.Location = new System.Drawing.Point(7, 85);
             label7.Name = "label7";
-            label7.Size = new System.Drawing.Size(320, 15);
+            label7.Size = new System.Drawing.Size(366, 20);
             label7.TabIndex = 0;
             label7.Text = "Durchmesser der Rohre (mm):";
             label7.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label8
             // 
-            label8.Location = new System.Drawing.Point(9, 47);
+            label8.Location = new System.Drawing.Point(10, 63);
             label8.Name = "label8";
-            label8.Size = new System.Drawing.Size(320, 15);
+            label8.Size = new System.Drawing.Size(366, 20);
             label8.TabIndex = 2;
             label8.Text = "Jahresverbrauch (MWh):";
             label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label9
             // 
-            label9.Location = new System.Drawing.Point(10, 18);
+            label9.Location = new System.Drawing.Point(11, 24);
             label9.Name = "label9";
-            label9.Size = new System.Drawing.Size(320, 15);
+            label9.Size = new System.Drawing.Size(366, 20);
             label9.TabIndex = 2;
             label9.Text = "Art der Heizung:";
             label9.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label19
             // 
-            label19.Location = new System.Drawing.Point(9, 91);
+            label19.Location = new System.Drawing.Point(10, 121);
             label19.Name = "label19";
-            label19.Size = new System.Drawing.Size(320, 15);
+            label19.Size = new System.Drawing.Size(366, 20);
             label19.TabIndex = 2;
             label19.Text = "Vorlauftemperatur bei Außentemperatur:";
             label19.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label20
             // 
-            label20.Location = new System.Drawing.Point(9, 120);
+            label20.Location = new System.Drawing.Point(10, 160);
             label20.Name = "label20";
-            label20.Size = new System.Drawing.Size(320, 15);
+            label20.Size = new System.Drawing.Size(366, 20);
             label20.TabIndex = 2;
             label20.Text = "gewünschte Tagestemperatur (°C):";
             label20.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label21
             // 
-            label21.Location = new System.Drawing.Point(6, 93);
+            label21.Location = new System.Drawing.Point(7, 124);
             label21.Name = "label21";
-            label21.Size = new System.Drawing.Size(320, 15);
+            label21.Size = new System.Drawing.Size(366, 20);
             label21.TabIndex = 0;
             label21.Text = "Außendurchmesser Dämmung (mm):";
             label21.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label22
             // 
-            label22.Location = new System.Drawing.Point(6, 122);
+            label22.Location = new System.Drawing.Point(7, 163);
             label22.Name = "label22";
-            label22.Size = new System.Drawing.Size(320, 15);
+            label22.Size = new System.Drawing.Size(366, 20);
             label22.TabIndex = 0;
             label22.Text = "Wärmeleitfähigkeit Dämmung (W/(m*K)):";
             label22.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label23
             // 
-            label23.Location = new System.Drawing.Point(6, 151);
+            label23.Location = new System.Drawing.Point(7, 201);
             label23.Name = "label23";
-            label23.Size = new System.Drawing.Size(320, 15);
+            label23.Size = new System.Drawing.Size(366, 20);
             label23.TabIndex = 0;
             label23.Text = "Anzahl der Hausanschlüsse:";
             label23.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label24
             // 
-            label24.Location = new System.Drawing.Point(9, 149);
+            label24.Location = new System.Drawing.Point(10, 199);
             label24.Name = "label24";
-            label24.Size = new System.Drawing.Size(320, 15);
+            label24.Size = new System.Drawing.Size(366, 20);
             label24.TabIndex = 2;
             label24.Text = "gewünschte Nachttemperatur (°C):";
             label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label25
             // 
-            label25.Location = new System.Drawing.Point(9, 178);
+            label25.Location = new System.Drawing.Point(10, 237);
             label25.Name = "label25";
-            label25.Size = new System.Drawing.Size(320, 15);
+            label25.Size = new System.Drawing.Size(366, 20);
             label25.TabIndex = 2;
             label25.Text = "Anfang Tagestemperatur (Uhrzeit, Stunde):";
             label25.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label26
             // 
-            label26.Location = new System.Drawing.Point(9, 207);
+            label26.Location = new System.Drawing.Point(10, 276);
             label26.Name = "label26";
-            label26.Size = new System.Drawing.Size(320, 15);
+            label26.Size = new System.Drawing.Size(366, 20);
             label26.TabIndex = 2;
             label26.Text = "Ende Tagestemperatur (Uhrzeit, Stunde):";
             label26.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label27
             // 
-            label27.Location = new System.Drawing.Point(9, 236);
+            label27.Location = new System.Drawing.Point(10, 315);
             label27.Name = "label27";
-            label27.Size = new System.Drawing.Size(320, 15);
+            label27.Size = new System.Drawing.Size(366, 20);
             label27.TabIndex = 2;
             label27.Text = "Gütegrad der Wärmepumpe in %";
             label27.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label28
             // 
-            label28.Location = new System.Drawing.Point(9, 265);
+            label28.Location = new System.Drawing.Point(10, 353);
             label28.Name = "label28";
-            label28.Size = new System.Drawing.Size(320, 15);
+            label28.Size = new System.Drawing.Size(366, 20);
             label28.TabIndex = 2;
             label28.Text = "Anzahl dieser Heizungen im System:";
             label28.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label29
             // 
-            label29.Location = new System.Drawing.Point(6, 45);
+            label29.Location = new System.Drawing.Point(7, 60);
             label29.Name = "label29";
-            label29.Size = new System.Drawing.Size(320, 15);
+            label29.Size = new System.Drawing.Size(366, 20);
             label29.TabIndex = 2;
             label29.Text = "Größe des Speichers (in m³):";
             label29.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label30
             // 
-            label30.Location = new System.Drawing.Point(6, 74);
+            label30.Location = new System.Drawing.Point(7, 99);
             label30.Name = "label30";
-            label30.Size = new System.Drawing.Size(320, 15);
+            label30.Size = new System.Drawing.Size(366, 20);
             label30.TabIndex = 2;
             label30.Text = "Leistungsübertragung Wärmetauscher (in W/K):";
             label30.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label31
             // 
-            label31.Location = new System.Drawing.Point(6, 103);
+            label31.Location = new System.Drawing.Point(7, 137);
             label31.Name = "label31";
-            label31.Size = new System.Drawing.Size(320, 15);
+            label31.Size = new System.Drawing.Size(366, 20);
             label31.TabIndex = 2;
             label31.Text = "Anzahl der Pufferspeicher im System:";
             label31.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label32
             // 
-            label32.Location = new System.Drawing.Point(6, 38);
+            label32.Location = new System.Drawing.Point(7, 51);
             label32.Name = "label32";
-            label32.Size = new System.Drawing.Size(320, 15);
+            label32.Size = new System.Drawing.Size(366, 20);
             label32.TabIndex = 4;
             label32.Text = "Größe des Solarthermie-Felds (in m²):";
             label32.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label33
             // 
-            label33.Location = new System.Drawing.Point(6, 67);
+            label33.Location = new System.Drawing.Point(7, 89);
             label33.Name = "label33";
-            label33.Size = new System.Drawing.Size(320, 15);
+            label33.Size = new System.Drawing.Size(366, 20);
             label33.TabIndex = 4;
             label33.Text = "Wirkungsgrad Solarthermie (in %):";
             label33.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label34
             // 
-            label34.Location = new System.Drawing.Point(6, 38);
+            label34.Location = new System.Drawing.Point(7, 51);
             label34.Name = "label34";
-            label34.Size = new System.Drawing.Size(320, 15);
+            label34.Size = new System.Drawing.Size(366, 20);
             label34.TabIndex = 6;
             label34.Text = "Anfangstemperatur in der Mitte des Speichers (in °C): ";
             label34.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label35
             // 
-            label35.Location = new System.Drawing.Point(6, 67);
+            label35.Location = new System.Drawing.Point(7, 89);
             label35.Name = "label35";
-            label35.Size = new System.Drawing.Size(320, 15);
+            label35.Size = new System.Drawing.Size(366, 20);
             label35.TabIndex = 6;
             label35.Text = "Anfangstemperatur am Rand des Speichers (in °C): ";
             label35.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label36
             // 
-            label36.Location = new System.Drawing.Point(0, 25);
+            label36.Location = new System.Drawing.Point(0, 33);
             label36.Name = "label36";
-            label36.Size = new System.Drawing.Size(320, 15);
+            label36.Size = new System.Drawing.Size(366, 20);
             label36.TabIndex = 8;
             label36.Text = "Erdsondenspeicher Eintrag (MWh):";
             label36.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label37
             // 
-            label37.Location = new System.Drawing.Point(0, 54);
+            label37.Location = new System.Drawing.Point(0, 72);
             label37.Name = "label37";
-            label37.Size = new System.Drawing.Size(320, 15);
+            label37.Size = new System.Drawing.Size(366, 20);
             label37.TabIndex = 8;
             label37.Text = "Erdsondenspeicher Lieferung (MWh):";
             label37.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label38
             // 
-            label38.Location = new System.Drawing.Point(0, 83);
+            label38.Location = new System.Drawing.Point(0, 111);
             label38.Name = "label38";
-            label38.Size = new System.Drawing.Size(320, 15);
+            label38.Size = new System.Drawing.Size(366, 20);
             label38.TabIndex = 8;
             label38.Text = "Solarthermie Leistung (MWh):";
             label38.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label39
             // 
-            label39.Location = new System.Drawing.Point(0, 112);
+            label39.Location = new System.Drawing.Point(0, 149);
             label39.Name = "label39";
-            label39.Size = new System.Drawing.Size(320, 15);
+            label39.Size = new System.Drawing.Size(366, 20);
             label39.TabIndex = 8;
             label39.Text = "erzeugte Wärme (MWh):";
             label39.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label40
             // 
-            label40.Location = new System.Drawing.Point(0, 141);
+            label40.Location = new System.Drawing.Point(0, 188);
             label40.Name = "label40";
-            label40.Size = new System.Drawing.Size(320, 15);
+            label40.Size = new System.Drawing.Size(366, 20);
             label40.TabIndex = 8;
             label40.Text = "Anteil Elektrizität (MWh):";
             label40.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label41
             // 
-            label41.Location = new System.Drawing.Point(0, 170);
+            label41.Location = new System.Drawing.Point(0, 227);
             label41.Name = "label41";
-            label41.Size = new System.Drawing.Size(320, 15);
+            label41.Size = new System.Drawing.Size(366, 20);
             label41.TabIndex = 8;
             label41.Text = "solarer Deckungsgrad in % und COP:";
             label41.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label42
             // 
-            label42.Location = new System.Drawing.Point(6, 96);
+            label42.Location = new System.Drawing.Point(7, 128);
             label42.Name = "label42";
-            label42.Size = new System.Drawing.Size(320, 15);
+            label42.Size = new System.Drawing.Size(366, 20);
             label42.TabIndex = 6;
             label42.Text = "Startzeitpunkt (TT.MM,):";
             label42.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label43
             // 
-            label43.Location = new System.Drawing.Point(6, 125);
+            label43.Location = new System.Drawing.Point(7, 167);
             label43.Name = "label43";
-            label43.Size = new System.Drawing.Size(320, 15);
+            label43.Size = new System.Drawing.Size(366, 20);
             label43.TabIndex = 6;
             label43.Text = "Anzahl der Jahre";
             label43.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label44
             // 
-            label44.Location = new System.Drawing.Point(6, 154);
+            label44.Location = new System.Drawing.Point(7, 205);
             label44.Name = "label44";
-            label44.Size = new System.Drawing.Size(320, 15);
+            label44.Size = new System.Drawing.Size(366, 20);
             label44.TabIndex = 6;
             label44.Text = "Zeitschritte für die Simulation (in min)";
             label44.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label45
             // 
-            label45.Location = new System.Drawing.Point(6, 208);
+            label45.Location = new System.Drawing.Point(7, 277);
             label45.Name = "label45";
-            label45.Size = new System.Drawing.Size(320, 15);
+            label45.Size = new System.Drawing.Size(366, 20);
             label45.TabIndex = 5;
             label45.Text = "Anzahl Zwischenpunkte für Simulation:";
             label45.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -559,20 +560,33 @@ namespace DistrictHeating
             this.tabPlant.Controls.Add(label7);
             this.tabPlant.Controls.Add(this.pipelineLength);
             this.tabPlant.Controls.Add(label1);
-            this.tabPlant.Location = new System.Drawing.Point(4, 24);
+            this.tabPlant.Location = new System.Drawing.Point(4, 29);
+            this.tabPlant.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabPlant.Name = "tabPlant";
-            this.tabPlant.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPlant.Size = new System.Drawing.Size(1057, 606);
+            this.tabPlant.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabPlant.Size = new System.Drawing.Size(1209, 812);
             this.tabPlant.TabIndex = 3;
             this.tabPlant.Text = "Anlage";
             this.tabPlant.UseVisualStyleBackColor = true;
             // 
+            // debug
+            // 
+            this.debug.Location = new System.Drawing.Point(1064, 737);
+            this.debug.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.debug.Name = "debug";
+            this.debug.Size = new System.Drawing.Size(86, 31);
+            this.debug.TabIndex = 3;
+            this.debug.Text = "Debug";
+            this.debug.UseVisualStyleBackColor = true;
+            this.debug.Click += new System.EventHandler(this.debug_Click);
+            // 
             // threePipes
             // 
             this.threePipes.AutoSize = true;
-            this.threePipes.Location = new System.Drawing.Point(333, 202);
+            this.threePipes.Location = new System.Drawing.Point(381, 269);
+            this.threePipes.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.threePipes.Name = "threePipes";
-            this.threePipes.Size = new System.Drawing.Size(87, 19);
+            this.threePipes.Size = new System.Drawing.Size(107, 24);
             this.threePipes.TabIndex = 2;
             this.threePipes.TabStop = true;
             this.threePipes.Text = "3 Leitungen";
@@ -581,9 +595,10 @@ namespace DistrictHeating
             // twoPipes
             // 
             this.twoPipes.AutoSize = true;
-            this.twoPipes.Location = new System.Drawing.Point(333, 177);
+            this.twoPipes.Location = new System.Drawing.Point(381, 236);
+            this.twoPipes.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.twoPipes.Name = "twoPipes";
-            this.twoPipes.Size = new System.Drawing.Size(87, 19);
+            this.twoPipes.Size = new System.Drawing.Size(107, 24);
             this.twoPipes.TabIndex = 2;
             this.twoPipes.TabStop = true;
             this.twoPipes.Text = "2 Leitungen";
@@ -591,37 +606,42 @@ namespace DistrictHeating
             // 
             // numConnections
             // 
-            this.numConnections.Location = new System.Drawing.Point(333, 148);
+            this.numConnections.Location = new System.Drawing.Point(381, 197);
+            this.numConnections.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.numConnections.Name = "numConnections";
-            this.numConnections.Size = new System.Drawing.Size(100, 23);
+            this.numConnections.Size = new System.Drawing.Size(114, 27);
             this.numConnections.TabIndex = 1;
             // 
             // insulationLambda
             // 
-            this.insulationLambda.Location = new System.Drawing.Point(333, 119);
+            this.insulationLambda.Location = new System.Drawing.Point(381, 159);
+            this.insulationLambda.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.insulationLambda.Name = "insulationLambda";
-            this.insulationLambda.Size = new System.Drawing.Size(100, 23);
+            this.insulationLambda.Size = new System.Drawing.Size(114, 27);
             this.insulationLambda.TabIndex = 1;
             // 
             // pipeInsulationDiameter
             // 
-            this.pipeInsulationDiameter.Location = new System.Drawing.Point(333, 90);
+            this.pipeInsulationDiameter.Location = new System.Drawing.Point(381, 120);
+            this.pipeInsulationDiameter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pipeInsulationDiameter.Name = "pipeInsulationDiameter";
-            this.pipeInsulationDiameter.Size = new System.Drawing.Size(100, 23);
+            this.pipeInsulationDiameter.Size = new System.Drawing.Size(114, 27);
             this.pipeInsulationDiameter.TabIndex = 1;
             // 
             // pipeDiameter
             // 
-            this.pipeDiameter.Location = new System.Drawing.Point(333, 61);
+            this.pipeDiameter.Location = new System.Drawing.Point(381, 81);
+            this.pipeDiameter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pipeDiameter.Name = "pipeDiameter";
-            this.pipeDiameter.Size = new System.Drawing.Size(100, 23);
+            this.pipeDiameter.Size = new System.Drawing.Size(114, 27);
             this.pipeDiameter.TabIndex = 1;
             // 
             // pipelineLength
             // 
-            this.pipelineLength.Location = new System.Drawing.Point(333, 32);
+            this.pipelineLength.Location = new System.Drawing.Point(381, 43);
+            this.pipelineLength.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pipelineLength.Name = "pipelineLength";
-            this.pipelineLength.Size = new System.Drawing.Size(100, 23);
+            this.pipelineLength.Size = new System.Drawing.Size(114, 27);
             this.pipelineLength.TabIndex = 1;
             // 
             // tabMain
@@ -637,9 +657,10 @@ namespace DistrictHeating
             this.tabMain.Controls.Add(this.legend);
             this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabMain.Location = new System.Drawing.Point(0, 0);
+            this.tabMain.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabMain.Name = "tabMain";
             this.tabMain.SelectedIndex = 0;
-            this.tabMain.Size = new System.Drawing.Size(1065, 634);
+            this.tabMain.Size = new System.Drawing.Size(1217, 845);
             this.tabMain.TabIndex = 0;
             // 
             // tabBHTES
@@ -657,56 +678,61 @@ namespace DistrictHeating
             this.tabBHTES.Controls.Add(label3);
             this.tabBHTES.Controls.Add(this.numBoreHoles);
             this.tabBHTES.Controls.Add(label2);
-            this.tabBHTES.Location = new System.Drawing.Point(4, 24);
+            this.tabBHTES.Location = new System.Drawing.Point(4, 29);
+            this.tabBHTES.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabBHTES.Name = "tabBHTES";
-            this.tabBHTES.Padding = new System.Windows.Forms.Padding(3);
-            this.tabBHTES.Size = new System.Drawing.Size(1057, 606);
+            this.tabBHTES.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabBHTES.Size = new System.Drawing.Size(1209, 812);
             this.tabBHTES.TabIndex = 0;
             this.tabBHTES.Text = "Erdsondenspeicher";
             this.tabBHTES.UseVisualStyleBackColor = true;
             // 
             // boreHoleFieldDisplay
             // 
-            this.boreHoleFieldDisplay.Location = new System.Drawing.Point(542, 14);
-            this.boreHoleFieldDisplay.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.boreHoleFieldDisplay.Location = new System.Drawing.Point(619, 19);
             this.boreHoleFieldDisplay.Name = "boreHoleFieldDisplay";
-            this.boreHoleFieldDisplay.Size = new System.Drawing.Size(477, 409);
+            this.boreHoleFieldDisplay.Size = new System.Drawing.Size(545, 545);
             this.boreHoleFieldDisplay.TabIndex = 7;
             this.boreHoleFieldDisplay.Paint += new System.Windows.Forms.PaintEventHandler(this.boreHoleFieldDisplay_Paint);
             // 
             // numGrid
             // 
-            this.numGrid.Location = new System.Drawing.Point(332, 205);
+            this.numGrid.Location = new System.Drawing.Point(379, 273);
+            this.numGrid.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.numGrid.Name = "numGrid";
-            this.numGrid.Size = new System.Drawing.Size(100, 23);
+            this.numGrid.Size = new System.Drawing.Size(114, 27);
             this.numGrid.TabIndex = 6;
             // 
             // groundHeatCapacity
             // 
-            this.groundHeatCapacity.Location = new System.Drawing.Point(332, 176);
+            this.groundHeatCapacity.Location = new System.Drawing.Point(379, 235);
+            this.groundHeatCapacity.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.groundHeatCapacity.Name = "groundHeatCapacity";
-            this.groundHeatCapacity.Size = new System.Drawing.Size(100, 23);
+            this.groundHeatCapacity.Size = new System.Drawing.Size(114, 27);
             this.groundHeatCapacity.TabIndex = 6;
             // 
             // groundLambda
             // 
-            this.groundLambda.Location = new System.Drawing.Point(332, 147);
+            this.groundLambda.Location = new System.Drawing.Point(379, 196);
+            this.groundLambda.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.groundLambda.Name = "groundLambda";
-            this.groundLambda.Size = new System.Drawing.Size(100, 23);
+            this.groundLambda.Size = new System.Drawing.Size(114, 27);
             this.groundLambda.TabIndex = 6;
             // 
             // borHoleDistance
             // 
-            this.borHoleDistance.Location = new System.Drawing.Point(332, 118);
+            this.borHoleDistance.Location = new System.Drawing.Point(379, 157);
+            this.borHoleDistance.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.borHoleDistance.Name = "borHoleDistance";
-            this.borHoleDistance.Size = new System.Drawing.Size(100, 23);
+            this.borHoleDistance.Size = new System.Drawing.Size(114, 27);
             this.borHoleDistance.TabIndex = 6;
             // 
             // boreHoleLength
             // 
-            this.boreHoleLength.Location = new System.Drawing.Point(332, 89);
+            this.boreHoleLength.Location = new System.Drawing.Point(379, 119);
+            this.boreHoleLength.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.boreHoleLength.Name = "boreHoleLength";
-            this.boreHoleLength.Size = new System.Drawing.Size(100, 23);
+            this.boreHoleLength.Size = new System.Drawing.Size(114, 27);
             this.boreHoleLength.TabIndex = 6;
             // 
             // numBoreHoles
@@ -721,9 +747,10 @@ namespace DistrictHeating
             "91 (5 Ringe)",
             "127 (6 Ringe)",
             "169 (7 Ringe)"});
-            this.numBoreHoles.Location = new System.Drawing.Point(332, 60);
+            this.numBoreHoles.Location = new System.Drawing.Point(379, 80);
+            this.numBoreHoles.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.numBoreHoles.Name = "numBoreHoles";
-            this.numBoreHoles.Size = new System.Drawing.Size(189, 23);
+            this.numBoreHoles.Size = new System.Drawing.Size(215, 28);
             this.numBoreHoles.TabIndex = 4;
             // 
             // tabBufferStorage
@@ -734,33 +761,37 @@ namespace DistrictHeating
             this.tabBufferStorage.Controls.Add(label30);
             this.tabBufferStorage.Controls.Add(this.bufferStroageSize);
             this.tabBufferStorage.Controls.Add(label29);
-            this.tabBufferStorage.Location = new System.Drawing.Point(4, 24);
+            this.tabBufferStorage.Location = new System.Drawing.Point(4, 29);
+            this.tabBufferStorage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabBufferStorage.Name = "tabBufferStorage";
-            this.tabBufferStorage.Padding = new System.Windows.Forms.Padding(3);
-            this.tabBufferStorage.Size = new System.Drawing.Size(1057, 606);
+            this.tabBufferStorage.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabBufferStorage.Size = new System.Drawing.Size(1209, 812);
             this.tabBufferStorage.TabIndex = 7;
             this.tabBufferStorage.Text = "Pufferspeicher";
             this.tabBufferStorage.UseVisualStyleBackColor = true;
             // 
             // bufferStorageInstances
             // 
-            this.bufferStorageInstances.Location = new System.Drawing.Point(333, 100);
+            this.bufferStorageInstances.Location = new System.Drawing.Point(381, 133);
+            this.bufferStorageInstances.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.bufferStorageInstances.Name = "bufferStorageInstances";
-            this.bufferStorageInstances.Size = new System.Drawing.Size(100, 23);
+            this.bufferStorageInstances.Size = new System.Drawing.Size(114, 27);
             this.bufferStorageInstances.TabIndex = 3;
             // 
             // bufferStorageEnergyTransfer
             // 
-            this.bufferStorageEnergyTransfer.Location = new System.Drawing.Point(333, 71);
+            this.bufferStorageEnergyTransfer.Location = new System.Drawing.Point(381, 95);
+            this.bufferStorageEnergyTransfer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.bufferStorageEnergyTransfer.Name = "bufferStorageEnergyTransfer";
-            this.bufferStorageEnergyTransfer.Size = new System.Drawing.Size(100, 23);
+            this.bufferStorageEnergyTransfer.Size = new System.Drawing.Size(114, 27);
             this.bufferStorageEnergyTransfer.TabIndex = 3;
             // 
             // bufferStroageSize
             // 
-            this.bufferStroageSize.Location = new System.Drawing.Point(333, 42);
+            this.bufferStroageSize.Location = new System.Drawing.Point(381, 56);
+            this.bufferStroageSize.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.bufferStroageSize.Name = "bufferStroageSize";
-            this.bufferStroageSize.Size = new System.Drawing.Size(100, 23);
+            this.bufferStroageSize.Size = new System.Drawing.Size(114, 27);
             this.bufferStroageSize.TabIndex = 3;
             // 
             // tabSolar
@@ -769,26 +800,29 @@ namespace DistrictHeating
             this.tabSolar.Controls.Add(label33);
             this.tabSolar.Controls.Add(this.solarFieldSize);
             this.tabSolar.Controls.Add(label32);
-            this.tabSolar.Location = new System.Drawing.Point(4, 24);
+            this.tabSolar.Location = new System.Drawing.Point(4, 29);
+            this.tabSolar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabSolar.Name = "tabSolar";
-            this.tabSolar.Padding = new System.Windows.Forms.Padding(3);
-            this.tabSolar.Size = new System.Drawing.Size(1057, 606);
+            this.tabSolar.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabSolar.Size = new System.Drawing.Size(1209, 812);
             this.tabSolar.TabIndex = 1;
             this.tabSolar.Text = "Solarthermie";
             this.tabSolar.UseVisualStyleBackColor = true;
             // 
             // solarEfficiency
             // 
-            this.solarEfficiency.Location = new System.Drawing.Point(333, 64);
+            this.solarEfficiency.Location = new System.Drawing.Point(381, 85);
+            this.solarEfficiency.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.solarEfficiency.Name = "solarEfficiency";
-            this.solarEfficiency.Size = new System.Drawing.Size(100, 23);
+            this.solarEfficiency.Size = new System.Drawing.Size(114, 27);
             this.solarEfficiency.TabIndex = 5;
             // 
             // solarFieldSize
             // 
-            this.solarFieldSize.Location = new System.Drawing.Point(333, 35);
+            this.solarFieldSize.Location = new System.Drawing.Point(381, 47);
+            this.solarFieldSize.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.solarFieldSize.Name = "solarFieldSize";
-            this.solarFieldSize.Size = new System.Drawing.Size(100, 23);
+            this.solarFieldSize.Size = new System.Drawing.Size(114, 27);
             this.solarFieldSize.TabIndex = 5;
             // 
             // tabConsumer
@@ -828,164 +862,175 @@ namespace DistrictHeating
             this.tabConsumer.Controls.Add(label20);
             this.tabConsumer.Controls.Add(label19);
             this.tabConsumer.Controls.Add(label8);
-            this.tabConsumer.Location = new System.Drawing.Point(4, 24);
+            this.tabConsumer.Location = new System.Drawing.Point(4, 29);
+            this.tabConsumer.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabConsumer.Name = "tabConsumer";
-            this.tabConsumer.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConsumer.Size = new System.Drawing.Size(1057, 606);
+            this.tabConsumer.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabConsumer.Size = new System.Drawing.Size(1209, 812);
             this.tabConsumer.TabIndex = 6;
             this.tabConsumer.Text = "Verbraucher";
             this.tabConsumer.UseVisualStyleBackColor = true;
             // 
             // vlm20
             // 
-            this.vlm20.Location = new System.Drawing.Point(576, 88);
+            this.vlm20.Location = new System.Drawing.Point(658, 117);
+            this.vlm20.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vlm20.Name = "vlm20";
-            this.vlm20.Size = new System.Drawing.Size(24, 23);
+            this.vlm20.Size = new System.Drawing.Size(27, 27);
             this.vlm20.TabIndex = 6;
             // 
             // vlm15
             // 
-            this.vlm15.Location = new System.Drawing.Point(546, 88);
+            this.vlm15.Location = new System.Drawing.Point(624, 117);
+            this.vlm15.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vlm15.Name = "vlm15";
-            this.vlm15.Size = new System.Drawing.Size(24, 23);
+            this.vlm15.Size = new System.Drawing.Size(27, 27);
             this.vlm15.TabIndex = 6;
             // 
             // vlm10
             // 
-            this.vlm10.Location = new System.Drawing.Point(516, 88);
+            this.vlm10.Location = new System.Drawing.Point(590, 117);
+            this.vlm10.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vlm10.Name = "vlm10";
-            this.vlm10.Size = new System.Drawing.Size(24, 23);
+            this.vlm10.Size = new System.Drawing.Size(27, 27);
             this.vlm10.TabIndex = 6;
             // 
             // vlm5
             // 
-            this.vlm5.Location = new System.Drawing.Point(486, 88);
+            this.vlm5.Location = new System.Drawing.Point(555, 117);
+            this.vlm5.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vlm5.Name = "vlm5";
-            this.vlm5.Size = new System.Drawing.Size(24, 23);
+            this.vlm5.Size = new System.Drawing.Size(27, 27);
             this.vlm5.TabIndex = 6;
             // 
             // vl0
             // 
-            this.vl0.Location = new System.Drawing.Point(456, 88);
+            this.vl0.Location = new System.Drawing.Point(521, 117);
+            this.vl0.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vl0.Name = "vl0";
-            this.vl0.Size = new System.Drawing.Size(24, 23);
+            this.vl0.Size = new System.Drawing.Size(27, 27);
             this.vl0.TabIndex = 6;
             // 
             // vl5
             // 
-            this.vl5.Location = new System.Drawing.Point(426, 88);
+            this.vl5.Location = new System.Drawing.Point(487, 117);
+            this.vl5.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vl5.Name = "vl5";
-            this.vl5.Size = new System.Drawing.Size(24, 23);
+            this.vl5.Size = new System.Drawing.Size(27, 27);
             this.vl5.TabIndex = 6;
             // 
             // vl10
             // 
-            this.vl10.Location = new System.Drawing.Point(396, 88);
+            this.vl10.Location = new System.Drawing.Point(453, 117);
+            this.vl10.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vl10.Name = "vl10";
-            this.vl10.Size = new System.Drawing.Size(24, 23);
+            this.vl10.Size = new System.Drawing.Size(27, 27);
             this.vl10.TabIndex = 6;
             // 
             // vl15
             // 
-            this.vl15.Location = new System.Drawing.Point(366, 88);
+            this.vl15.Location = new System.Drawing.Point(418, 117);
+            this.vl15.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vl15.Name = "vl15";
-            this.vl15.Size = new System.Drawing.Size(24, 23);
+            this.vl15.Size = new System.Drawing.Size(27, 27);
             this.vl15.TabIndex = 6;
             // 
             // vl20
             // 
-            this.vl20.Location = new System.Drawing.Point(336, 88);
+            this.vl20.Location = new System.Drawing.Point(384, 117);
+            this.vl20.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.vl20.Name = "vl20";
-            this.vl20.Size = new System.Drawing.Size(24, 23);
+            this.vl20.Size = new System.Drawing.Size(27, 27);
             this.vl20.TabIndex = 6;
             // 
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(576, 70);
+            this.label18.Location = new System.Drawing.Point(658, 93);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(29, 15);
+            this.label18.Size = new System.Drawing.Size(37, 20);
             this.label18.TabIndex = 5;
             this.label18.Text = "-20°";
             // 
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(546, 70);
+            this.label17.Location = new System.Drawing.Point(624, 93);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(29, 15);
+            this.label17.Size = new System.Drawing.Size(37, 20);
             this.label17.TabIndex = 5;
             this.label17.Text = "-15°";
             // 
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(516, 70);
+            this.label16.Location = new System.Drawing.Point(590, 93);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(29, 15);
+            this.label16.Size = new System.Drawing.Size(37, 20);
             this.label16.TabIndex = 5;
             this.label16.Text = "-10°";
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(486, 70);
+            this.label15.Location = new System.Drawing.Point(555, 93);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(23, 15);
+            this.label15.Size = new System.Drawing.Size(29, 20);
             this.label15.TabIndex = 5;
             this.label15.Text = "-5°";
             // 
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(456, 70);
+            this.label14.Location = new System.Drawing.Point(521, 93);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(18, 15);
+            this.label14.Size = new System.Drawing.Size(23, 20);
             this.label14.TabIndex = 5;
             this.label14.Text = "0°";
             // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(426, 70);
+            this.label13.Location = new System.Drawing.Point(487, 93);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(18, 15);
+            this.label13.Size = new System.Drawing.Size(23, 20);
             this.label13.TabIndex = 5;
             this.label13.Text = "5°";
             // 
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(396, 70);
+            this.label12.Location = new System.Drawing.Point(453, 93);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(24, 15);
+            this.label12.Size = new System.Drawing.Size(31, 20);
             this.label12.TabIndex = 5;
             this.label12.Text = "10°";
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(366, 70);
+            this.label11.Location = new System.Drawing.Point(418, 93);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(24, 15);
+            this.label11.Size = new System.Drawing.Size(31, 20);
             this.label11.TabIndex = 5;
             this.label11.Text = "15°";
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(336, 70);
+            this.label10.Location = new System.Drawing.Point(384, 93);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(24, 15);
+            this.label10.Size = new System.Drawing.Size(31, 20);
             this.label10.TabIndex = 5;
             this.label10.Text = "20°";
             // 
             // HeatingName
             // 
             this.HeatingName.FormattingEnabled = true;
-            this.HeatingName.Location = new System.Drawing.Point(336, 15);
+            this.HeatingName.Location = new System.Drawing.Point(384, 20);
+            this.HeatingName.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.HeatingName.Name = "HeatingName";
-            this.HeatingName.Size = new System.Drawing.Size(121, 23);
+            this.HeatingName.Size = new System.Drawing.Size(138, 28);
             this.HeatingName.TabIndex = 4;
             this.HeatingName.SelectedIndexChanged += new System.EventHandler(this.HeatingName_SelectedIndexChanged);
             this.HeatingName.TextUpdate += new System.EventHandler(this.HeatingName_TextUpdate);
@@ -993,51 +1038,58 @@ namespace DistrictHeating
             // 
             // instanceNumber
             // 
-            this.instanceNumber.Location = new System.Drawing.Point(336, 262);
+            this.instanceNumber.Location = new System.Drawing.Point(384, 349);
+            this.instanceNumber.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.instanceNumber.Name = "instanceNumber";
-            this.instanceNumber.Size = new System.Drawing.Size(100, 23);
+            this.instanceNumber.Size = new System.Drawing.Size(114, 27);
             this.instanceNumber.TabIndex = 3;
             // 
             // heatPumpEfficiency
             // 
-            this.heatPumpEfficiency.Location = new System.Drawing.Point(336, 233);
+            this.heatPumpEfficiency.Location = new System.Drawing.Point(384, 311);
+            this.heatPumpEfficiency.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.heatPumpEfficiency.Name = "heatPumpEfficiency";
-            this.heatPumpEfficiency.Size = new System.Drawing.Size(100, 23);
+            this.heatPumpEfficiency.Size = new System.Drawing.Size(114, 27);
             this.heatPumpEfficiency.TabIndex = 3;
             // 
             // endDayTime
             // 
-            this.endDayTime.Location = new System.Drawing.Point(336, 204);
+            this.endDayTime.Location = new System.Drawing.Point(384, 272);
+            this.endDayTime.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.endDayTime.Name = "endDayTime";
-            this.endDayTime.Size = new System.Drawing.Size(100, 23);
+            this.endDayTime.Size = new System.Drawing.Size(114, 27);
             this.endDayTime.TabIndex = 3;
             // 
             // beginDayTime
             // 
-            this.beginDayTime.Location = new System.Drawing.Point(336, 175);
+            this.beginDayTime.Location = new System.Drawing.Point(384, 233);
+            this.beginDayTime.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.beginDayTime.Name = "beginDayTime";
-            this.beginDayTime.Size = new System.Drawing.Size(100, 23);
+            this.beginDayTime.Size = new System.Drawing.Size(114, 27);
             this.beginDayTime.TabIndex = 3;
             // 
             // nightTemperature
             // 
-            this.nightTemperature.Location = new System.Drawing.Point(336, 146);
+            this.nightTemperature.Location = new System.Drawing.Point(384, 195);
+            this.nightTemperature.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.nightTemperature.Name = "nightTemperature";
-            this.nightTemperature.Size = new System.Drawing.Size(100, 23);
+            this.nightTemperature.Size = new System.Drawing.Size(114, 27);
             this.nightTemperature.TabIndex = 3;
             // 
             // dayTemperature
             // 
-            this.dayTemperature.Location = new System.Drawing.Point(336, 117);
+            this.dayTemperature.Location = new System.Drawing.Point(384, 156);
+            this.dayTemperature.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.dayTemperature.Name = "dayTemperature";
-            this.dayTemperature.Size = new System.Drawing.Size(100, 23);
+            this.dayTemperature.Size = new System.Drawing.Size(114, 27);
             this.dayTemperature.TabIndex = 3;
             // 
             // energyPerYear
             // 
-            this.energyPerYear.Location = new System.Drawing.Point(336, 44);
+            this.energyPerYear.Location = new System.Drawing.Point(384, 59);
+            this.energyPerYear.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.energyPerYear.Name = "energyPerYear";
-            this.energyPerYear.Size = new System.Drawing.Size(100, 23);
+            this.energyPerYear.Size = new System.Drawing.Size(114, 27);
             this.energyPerYear.TabIndex = 3;
             // 
             // tabWether
@@ -1045,28 +1097,31 @@ namespace DistrictHeating
             this.tabWether.Controls.Add(this.saveTemperatureData);
             this.tabWether.Controls.Add(this.readTemperatureData);
             this.tabWether.Controls.Add(this.wetherData);
-            this.tabWether.Location = new System.Drawing.Point(4, 24);
+            this.tabWether.Location = new System.Drawing.Point(4, 29);
+            this.tabWether.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabWether.Name = "tabWether";
-            this.tabWether.Padding = new System.Windows.Forms.Padding(3);
-            this.tabWether.Size = new System.Drawing.Size(1057, 606);
+            this.tabWether.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabWether.Size = new System.Drawing.Size(1209, 812);
             this.tabWether.TabIndex = 2;
             this.tabWether.Text = "Wetterdaten";
             this.tabWether.UseVisualStyleBackColor = true;
             // 
             // saveTemperatureData
             // 
-            this.saveTemperatureData.Location = new System.Drawing.Point(849, 6);
+            this.saveTemperatureData.Location = new System.Drawing.Point(970, 8);
+            this.saveTemperatureData.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.saveTemperatureData.Name = "saveTemperatureData";
-            this.saveTemperatureData.Size = new System.Drawing.Size(178, 23);
+            this.saveTemperatureData.Size = new System.Drawing.Size(203, 31);
             this.saveTemperatureData.TabIndex = 1;
             this.saveTemperatureData.Text = "Temperaturdaten speichern";
             this.saveTemperatureData.UseVisualStyleBackColor = true;
             // 
             // readTemperatureData
             // 
-            this.readTemperatureData.Location = new System.Drawing.Point(577, 6);
+            this.readTemperatureData.Location = new System.Drawing.Point(659, 8);
+            this.readTemperatureData.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.readTemperatureData.Name = "readTemperatureData";
-            this.readTemperatureData.Size = new System.Drawing.Size(178, 23);
+            this.readTemperatureData.Size = new System.Drawing.Size(203, 31);
             this.readTemperatureData.TabIndex = 1;
             this.readTemperatureData.Text = "Temperaturdaten lesen";
             this.readTemperatureData.UseVisualStyleBackColor = true;
@@ -1075,10 +1130,11 @@ namespace DistrictHeating
             // wetherData
             // 
             this.wetherData.FormattingEnabled = true;
-            this.wetherData.ItemHeight = 15;
-            this.wetherData.Location = new System.Drawing.Point(6, 6);
+            this.wetherData.ItemHeight = 20;
+            this.wetherData.Location = new System.Drawing.Point(7, 8);
+            this.wetherData.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.wetherData.Name = "wetherData";
-            this.wetherData.Size = new System.Drawing.Size(565, 574);
+            this.wetherData.Size = new System.Drawing.Size(645, 764);
             this.wetherData.TabIndex = 0;
             // 
             // tabSimulation
@@ -1096,16 +1152,18 @@ namespace DistrictHeating
             this.tabSimulation.Controls.Add(this.startCenterTemperature);
             this.tabSimulation.Controls.Add(label34);
             this.tabSimulation.Controls.Add(this.startSimulation);
-            this.tabSimulation.Location = new System.Drawing.Point(4, 24);
+            this.tabSimulation.Location = new System.Drawing.Point(4, 29);
+            this.tabSimulation.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabSimulation.Name = "tabSimulation";
-            this.tabSimulation.Padding = new System.Windows.Forms.Padding(3);
-            this.tabSimulation.Size = new System.Drawing.Size(1057, 606);
+            this.tabSimulation.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabSimulation.Size = new System.Drawing.Size(1209, 812);
             this.tabSimulation.TabIndex = 4;
             this.tabSimulation.Text = "Simulation";
             this.tabSimulation.UseVisualStyleBackColor = true;
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.saveSimulationData);
             this.groupBox1.Controls.Add(this.solarPercentage);
             this.groupBox1.Controls.Add(label41);
             this.groupBox1.Controls.Add(this.electricityTotal);
@@ -1118,103 +1176,118 @@ namespace DistrictHeating
             this.groupBox1.Controls.Add(label37);
             this.groupBox1.Controls.Add(this.boreHoleAdded);
             this.groupBox1.Controls.Add(label36);
-            this.groupBox1.Location = new System.Drawing.Point(6, 276);
+            this.groupBox1.Location = new System.Drawing.Point(7, 368);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(436, 251);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.groupBox1.Size = new System.Drawing.Size(498, 335);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ergebnisse";
             // 
             // solarPercentage
             // 
-            this.solarPercentage.Location = new System.Drawing.Point(327, 167);
+            this.solarPercentage.Location = new System.Drawing.Point(374, 223);
+            this.solarPercentage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.solarPercentage.Name = "solarPercentage";
-            this.solarPercentage.Size = new System.Drawing.Size(100, 23);
+            this.solarPercentage.Size = new System.Drawing.Size(114, 27);
             this.solarPercentage.TabIndex = 9;
             // 
             // electricityTotal
             // 
-            this.electricityTotal.Location = new System.Drawing.Point(327, 138);
+            this.electricityTotal.Location = new System.Drawing.Point(374, 184);
+            this.electricityTotal.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.electricityTotal.Name = "electricityTotal";
-            this.electricityTotal.Size = new System.Drawing.Size(100, 23);
+            this.electricityTotal.Size = new System.Drawing.Size(114, 27);
             this.electricityTotal.TabIndex = 9;
             // 
             // heatProduced
             // 
-            this.heatProduced.Location = new System.Drawing.Point(327, 109);
+            this.heatProduced.Location = new System.Drawing.Point(374, 145);
+            this.heatProduced.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.heatProduced.Name = "heatProduced";
-            this.heatProduced.Size = new System.Drawing.Size(100, 23);
+            this.heatProduced.Size = new System.Drawing.Size(114, 27);
             this.heatProduced.TabIndex = 9;
             // 
             // solarTotal
             // 
-            this.solarTotal.Location = new System.Drawing.Point(327, 80);
+            this.solarTotal.Location = new System.Drawing.Point(374, 107);
+            this.solarTotal.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.solarTotal.Name = "solarTotal";
-            this.solarTotal.Size = new System.Drawing.Size(100, 23);
+            this.solarTotal.Size = new System.Drawing.Size(114, 27);
             this.solarTotal.TabIndex = 9;
             // 
             // boreHoleRemoved
             // 
-            this.boreHoleRemoved.Location = new System.Drawing.Point(327, 51);
+            this.boreHoleRemoved.Location = new System.Drawing.Point(374, 68);
+            this.boreHoleRemoved.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.boreHoleRemoved.Name = "boreHoleRemoved";
-            this.boreHoleRemoved.Size = new System.Drawing.Size(100, 23);
+            this.boreHoleRemoved.Size = new System.Drawing.Size(114, 27);
             this.boreHoleRemoved.TabIndex = 9;
             // 
             // boreHoleAdded
             // 
-            this.boreHoleAdded.Location = new System.Drawing.Point(327, 22);
+            this.boreHoleAdded.Location = new System.Drawing.Point(374, 29);
+            this.boreHoleAdded.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.boreHoleAdded.Name = "boreHoleAdded";
-            this.boreHoleAdded.Size = new System.Drawing.Size(100, 23);
+            this.boreHoleAdded.Size = new System.Drawing.Size(114, 27);
             this.boreHoleAdded.TabIndex = 9;
             // 
             // progressBar
             // 
-            this.progressBar.Location = new System.Drawing.Point(6, 561);
+            this.progressBar.Location = new System.Drawing.Point(7, 748);
+            this.progressBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.progressBar.Maximum = 1000;
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(886, 23);
+            this.progressBar.Size = new System.Drawing.Size(1013, 31);
             this.progressBar.TabIndex = 8;
             // 
             // timeStep
             // 
-            this.timeStep.Location = new System.Drawing.Point(333, 151);
+            this.timeStep.Location = new System.Drawing.Point(381, 201);
+            this.timeStep.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.timeStep.Name = "timeStep";
-            this.timeStep.Size = new System.Drawing.Size(100, 23);
+            this.timeStep.Size = new System.Drawing.Size(114, 27);
             this.timeStep.TabIndex = 7;
             // 
             // numYears
             // 
-            this.numYears.Location = new System.Drawing.Point(333, 122);
+            this.numYears.Location = new System.Drawing.Point(381, 163);
+            this.numYears.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.numYears.Name = "numYears";
-            this.numYears.Size = new System.Drawing.Size(100, 23);
+            this.numYears.Size = new System.Drawing.Size(114, 27);
             this.numYears.TabIndex = 7;
             // 
             // startDate
             // 
-            this.startDate.Location = new System.Drawing.Point(333, 93);
+            this.startDate.Location = new System.Drawing.Point(381, 124);
+            this.startDate.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.startDate.Name = "startDate";
-            this.startDate.Size = new System.Drawing.Size(100, 23);
+            this.startDate.Size = new System.Drawing.Size(114, 27);
             this.startDate.TabIndex = 7;
             // 
             // startBorderTemperature
             // 
-            this.startBorderTemperature.Location = new System.Drawing.Point(333, 64);
+            this.startBorderTemperature.Location = new System.Drawing.Point(381, 85);
+            this.startBorderTemperature.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.startBorderTemperature.Name = "startBorderTemperature";
-            this.startBorderTemperature.Size = new System.Drawing.Size(100, 23);
+            this.startBorderTemperature.Size = new System.Drawing.Size(114, 27);
             this.startBorderTemperature.TabIndex = 7;
             // 
             // startCenterTemperature
             // 
-            this.startCenterTemperature.Location = new System.Drawing.Point(333, 35);
+            this.startCenterTemperature.Location = new System.Drawing.Point(381, 47);
+            this.startCenterTemperature.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.startCenterTemperature.Name = "startCenterTemperature";
-            this.startCenterTemperature.Size = new System.Drawing.Size(100, 23);
+            this.startCenterTemperature.Size = new System.Drawing.Size(114, 27);
             this.startCenterTemperature.TabIndex = 7;
             // 
             // startSimulation
             // 
-            this.startSimulation.Location = new System.Drawing.Point(898, 561);
+            this.startSimulation.Location = new System.Drawing.Point(1026, 748);
+            this.startSimulation.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.startSimulation.Name = "startSimulation";
-            this.startSimulation.Size = new System.Drawing.Size(129, 23);
+            this.startSimulation.Size = new System.Drawing.Size(147, 31);
             this.startSimulation.TabIndex = 0;
             this.startSimulation.Text = "Simulation Starten";
             this.startSimulation.UseVisualStyleBackColor = true;
@@ -1228,19 +1301,21 @@ namespace DistrictHeating
             this.tabGraphics.Controls.Add(this.panelRight);
             this.tabGraphics.Controls.Add(this.panelLeft);
             this.tabGraphics.Controls.Add(this.graphicsPanel);
-            this.tabGraphics.Location = new System.Drawing.Point(4, 24);
+            this.tabGraphics.Location = new System.Drawing.Point(4, 29);
+            this.tabGraphics.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.tabGraphics.Name = "tabGraphics";
-            this.tabGraphics.Padding = new System.Windows.Forms.Padding(3);
-            this.tabGraphics.Size = new System.Drawing.Size(1057, 606);
+            this.tabGraphics.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.tabGraphics.Size = new System.Drawing.Size(1209, 812);
             this.tabGraphics.TabIndex = 5;
             this.tabGraphics.Text = "Grafik";
             this.tabGraphics.UseVisualStyleBackColor = true;
             // 
             // zoomMinus
             // 
-            this.zoomMinus.Location = new System.Drawing.Point(10, 551);
+            this.zoomMinus.Location = new System.Drawing.Point(11, 735);
+            this.zoomMinus.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.zoomMinus.Name = "zoomMinus";
-            this.zoomMinus.Size = new System.Drawing.Size(37, 33);
+            this.zoomMinus.Size = new System.Drawing.Size(42, 44);
             this.zoomMinus.TabIndex = 3;
             this.zoomMinus.Text = "-";
             this.zoomMinus.UseVisualStyleBackColor = true;
@@ -1248,9 +1323,10 @@ namespace DistrictHeating
             // 
             // zoomPlus
             // 
-            this.zoomPlus.Location = new System.Drawing.Point(990, 551);
+            this.zoomPlus.Location = new System.Drawing.Point(1131, 735);
+            this.zoomPlus.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.zoomPlus.Name = "zoomPlus";
-            this.zoomPlus.Size = new System.Drawing.Size(37, 33);
+            this.zoomPlus.Size = new System.Drawing.Size(42, 44);
             this.zoomPlus.TabIndex = 3;
             this.zoomPlus.Text = "+";
             this.zoomPlus.UseVisualStyleBackColor = true;
@@ -1259,33 +1335,37 @@ namespace DistrictHeating
             // timeScale
             // 
             this.timeScale.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.timeScale.Location = new System.Drawing.Point(44, 570);
+            this.timeScale.Location = new System.Drawing.Point(50, 764);
+            this.timeScale.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.timeScale.Name = "timeScale";
-            this.timeScale.Size = new System.Drawing.Size(957, 33);
+            this.timeScale.Size = new System.Drawing.Size(1095, 44);
             this.timeScale.TabIndex = 2;
             // 
             // panelRight
             // 
             this.panelRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panelRight.Location = new System.Drawing.Point(1001, 3);
+            this.panelRight.Location = new System.Drawing.Point(1145, 4);
+            this.panelRight.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.panelRight.Name = "panelRight";
-            this.panelRight.Size = new System.Drawing.Size(53, 600);
+            this.panelRight.Size = new System.Drawing.Size(61, 804);
             this.panelRight.TabIndex = 0;
             // 
             // panelLeft
             // 
             this.panelLeft.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelLeft.Location = new System.Drawing.Point(3, 3);
+            this.panelLeft.Location = new System.Drawing.Point(3, 4);
+            this.panelLeft.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.panelLeft.Name = "panelLeft";
-            this.panelLeft.Size = new System.Drawing.Size(41, 600);
+            this.panelLeft.Size = new System.Drawing.Size(47, 804);
             this.panelLeft.TabIndex = 1;
             // 
             // graphicsPanel
             // 
             this.graphicsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.graphicsPanel.Location = new System.Drawing.Point(3, 3);
+            this.graphicsPanel.Location = new System.Drawing.Point(3, 4);
+            this.graphicsPanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.graphicsPanel.Name = "graphicsPanel";
-            this.graphicsPanel.Size = new System.Drawing.Size(1051, 600);
+            this.graphicsPanel.Size = new System.Drawing.Size(1203, 804);
             this.graphicsPanel.TabIndex = 0;
             this.graphicsPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.graphicsPanel_Paint);
             this.graphicsPanel.MouseClick += new System.Windows.Forms.MouseEventHandler(this.graphicsPanel_MouseClick);
@@ -1311,10 +1391,11 @@ namespace DistrictHeating
             this.legend.Controls.Add(this.bufferEnergy);
             this.legend.Controls.Add(this.netLoss);
             this.legend.Controls.Add(this.boreHoleEnergy);
-            this.legend.Location = new System.Drawing.Point(4, 24);
+            this.legend.Location = new System.Drawing.Point(4, 29);
+            this.legend.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.legend.Name = "legend";
-            this.legend.Padding = new System.Windows.Forms.Padding(3);
-            this.legend.Size = new System.Drawing.Size(1057, 606);
+            this.legend.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.legend.Size = new System.Drawing.Size(1209, 812);
             this.legend.TabIndex = 8;
             this.legend.Text = "Legende";
             this.legend.UseVisualStyleBackColor = true;
@@ -1323,9 +1404,10 @@ namespace DistrictHeating
             // 
             this.warmPipe.AutoSize = true;
             this.warmPipe.ForeColor = System.Drawing.Color.DarkOrange;
-            this.warmPipe.Location = new System.Drawing.Point(239, 74);
+            this.warmPipe.Location = new System.Drawing.Point(273, 99);
+            this.warmPipe.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.warmPipe.Name = "warmPipe";
-            this.warmPipe.Size = new System.Drawing.Size(192, 19);
+            this.warmPipe.Size = new System.Drawing.Size(239, 24);
             this.warmPipe.TabIndex = 0;
             this.warmPipe.Text = "Vorlauf (warm) Netzleitung (°C)";
             this.warmPipe.UseVisualStyleBackColor = true;
@@ -1335,9 +1417,10 @@ namespace DistrictHeating
             // 
             this.returnPipe.AutoSize = true;
             this.returnPipe.ForeColor = System.Drawing.Color.Black;
-            this.returnPipe.Location = new System.Drawing.Point(239, 94);
+            this.returnPipe.Location = new System.Drawing.Point(273, 125);
+            this.returnPipe.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.returnPipe.Name = "returnPipe";
-            this.returnPipe.Size = new System.Drawing.Size(160, 19);
+            this.returnPipe.Size = new System.Drawing.Size(197, 24);
             this.returnPipe.TabIndex = 0;
             this.returnPipe.Text = "Rücklauf Netzleitung (°C)";
             this.returnPipe.UseVisualStyleBackColor = true;
@@ -1347,9 +1430,10 @@ namespace DistrictHeating
             // 
             this.hotPipe.AutoSize = true;
             this.hotPipe.ForeColor = System.Drawing.Color.Maroon;
-            this.hotPipe.Location = new System.Drawing.Point(239, 114);
+            this.hotPipe.Location = new System.Drawing.Point(273, 152);
+            this.hotPipe.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.hotPipe.Name = "hotPipe";
-            this.hotPipe.Size = new System.Drawing.Size(185, 19);
+            this.hotPipe.Size = new System.Drawing.Size(230, 24);
             this.hotPipe.TabIndex = 0;
             this.hotPipe.Text = "Vorlauf (heiß) Netzleitung (°C)";
             this.hotPipe.UseVisualStyleBackColor = true;
@@ -1359,9 +1443,10 @@ namespace DistrictHeating
             // 
             this.boreHoleCenter.AutoSize = true;
             this.boreHoleCenter.ForeColor = System.Drawing.Color.Red;
-            this.boreHoleCenter.Location = new System.Drawing.Point(239, 134);
+            this.boreHoleCenter.Location = new System.Drawing.Point(273, 179);
+            this.boreHoleCenter.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.boreHoleCenter.Name = "boreHoleCenter";
-            this.boreHoleCenter.Size = new System.Drawing.Size(157, 19);
+            this.boreHoleCenter.Size = new System.Drawing.Size(195, 24);
             this.boreHoleCenter.TabIndex = 0;
             this.boreHoleCenter.Text = "Erdsondenfeld Mitte (°C)";
             this.boreHoleCenter.UseVisualStyleBackColor = true;
@@ -1371,9 +1456,10 @@ namespace DistrictHeating
             // 
             this.boreHoleBorder.AutoSize = true;
             this.boreHoleBorder.ForeColor = System.Drawing.Color.Purple;
-            this.boreHoleBorder.Location = new System.Drawing.Point(239, 154);
+            this.boreHoleBorder.Location = new System.Drawing.Point(273, 205);
+            this.boreHoleBorder.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.boreHoleBorder.Name = "boreHoleBorder";
-            this.boreHoleBorder.Size = new System.Drawing.Size(156, 19);
+            this.boreHoleBorder.Size = new System.Drawing.Size(194, 24);
             this.boreHoleBorder.TabIndex = 0;
             this.boreHoleBorder.Text = "Erdsondenfeld Rand (°C)";
             this.boreHoleBorder.UseVisualStyleBackColor = true;
@@ -1383,9 +1469,10 @@ namespace DistrictHeating
             // 
             this.heatConsumption.AutoSize = true;
             this.heatConsumption.ForeColor = System.Drawing.Color.Fuchsia;
-            this.heatConsumption.Location = new System.Drawing.Point(239, 174);
+            this.heatConsumption.Location = new System.Drawing.Point(273, 232);
+            this.heatConsumption.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.heatConsumption.Name = "heatConsumption";
-            this.heatConsumption.Size = new System.Drawing.Size(192, 19);
+            this.heatConsumption.Size = new System.Drawing.Size(237, 24);
             this.heatConsumption.TabIndex = 0;
             this.heatConsumption.Text = "Wärmeverbrauch Heizung (kW)";
             this.heatConsumption.UseVisualStyleBackColor = true;
@@ -1395,9 +1482,10 @@ namespace DistrictHeating
             // 
             this.electricityConsumption.AutoSize = true;
             this.electricityConsumption.ForeColor = System.Drawing.Color.DeepPink;
-            this.electricityConsumption.Location = new System.Drawing.Point(239, 194);
+            this.electricityConsumption.Location = new System.Drawing.Point(273, 259);
+            this.electricityConsumption.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.electricityConsumption.Name = "electricityConsumption";
-            this.electricityConsumption.Size = new System.Drawing.Size(273, 19);
+            this.electricityConsumption.Size = new System.Drawing.Size(338, 24);
             this.electricityConsumption.TabIndex = 0;
             this.electricityConsumption.Text = "Stromverbrauch Heizung (Wärmepumpe) (kW)";
             this.electricityConsumption.UseVisualStyleBackColor = true;
@@ -1407,9 +1495,10 @@ namespace DistrictHeating
             // 
             this.solarEnergy.AutoSize = true;
             this.solarEnergy.ForeColor = System.Drawing.Color.Olive;
-            this.solarEnergy.Location = new System.Drawing.Point(239, 214);
+            this.solarEnergy.Location = new System.Drawing.Point(273, 285);
+            this.solarEnergy.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.solarEnergy.Name = "solarEnergy";
-            this.solarEnergy.Size = new System.Drawing.Size(169, 19);
+            this.solarEnergy.Size = new System.Drawing.Size(210, 24);
             this.solarEnergy.TabIndex = 0;
             this.solarEnergy.Text = "Leistung Solarthermie (kW)";
             this.solarEnergy.UseVisualStyleBackColor = true;
@@ -1419,9 +1508,10 @@ namespace DistrictHeating
             // 
             this.boreHoleEnergyFlow.AutoSize = true;
             this.boreHoleEnergyFlow.ForeColor = System.Drawing.Color.Navy;
-            this.boreHoleEnergyFlow.Location = new System.Drawing.Point(239, 234);
+            this.boreHoleEnergyFlow.Location = new System.Drawing.Point(273, 312);
+            this.boreHoleEnergyFlow.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.boreHoleEnergyFlow.Name = "boreHoleEnergyFlow";
-            this.boreHoleEnergyFlow.Size = new System.Drawing.Size(196, 19);
+            this.boreHoleEnergyFlow.Size = new System.Drawing.Size(245, 24);
             this.boreHoleEnergyFlow.TabIndex = 0;
             this.boreHoleEnergyFlow.Text = "Energiefluss Erdsondenfeld (kW)";
             this.boreHoleEnergyFlow.UseVisualStyleBackColor = true;
@@ -1431,9 +1521,10 @@ namespace DistrictHeating
             // 
             this.ambientTemperature.AutoSize = true;
             this.ambientTemperature.ForeColor = System.Drawing.Color.Blue;
-            this.ambientTemperature.Location = new System.Drawing.Point(239, 254);
+            this.ambientTemperature.Location = new System.Drawing.Point(273, 339);
+            this.ambientTemperature.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.ambientTemperature.Name = "ambientTemperature";
-            this.ambientTemperature.Size = new System.Drawing.Size(220, 19);
+            this.ambientTemperature.Size = new System.Drawing.Size(272, 24);
             this.ambientTemperature.TabIndex = 0;
             this.ambientTemperature.Text = "Außentemperatur (Wetterdaten) (°C)";
             this.ambientTemperature.UseVisualStyleBackColor = true;
@@ -1443,9 +1534,10 @@ namespace DistrictHeating
             // 
             this.volumeFlow.AutoSize = true;
             this.volumeFlow.ForeColor = System.Drawing.Color.Teal;
-            this.volumeFlow.Location = new System.Drawing.Point(239, 274);
+            this.volumeFlow.Location = new System.Drawing.Point(273, 365);
+            this.volumeFlow.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.volumeFlow.Name = "volumeFlow";
-            this.volumeFlow.Size = new System.Drawing.Size(208, 19);
+            this.volumeFlow.Size = new System.Drawing.Size(256, 24);
             this.volumeFlow.TabIndex = 0;
             this.volumeFlow.Text = "Volumenfluss im Leitungsnetz (l/s)";
             this.volumeFlow.UseVisualStyleBackColor = true;
@@ -1455,9 +1547,10 @@ namespace DistrictHeating
             // 
             this.bufferBottomTemperature.AutoSize = true;
             this.bufferBottomTemperature.ForeColor = System.Drawing.Color.Gold;
-            this.bufferBottomTemperature.Location = new System.Drawing.Point(239, 394);
+            this.bufferBottomTemperature.Location = new System.Drawing.Point(273, 525);
+            this.bufferBottomTemperature.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.bufferBottomTemperature.Name = "bufferBottomTemperature";
-            this.bufferBottomTemperature.Size = new System.Drawing.Size(199, 19);
+            this.bufferBottomTemperature.Size = new System.Drawing.Size(246, 24);
             this.bufferBottomTemperature.TabIndex = 0;
             this.bufferBottomTemperature.Text = "Pufferspeicher Temperatur unten";
             this.bufferBottomTemperature.UseVisualStyleBackColor = true;
@@ -1467,9 +1560,10 @@ namespace DistrictHeating
             // 
             this.bufferTopTemperature.AutoSize = true;
             this.bufferTopTemperature.ForeColor = System.Drawing.Color.YellowGreen;
-            this.bufferTopTemperature.Location = new System.Drawing.Point(239, 369);
+            this.bufferTopTemperature.Location = new System.Drawing.Point(273, 492);
+            this.bufferTopTemperature.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.bufferTopTemperature.Name = "bufferTopTemperature";
-            this.bufferTopTemperature.Size = new System.Drawing.Size(195, 19);
+            this.bufferTopTemperature.Size = new System.Drawing.Size(243, 24);
             this.bufferTopTemperature.TabIndex = 0;
             this.bufferTopTemperature.Text = "Pufferspeicher Temperatur oben";
             this.bufferTopTemperature.UseVisualStyleBackColor = true;
@@ -1479,9 +1573,10 @@ namespace DistrictHeating
             // 
             this.bufferEnergy.AutoSize = true;
             this.bufferEnergy.ForeColor = System.Drawing.Color.LawnGreen;
-            this.bufferEnergy.Location = new System.Drawing.Point(239, 344);
+            this.bufferEnergy.Location = new System.Drawing.Point(273, 459);
+            this.bufferEnergy.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.bufferEnergy.Name = "bufferEnergy";
-            this.bufferEnergy.Size = new System.Drawing.Size(203, 19);
+            this.bufferEnergy.Size = new System.Drawing.Size(252, 24);
             this.bufferEnergy.TabIndex = 0;
             this.bufferEnergy.Text = "Puffersepeicher Energie (in MWh)";
             this.bufferEnergy.UseVisualStyleBackColor = true;
@@ -1491,9 +1586,10 @@ namespace DistrictHeating
             // 
             this.netLoss.AutoSize = true;
             this.netLoss.ForeColor = System.Drawing.Color.Indigo;
-            this.netLoss.Location = new System.Drawing.Point(239, 319);
+            this.netLoss.Location = new System.Drawing.Point(273, 425);
+            this.netLoss.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.netLoss.Name = "netLoss";
-            this.netLoss.Size = new System.Drawing.Size(156, 19);
+            this.netLoss.Size = new System.Drawing.Size(193, 24);
             this.netLoss.TabIndex = 0;
             this.netLoss.Text = "Leitungsverluste im Netz";
             this.netLoss.UseVisualStyleBackColor = true;
@@ -1503,9 +1599,10 @@ namespace DistrictHeating
             // 
             this.boreHoleEnergy.AutoSize = true;
             this.boreHoleEnergy.ForeColor = System.Drawing.Color.Brown;
-            this.boreHoleEnergy.Location = new System.Drawing.Point(239, 294);
+            this.boreHoleEnergy.Location = new System.Drawing.Point(273, 392);
+            this.boreHoleEnergy.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.boreHoleEnergy.Name = "boreHoleEnergy";
-            this.boreHoleEnergy.Size = new System.Drawing.Size(321, 19);
+            this.boreHoleEnergy.Size = new System.Drawing.Size(403, 24);
             this.boreHoleEnergy.TabIndex = 0;
             this.boreHoleEnergy.Text = "Energie im Erdsondenfeld (bezogen aud 10°C) (in MWh)";
             this.boreHoleEnergy.UseVisualStyleBackColor = true;
@@ -1521,32 +1618,33 @@ namespace DistrictHeating
             this.contextMenuSaveImage.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.bildSpeichernToolStripMenuItem});
             this.contextMenuSaveImage.Name = "contextMenuStrip1";
-            this.contextMenuSaveImage.Size = new System.Drawing.Size(149, 26);
+            this.contextMenuSaveImage.Size = new System.Drawing.Size(172, 28);
             this.contextMenuSaveImage.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuSaveImage_Opening);
             // 
             // bildSpeichernToolStripMenuItem
             // 
             this.bildSpeichernToolStripMenuItem.Name = "bildSpeichernToolStripMenuItem";
-            this.bildSpeichernToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.bildSpeichernToolStripMenuItem.Size = new System.Drawing.Size(171, 24);
             this.bildSpeichernToolStripMenuItem.Text = "Bild speichern";
             this.bildSpeichernToolStripMenuItem.Click += new System.EventHandler(this.saveImage_Click);
             // 
-            // debug
+            // saveSimulationData
             // 
-            this.debug.Location = new System.Drawing.Point(931, 553);
-            this.debug.Name = "debug";
-            this.debug.Size = new System.Drawing.Size(75, 23);
-            this.debug.TabIndex = 3;
-            this.debug.Text = "Debug";
-            this.debug.UseVisualStyleBackColor = true;
-            this.debug.Click += new System.EventHandler(this.debug_Click);
+            this.saveSimulationData.Location = new System.Drawing.Point(374, 257);
+            this.saveSimulationData.Name = "saveSimulationData";
+            this.saveSimulationData.Size = new System.Drawing.Size(114, 29);
+            this.saveSimulationData.TabIndex = 10;
+            this.saveSimulationData.Text = "Speichern";
+            this.saveSimulationData.UseVisualStyleBackColor = true;
+            this.saveSimulationData.Click += new System.EventHandler(this.saveSimulationData_Click);
             // 
             // DistrictHeating
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1065, 634);
+            this.ClientSize = new System.Drawing.Size(1217, 845);
             this.Controls.Add(this.tabMain);
+            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "DistrictHeating";
             this.Text = "Simulation einer Anlage mit Solarthermie, Erdsonden-Wärmespeicher und Wärmeverbra" +
     "uchern";
@@ -1675,5 +1773,6 @@ namespace DistrictHeating
         private TextBox numYears;
         private TextBox numGrid;
         private Button debug;
+        private Button saveSimulationData;
     }
 }

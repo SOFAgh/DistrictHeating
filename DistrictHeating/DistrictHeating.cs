@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -130,8 +131,8 @@ namespace DistrictHeating
             if (!double.TryParse(groundHeatCapacity.Text, out Plant.BoreHoleField.HeatCapacity)) return groundHeatCapacity;
             if (!double.TryParse(groundLambda.Text, out Plant.BoreHoleField.Lambda)) return groundLambda;
             if (!double.TryParse(startCenterTemperature.Text, out Plant.BoreHoleField.startBoreholeFieldCenterTemperature)) return startCenterTemperature;
-            string[] dateParts = startDate.Text.Split('.',StringSplitOptions.RemoveEmptyEntries);
-            if (dateParts.Length ==2) 
+            string[] dateParts = startDate.Text.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            if (dateParts.Length == 2)
             {
                 Plant.SetStartTime(dateParts[0], dateParts[1]);
             }
@@ -387,13 +388,48 @@ namespace DistrictHeating
 
         private void debug_Click(object sender, EventArgs e)
         {
-            BoreHoleField bhf = new BoreHoleField(1, Plant.ZeroK + 10);
+            BoreHoleFieldOld bhf = new BoreHoleFieldOld(1, Plant.ZeroK + 10);
             bhf.BoreHoleDistance = 5.2;
             bhf.Grid = 6;
             bhf.Initialize();
             bhf.InitializeNew(6);
             bhf.SomeDebugCode();
-            bhf.TransferEnergieTest(0.1/1000, 363.15, out double outTemp, 300);
+            bhf.TransferEnergieTest(0.1 / 1000, 363.15, out double outTemp, 300);
+        }
+
+        private void saveSimulationData_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                using (StreamWriter outputFile = new StreamWriter(saveFileDialog.FileName))
+                {
+                    outputFile.Write("Stunde");
+                    int maxLength = 0;
+                    List<string> columns = new List<string>();
+                    foreach (string column in Plant.Diagrams.Keys)
+                    {
+                        outputFile.Write(", " + column);
+                        maxLength = Math.Max(maxLength, Plant.Diagrams[column].Count);
+                        columns.Add(column);
+                    }
+                    outputFile.WriteLine();
+                    for (int i = 0; i < maxLength; i++)
+                    {
+                        outputFile.Write(i.ToString());
+                        for (int j = 0; j < columns.Count; j++)
+                        {
+                            List<Plant.DiagramEntry> l = Plant.Diagrams[columns[j]];
+                            double val;
+                            if (l.Count == maxLength) val = l[i].val;
+                            else val = l[i / 24].val;
+                            outputFile.Write(", " + val.ToString("F2", CultureInfo.InvariantCulture));
+                        }
+                        outputFile.WriteLine();
+                    }
+                }
+            }
         }
     }
 }
