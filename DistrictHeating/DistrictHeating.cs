@@ -82,6 +82,9 @@ namespace DistrictHeating
             timeStep.Text = Plant.TimeStep.ToString();
             numYears.Text = Plant.NumYears.ToString();
             numGrid.Text = Plant.BoreHoleField.Grid.ToString();
+            boreHolePower.Text = Plant.BoreHoleField.TransferPower.ToString();
+            boreholeTempFileName.Text = Plant.boreHoleTempFileName;
+
             // bufferStorage
             bufferStorageEnergyTransfer.Text = Plant.BufferStorage.EnergyTransfer.ToString();
             bufferStroageSize.Text = Plant.BufferStorage.Volume.ToString();
@@ -126,6 +129,10 @@ namespace DistrictHeating
             if (!double.TryParse(borHoleDistance.Text, out double bhdist)) return borHoleDistance;
             Plant.BoreHoleField.BoreHoleDistance = bhdist;
             if (!int.TryParse(numGrid.Text, out int grid)) return numGrid;
+            if (!double.TryParse(boreHolePower.Text, out double transferPower)) return numGrid;
+            Plant.BoreHoleField.TransferPower = transferPower;
+            Plant.boreHoleTempFileName = boreholeTempFileName.Text;
+
             if (grid > 1 && grid < 50) Plant.BoreHoleField.Grid = grid; ;
             if (!double.TryParse(boreHoleLength.Text, out Plant.BoreHoleField.Length)) return boreHoleLength;
             if (!double.TryParse(groundHeatCapacity.Text, out Plant.BoreHoleField.HeatCapacity)) return groundHeatCapacity;
@@ -429,6 +436,16 @@ namespace DistrictHeating
                         outputFile.WriteLine();
                     }
                 }
+            }
+        }
+
+        private void selectBoreholeTempFile_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                boreholeTempFileName.Text = saveFileDialog.FileName;
             }
         }
     }

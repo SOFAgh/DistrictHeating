@@ -20,8 +20,9 @@ namespace DistrictHeating
         double Length = 100; // hardcoded 100m borehole deepth
         double HeatCapacity;
         double TransferPower = 10; // hardcoded property for the heat exchange between pipe and soil, i.e. 50 W/m at deltaT 10K in W/(m*K)
-        public HexSubdevision(double dist, int numRings, double initialTemperature)
+        public HexSubdevision(double dist, int numRings, double initialTemperature, double TransferPower )
         {
+            this.TransferPower = TransferPower;
             this.numRings = numRings + 1; // one more ring, the outer hexagons are for heat transfer into the surrounding big hexagons
             temperature = new double[this.numRings * 2 + 1, this.numRings * 2 + 1];
             int numHexagons = numRings * (numRings + 1) / 2 * 6 + 1; // without the outer ring

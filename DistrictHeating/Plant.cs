@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Security.Principal;
 using System.Globalization;
 using System.IO;
+using System.Windows.Forms;
 
 namespace DistrictHeating
 {
@@ -99,6 +100,9 @@ namespace DistrictHeating
         public BoreHoleField BoreHoleField;
         public Pipeline Pipeline;
         public BufferStorage BufferStorage;
+        internal string boreHoleTempFileName = "";
+        private StreamWriter? boreHoleTempFile;
+
         public int CurrentHourIndex { get { return (int)Math.Floor((currentTime / 3600) % HoursPerYear); } }
         internal double GetCurrentTemperature()
         {
@@ -148,6 +152,8 @@ namespace DistrictHeating
             }
             BoreHoleField.Initialize();
             BufferStorage.Initialize();
+            if (!string.IsNullOrEmpty(boreHoleTempFileName)) boreHoleTempFile = new StreamWriter(boreHoleTempFileName);
+            else boreHoleTempFile = null;
 
             // in the following loop we consider for each time step (one hour) how much energy the solar collectors will deliver and how much energy the heaters will require
             // wich both depend on whether data. The difference will be stored in or must be provided by the boreholefield. Now the question is the temperature level
@@ -302,7 +308,18 @@ namespace DistrictHeating
                         //System.Diagnostics.Trace.WriteLine("BoreholeEnergy: " + JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)) / 1000);
                     }
                 }
+                if (boreHoleTempFile!=null)
+                {
+                    double[] profile = BoreHoleField.GetTemperatureProfile();
+                    for (int pi = 0; pi < profile.Length; pi++)
+                    {
+                        if (pi != 0) boreHoleTempFile.Write(", ");
+                        boreHoleTempFile.Write((profile[pi]-ZeroK).ToString("F2", CultureInfo.InvariantCulture));
+                    }
+                    boreHoleTempFile.WriteLine();
+                }
             }
+            if (boreHoleTempFile != null) boreHoleTempFile.Close();
             solarPercentage = heatProduced / (electricityTotal + heatProduced);
             electricityTotal = JouleToKWh(electricityTotal) / 1000; // we expect MWh
             heatProduced = JouleToKWh(heatProduced) / 1000; // we expect MWh

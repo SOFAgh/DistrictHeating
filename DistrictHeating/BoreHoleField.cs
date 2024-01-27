@@ -21,10 +21,12 @@ namespace DistrictHeating
         public double startBoreholeFieldCenterTemperature = 10 + Plant.ZeroK;
         public double startBoreholeFieldBorderTemperature = 10 + Plant.ZeroK;
         HexSubdevision[] Boreholes; // The boreholes are subdevided for better precision. Ordered from inside to outer rings
+        Dictionary<(int, int), int> BoreHoleIndex;
 
         public int NumberOfBoreHoles { get; set; } = 61;
         public double BoreHoleDistance { get; set; } = 3.0;
         public int Grid { get; set; } = 6;
+        public double TransferPower { get; set; } = 5; // W/(K*m) power of the heat exchange of the borehole per meter and per K temperature difference
         private double GridDistance
         {
             get
@@ -163,9 +165,11 @@ namespace DistrictHeating
             }
             NumberOfBoreHoles = (numBoreholeRings * (numBoreholeRings + 1)) / 2 * 6 + 1;
             Boreholes = new HexSubdevision[NumberOfBoreHoles];
+            BoreHoleIndex = new Dictionary<(int, int), int>();
             foreach ((int i, int j, int k) in BoreholeIndices)
             {
-                Boreholes[k] = new HexSubdevision(GridDistance, 4, this[i,j]); // hardcoded number of subdevision rings (4: 61 hexagons)
+                Boreholes[k] = new HexSubdevision(GridDistance, 4, this[i, j], TransferPower); // hardcoded number of subdevision rings (4: 61 hexagons)
+                BoreHoleIndex[(i, j)] = k;
                 // System.Diagnostics.Trace.WriteLine("Borehole: " + i.ToString() + ", " + j.ToString());
             }
         }
@@ -223,7 +227,7 @@ namespace DistrictHeating
             double res = 0.0;
             foreach ((int i, int j) in AllIndicesWithoutBoreholes)
             {
-                res += area * (this[i,j] - baseTemperature);
+                res += area * (this[i, j] - baseTemperature);
             }
             res *= Length * HeatCapacity;
             for (int i = 0; i < Boreholes.Length; i++)
@@ -241,7 +245,7 @@ namespace DistrictHeating
         internal double GetColdEndTemperature(int v)
         {
             // return this[numRings, 0];
-            return Boreholes[Boreholes.Length-1].MeanTemperature;
+            return Boreholes[Boreholes.Length - 1].MeanTemperature;
         }
 
         internal void Dump(string v)
@@ -256,6 +260,17 @@ namespace DistrictHeating
 
         internal void Paint(Panel? panel)
         {
+        }
+
+        internal double[] GetTemperatureProfile()
+        {
+            double[] res = new double[2 * numRings + 1];
+            for (int i = 0; i < res.Length; i++)
+            {
+                if ((i - numRings) % Grid == 0 && BoreHoleIndex.ContainsKey((i-numRings, 0))) res[i] = Boreholes[BoreHoleIndex[(i-numRings,0)]].MeanTemperature;
+                else res[i] = temperature[i, numRings];
+            }
+            return res;
         }
     }
 }

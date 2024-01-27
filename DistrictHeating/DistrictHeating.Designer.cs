@@ -71,6 +71,8 @@ namespace DistrictHeating
             System.Windows.Forms.Label label43;
             System.Windows.Forms.Label label44;
             System.Windows.Forms.Label label45;
+            System.Windows.Forms.Label label46;
+            System.Windows.Forms.Label label47;
             this.tabPlant = new System.Windows.Forms.TabPage();
             this.debug = new System.Windows.Forms.Button();
             this.threePipes = new System.Windows.Forms.RadioButton();
@@ -82,7 +84,11 @@ namespace DistrictHeating
             this.pipelineLength = new System.Windows.Forms.TextBox();
             this.tabMain = new System.Windows.Forms.TabControl();
             this.tabBHTES = new System.Windows.Forms.TabPage();
+            this.boreHoleTime = new System.Windows.Forms.HScrollBar();
+            this.selectBoreholeTempFile = new System.Windows.Forms.Button();
             this.boreHoleFieldDisplay = new System.Windows.Forms.Panel();
+            this.boreholeTempFileName = new System.Windows.Forms.TextBox();
+            this.boreHolePower = new System.Windows.Forms.TextBox();
             this.numGrid = new System.Windows.Forms.TextBox();
             this.groundHeatCapacity = new System.Windows.Forms.TextBox();
             this.groundLambda = new System.Windows.Forms.TextBox();
@@ -129,6 +135,7 @@ namespace DistrictHeating
             this.wetherData = new System.Windows.Forms.ListBox();
             this.tabSimulation = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.saveSimulationData = new System.Windows.Forms.Button();
             this.solarPercentage = new System.Windows.Forms.TextBox();
             this.electricityTotal = new System.Windows.Forms.TextBox();
             this.heatProduced = new System.Windows.Forms.TextBox();
@@ -170,7 +177,6 @@ namespace DistrictHeating
             this.toolTipDiagram = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuSaveImage = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.bildSpeichernToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveSimulationData = new System.Windows.Forms.Button();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -207,6 +213,8 @@ namespace DistrictHeating
             label43 = new System.Windows.Forms.Label();
             label44 = new System.Windows.Forms.Label();
             label45 = new System.Windows.Forms.Label();
+            label46 = new System.Windows.Forms.Label();
+            label47 = new System.Windows.Forms.Label();
             this.tabPlant.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabBHTES.SuspendLayout();
@@ -545,6 +553,24 @@ namespace DistrictHeating
             label45.Text = "Anzahl Zwischenpunkte für Simulation:";
             label45.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // label46
+            // 
+            label46.Location = new System.Drawing.Point(7, 312);
+            label46.Name = "label46";
+            label46.Size = new System.Drawing.Size(366, 20);
+            label46.TabIndex = 5;
+            label46.Text = "Leistung Erdsonde (W/(K*m))";
+            label46.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // label47
+            // 
+            label47.Location = new System.Drawing.Point(7, 347);
+            label47.Name = "label47";
+            label47.Size = new System.Drawing.Size(366, 20);
+            label47.TabIndex = 5;
+            label47.Text = "Dateiname für Ausgabe";
+            label47.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // tabPlant
             // 
             this.tabPlant.Controls.Add(this.debug);
@@ -665,7 +691,13 @@ namespace DistrictHeating
             // 
             // tabBHTES
             // 
+            this.tabBHTES.Controls.Add(this.boreHoleTime);
+            this.tabBHTES.Controls.Add(this.selectBoreholeTempFile);
             this.tabBHTES.Controls.Add(this.boreHoleFieldDisplay);
+            this.tabBHTES.Controls.Add(this.boreholeTempFileName);
+            this.tabBHTES.Controls.Add(label47);
+            this.tabBHTES.Controls.Add(this.boreHolePower);
+            this.tabBHTES.Controls.Add(label46);
             this.tabBHTES.Controls.Add(this.numGrid);
             this.tabBHTES.Controls.Add(label45);
             this.tabBHTES.Controls.Add(this.groundHeatCapacity);
@@ -687,6 +719,23 @@ namespace DistrictHeating
             this.tabBHTES.Text = "Erdsondenspeicher";
             this.tabBHTES.UseVisualStyleBackColor = true;
             // 
+            // boreHoleTime
+            // 
+            this.boreHoleTime.Location = new System.Drawing.Point(619, 567);
+            this.boreHoleTime.Name = "boreHoleTime";
+            this.boreHoleTime.Size = new System.Drawing.Size(545, 26);
+            this.boreHoleTime.TabIndex = 9;
+            // 
+            // selectBoreholeTempFile
+            // 
+            this.selectBoreholeTempFile.Location = new System.Drawing.Point(582, 342);
+            this.selectBoreholeTempFile.Name = "selectBoreholeTempFile";
+            this.selectBoreholeTempFile.Size = new System.Drawing.Size(31, 29);
+            this.selectBoreholeTempFile.TabIndex = 8;
+            this.selectBoreholeTempFile.Text = "...";
+            this.selectBoreholeTempFile.UseVisualStyleBackColor = true;
+            this.selectBoreholeTempFile.Click += new System.EventHandler(this.selectBoreholeTempFile_Click);
+            // 
             // boreHoleFieldDisplay
             // 
             this.boreHoleFieldDisplay.Location = new System.Drawing.Point(619, 19);
@@ -694,6 +743,22 @@ namespace DistrictHeating
             this.boreHoleFieldDisplay.Size = new System.Drawing.Size(545, 545);
             this.boreHoleFieldDisplay.TabIndex = 7;
             this.boreHoleFieldDisplay.Paint += new System.Windows.Forms.PaintEventHandler(this.boreHoleFieldDisplay_Paint);
+            // 
+            // boreholeTempFileName
+            // 
+            this.boreholeTempFileName.Location = new System.Drawing.Point(379, 343);
+            this.boreholeTempFileName.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.boreholeTempFileName.Name = "boreholeTempFileName";
+            this.boreholeTempFileName.Size = new System.Drawing.Size(197, 27);
+            this.boreholeTempFileName.TabIndex = 6;
+            // 
+            // boreHolePower
+            // 
+            this.boreHolePower.Location = new System.Drawing.Point(379, 308);
+            this.boreHolePower.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.boreHolePower.Name = "boreHolePower";
+            this.boreHolePower.Size = new System.Drawing.Size(114, 27);
+            this.boreHolePower.TabIndex = 6;
             // 
             // numGrid
             // 
@@ -1185,6 +1250,16 @@ namespace DistrictHeating
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Ergebnisse";
             // 
+            // saveSimulationData
+            // 
+            this.saveSimulationData.Location = new System.Drawing.Point(374, 257);
+            this.saveSimulationData.Name = "saveSimulationData";
+            this.saveSimulationData.Size = new System.Drawing.Size(114, 29);
+            this.saveSimulationData.TabIndex = 10;
+            this.saveSimulationData.Text = "Speichern";
+            this.saveSimulationData.UseVisualStyleBackColor = true;
+            this.saveSimulationData.Click += new System.EventHandler(this.saveSimulationData_Click);
+            // 
             // solarPercentage
             // 
             this.solarPercentage.Location = new System.Drawing.Point(374, 223);
@@ -1628,16 +1703,6 @@ namespace DistrictHeating
             this.bildSpeichernToolStripMenuItem.Text = "Bild speichern";
             this.bildSpeichernToolStripMenuItem.Click += new System.EventHandler(this.saveImage_Click);
             // 
-            // saveSimulationData
-            // 
-            this.saveSimulationData.Location = new System.Drawing.Point(374, 257);
-            this.saveSimulationData.Name = "saveSimulationData";
-            this.saveSimulationData.Size = new System.Drawing.Size(114, 29);
-            this.saveSimulationData.TabIndex = 10;
-            this.saveSimulationData.Text = "Speichern";
-            this.saveSimulationData.UseVisualStyleBackColor = true;
-            this.saveSimulationData.Click += new System.EventHandler(this.saveSimulationData_Click);
-            // 
             // DistrictHeating
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -1774,5 +1839,9 @@ namespace DistrictHeating
         private TextBox numGrid;
         private Button debug;
         private Button saveSimulationData;
+        private HScrollBar boreHoleTime;
+        private Button selectBoreholeTempFile;
+        private TextBox boreholeTempFileName;
+        private TextBox boreHolePower;
     }
 }
