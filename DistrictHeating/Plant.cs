@@ -152,7 +152,18 @@ namespace DistrictHeating
             }
             BoreHoleField.Initialize();
             BufferStorage.Initialize();
-            if (!string.IsNullOrEmpty(boreHoleTempFileName)) boreHoleTempFile = new StreamWriter(boreHoleTempFileName);
+            if (!string.IsNullOrEmpty(boreHoleTempFileName))
+            {
+                boreHoleTempFile = new StreamWriter(boreHoleTempFileName);
+                double[] tp = BoreHoleField.GetTemperatureProfile();
+                boreHoleTempFile.Write("time");
+                double gridDistance = BoreHoleField.BoreHoleDistance / BoreHoleField.Grid;
+                for (int j = 0; j < tp.Length; j++)
+                {
+                    boreHoleTempFile.Write(", pos_" + ((j - tp.Length / 2) * gridDistance).ToString("F2", CultureInfo.InvariantCulture));
+                }
+                boreHoleTempFile.WriteLine();
+            }
             else boreHoleTempFile = null;
 
             // in the following loop we consider for each time step (one hour) how much energy the solar collectors will deliver and how much energy the heaters will require
@@ -310,11 +321,11 @@ namespace DistrictHeating
                 }
                 if (boreHoleTempFile!=null)
                 {
+                    boreHoleTempFile.Write(i.ToString());
                     double[] profile = BoreHoleField.GetTemperatureProfile();
                     for (int pi = 0; pi < profile.Length; pi++)
                     {
-                        if (pi != 0) boreHoleTempFile.Write(", ");
-                        boreHoleTempFile.Write((profile[pi]-ZeroK).ToString("F2", CultureInfo.InvariantCulture));
+                        boreHoleTempFile.Write(", " + (profile[pi]-ZeroK).ToString("F2", CultureInfo.InvariantCulture));
                     }
                     boreHoleTempFile.WriteLine();
                 }

@@ -13,6 +13,8 @@ namespace DistrictHeating
         private double[,] temperature;
         private int numRings; // number of rings of hexagons (not boreholes)
         private int numBoreholeRings;
+        private double[] boundaryRings;
+        private const int numBoundaryRings = 100;
         double area;
         double alpha; // thermal diffusivity (m²/s)
         public double Lambda = 2.6; // in W/(m*K) Sandstein Wikipedia
@@ -20,8 +22,10 @@ namespace DistrictHeating
         public double Length = 100.0;
         public double startBoreholeFieldCenterTemperature = 10 + Plant.ZeroK;
         public double startBoreholeFieldBorderTemperature = 10 + Plant.ZeroK;
+        public double boundaryTemperature = 10 + Plant.ZeroK;
         HexSubdevision[] Boreholes; // The boreholes are subdevided for better precision. Ordered from inside to outer rings
         Dictionary<(int, int), int> BoreHoleIndex;
+
 
         public int NumberOfBoreHoles { get; set; } = 61;
         public double BoreHoleDistance { get; set; } = 3.0;
@@ -84,6 +88,32 @@ namespace DistrictHeating
                 }
             }
         }
+        /// <summary>
+        /// Iterates all hexagons of a certain ring, corner==true when the hexagon is in the corner
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        private static IEnumerable<(int i, int j, bool corner)> RingC(int n)
+        {
+            if (n == 0)
+            {
+                yield return (0, 0, true);
+                yield break;
+            }
+
+            int x = -n, y = n;
+            var directions = new (int, int)[] { (1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1) };
+
+            foreach (var direction in directions)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    yield return (x, y, i == 0);
+                    x += direction.Item1;
+                    y += direction.Item2;
+                }
+            }
+        }
         public static IEnumerable<(int ii, int jj)> surrounding(int i, int j)
         {
             yield return (i - 1, j + 1);
@@ -131,21 +161,22 @@ namespace DistrictHeating
                 }
             }
         }
+        public enum hexagonPosition { inside, borehole, outside };
         /// <summary>
         /// Yields all indices of the hexagons surrounding (i, j). If a hexagon is outside the field or a borehole (i, j) is yielded.
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public IEnumerable<(int ii, int jj)> surroundingOrSelf(int i, int j)
+        public IEnumerable<(int ii, int jj, hexagonPosition pos)> surroundingOrSelf(int i, int j)
         {
             foreach ((int m, int n) in surrounding(i, j))
             {
                 int k = -m - n;
-                if (Math.Abs(m) + Math.Abs(n) + Math.Abs(k) > (numRings + 1) * 2 - 1) yield return (i, j); // outside the field
+                if (Math.Abs(m) + Math.Abs(n) + Math.Abs(k) > (numRings + 1) * 2 - 1) yield return (i, j, hexagonPosition.outside); // outside the field
                 else if (m % Grid == 0 && n % Grid == 0
-                    && Math.Abs(m / Grid) <= numBoreholeRings && Math.Abs(n / Grid) <= numBoreholeRings) yield return (i, j); // a borehole
-                else yield return (m, n);
+                    && Math.Abs(m / Grid) <= numBoreholeRings && Math.Abs(n / Grid) <= numBoreholeRings) yield return (i, j, hexagonPosition.borehole); // a borehole
+                else yield return (m, n, hexagonPosition.inside);
             }
         }
         internal void Initialize()
@@ -162,6 +193,11 @@ namespace DistrictHeating
                 {
                     this[i, j] = temp;
                 }
+            }
+            boundaryRings = new double[numBoundaryRings];
+            for (int i = 0; i < boundaryRings.Length; i++)
+            {
+                boundaryRings[i] = boundaryTemperature;
             }
             NumberOfBoreHoles = (numBoreholeRings * (numBoreholeRings + 1)) / 2 * 6 + 1;
             Boreholes = new HexSubdevision[NumberOfBoreHoles];
@@ -183,6 +219,7 @@ namespace DistrictHeating
                 int index = i;
                 if (flowRate < 0) index = Boreholes.Length - i - 1; // from outside to center when flow rate is negative
                 Boreholes[index].Step(Lambda, HeatCapacity, step, inTemperature, flowRate, out inTemperature);
+                if (inTemperature < 0) { }
             }
             outTemperature = inTemperature;
             // Transfer the temperature change at the edge of the borehole[i,j] to the surrounding hexagons.
@@ -213,12 +250,39 @@ namespace DistrictHeating
                 //foreach ((int i, int j) in AllIndicesWithoutBoreholes)
                 //{
                 double tsum = 0.0;
-                foreach ((int si, int sj) in surroundingOrSelf(i, j))
-                {
-                    tsum += this[si, sj];
+                foreach ((int si, int sj, hexagonPosition pos) in surroundingOrSelf(i, j))
+                {   // boundary condition:
+                    // if the neighbour is a borehole, this hexagon is isolated, i.e. the own temperature is used. HexSubdevision.Connect transfers the energy later
+                    // if the neighbour is outside we use a middle temperature between this and the boundaryTemperature
+                    if (pos == hexagonPosition.outside) tsum += boundaryRings[0]; // the first boundary ring
+                    else tsum += this[si, sj];
                 }
                 newTemperature[i + numRings, j + numRings] = alpha * 2 / 3 * (tsum - 6 * this[i, j]) / (GridDistance * GridDistance) * step + this[i, j];
             });
+            double tsum = 0.0;
+            double[] newBoundaryRings = (double[])boundaryRings.Clone();
+            int nn = 0;
+            foreach ((int i, int j, bool corner) in RingC(numRings))
+            {
+                if (corner) tsum += 3 * this[i, j]; // a corner hexagon has three connections to the next ring
+                else tsum += 2 * this[i, j]; // the other hexagons have two connections
+                if (corner) nn += 3; // a corner hexagon has three connections to the next ring
+                else nn += 2; // the other hexagons have two connections
+            }
+            tsum += (6 * (numRings + 1)) * 2 * boundaryRings[0]; // the inner connections in the ring count twice
+            tsum += ((numRings + 1) * 6 * 2 + 6) * boundaryRings[1]; // this is the number of connections to the next boundary ring
+            if (Math.Abs(tsum - ((numRings + 1) * 6 * 6) * boundaryRings[0]) > 10) { }
+            double tdiff = (tsum - ((numRings + 1) * 6 * 6) * boundaryRings[0]);
+            newBoundaryRings[0] = alpha * 2 / 3 * (tdiff / ((numRings + 1) * 6)) / (GridDistance * GridDistance) * step + boundaryRings[0];
+            for (int i = 1; i < newBoundaryRings.Length - 1; i++)
+            {   // boundary[0] is (numRing+1) in the ring counting
+                tsum = ((numRings + i) * 6 * 2 + 6) * boundaryRings[i - 1]; // connections to the next inner ring
+                tsum += (numRings + i + 1) * 6 * 2 * boundaryRings[i]; // the inner connections to itself
+                tsum += ((numRings + i + 1) * 6 * 2 + 6) * boundaryRings[i + 1]; // connections to the next outer ring
+                tdiff = tsum - ((numRings + i + 1) * 6 * 6) * boundaryRings[i];
+                newBoundaryRings[i] = alpha * 2 / 3 * (tdiff / ((numRings + i + 1) * 6)) / (GridDistance * GridDistance) * step + boundaryRings[i];
+            }
+            boundaryRings = newBoundaryRings;
             temperature = newTemperature;
         }
 
@@ -264,11 +328,19 @@ namespace DistrictHeating
 
         internal double[] GetTemperatureProfile()
         {
-            double[] res = new double[2 * numRings + 1];
-            for (int i = 0; i < res.Length; i++)
+            double[] res = new double[2 * numRings + 1 + 2 * boundaryRings.Length];
+            for (int i = 0; i < boundaryRings.Length; i++)
             {
-                if ((i - numRings) % Grid == 0 && BoreHoleIndex.ContainsKey((i-numRings, 0))) res[i] = Boreholes[BoreHoleIndex[(i-numRings,0)]].MeanTemperature;
-                else res[i] = temperature[i, numRings];
+                res[i] = boundaryRings[boundaryRings.Length - 1 - i];
+            }
+            for (int i = 0; i < 2 * numRings + 1; i++)
+            {
+                if ((i - numRings) % Grid == 0 && BoreHoleIndex.ContainsKey((i - numRings, 0))) res[i + boundaryRings.Length] = Boreholes[BoreHoleIndex[(i - numRings, 0)]].MeanTemperature;
+                else res[i + boundaryRings.Length] = temperature[i, numRings];
+            }
+            for (int i = 0; i < boundaryRings.Length; i++)
+            {
+                res[i + 2 * numRings + 1 + boundaryRings.Length] = boundaryRings[i];
             }
             return res;
         }
