@@ -219,7 +219,6 @@ namespace DistrictHeating
                 int index = i;
                 if (flowRate < 0) index = Boreholes.Length - i - 1; // from outside to center when flow rate is negative
                 Boreholes[index].Step(Lambda, HeatCapacity, step, inTemperature, flowRate, out inTemperature);
-                if (inTemperature < 0) { }
             }
             outTemperature = inTemperature;
             // Transfer the temperature change at the edge of the borehole[i,j] to the surrounding hexagons.
@@ -234,15 +233,6 @@ namespace DistrictHeating
                     ++ei;
                 }
             });
-            //foreach ((int i, int j, int k) in BoreholeIndices)
-            //{
-            //    int ei = 0;
-            //    foreach ((int si, int sj) in surrounding(i, j))
-            //    {
-            //        Boreholes[k].Connect(ei, ref temperature[si + numRings, sj + numRings], area);
-            //        ++ei;
-            //    }
-            //}
             double[,] newTemperature = (double[,])temperature.Clone();
             Parallel.ForEach(AllIndicesWithoutBoreholes, tuple =>
             {
@@ -253,7 +243,7 @@ namespace DistrictHeating
                 foreach ((int si, int sj, hexagonPosition pos) in surroundingOrSelf(i, j))
                 {   // boundary condition:
                     // if the neighbour is a borehole, this hexagon is isolated, i.e. the own temperature is used. HexSubdevision.Connect transfers the energy later
-                    // if the neighbour is outside we use a middle temperature between this and the boundaryTemperature
+                    // if the neighbour is outside we use the temperature of the boundary ring, which is assumed to be the same all around the field
                     if (pos == hexagonPosition.outside) tsum += boundaryRings[0]; // the first boundary ring
                     else tsum += this[si, sj];
                 }
@@ -261,27 +251,26 @@ namespace DistrictHeating
             });
             double tsum = 0.0;
             double[] newBoundaryRings = (double[])boundaryRings.Clone();
-            int nn = 0;
             foreach ((int i, int j, bool corner) in RingC(numRings))
             {
                 if (corner) tsum += 3 * this[i, j]; // a corner hexagon has three connections to the next ring
                 else tsum += 2 * this[i, j]; // the other hexagons have two connections
-                if (corner) nn += 3; // a corner hexagon has three connections to the next ring
-                else nn += 2; // the other hexagons have two connections
             }
             tsum += (6 * (numRings + 1)) * 2 * boundaryRings[0]; // the inner connections in the ring count twice
             tsum += ((numRings + 1) * 6 * 2 + 6) * boundaryRings[1]; // this is the number of connections to the next boundary ring
-            if (Math.Abs(tsum - ((numRings + 1) * 6 * 6) * boundaryRings[0]) > 10) { }
-            double tdiff = (tsum - ((numRings + 1) * 6 * 6) * boundaryRings[0]);
+            double tdiff = (tsum - ((numRings + 1) * 6 * 6) * boundaryRings[0]); // temperature difference for all hexagons
             newBoundaryRings[0] = alpha * 2 / 3 * (tdiff / ((numRings + 1) * 6)) / (GridDistance * GridDistance) * step + boundaryRings[0];
-            for (int i = 1; i < newBoundaryRings.Length - 1; i++)
-            {   // boundary[0] is (numRing+1) in the ring counting
-                tsum = ((numRings + i) * 6 * 2 + 6) * boundaryRings[i - 1]; // connections to the next inner ring
-                tsum += (numRings + i + 1) * 6 * 2 * boundaryRings[i]; // the inner connections to itself
-                tsum += ((numRings + i + 1) * 6 * 2 + 6) * boundaryRings[i + 1]; // connections to the next outer ring
-                tdiff = tsum - ((numRings + i + 1) * 6 * 6) * boundaryRings[i];
-                newBoundaryRings[i] = alpha * 2 / 3 * (tdiff / ((numRings + i + 1) * 6)) / (GridDistance * GridDistance) * step + boundaryRings[i];
-            }
+            Parallel.For(1, newBoundaryRings.Length, i =>
+            // for (int i = 1; i < newBoundaryRings.Length; i++)
+            {   // boundaryRings[0] is (numRing+1) in the ring counting
+                int nextRing = i + 1;
+                if (i == newBoundaryRings.Length - 1) nextRing = i; // at the very end the area is isolated, not clamped to ZeroK+10
+                double sum = ((numRings + i) * 6 * 2 + 6) * boundaryRings[i - 1]; // connections to the next inner ring
+                sum += (numRings + i + 1) * 6 * 2 * boundaryRings[i]; // the inner connections to itself
+                sum += ((numRings + i + 1) * 6 * 2 + 6) * boundaryRings[nextRing]; // connections to the next outer ring
+                double diff = sum - ((numRings + i + 1) * 6 * 6) * boundaryRings[i]; // temperature difference for all hexagons in ring i
+                newBoundaryRings[i] = alpha * 2 / 3 * (diff / ((numRings + i + 1) * 6)) / (GridDistance * GridDistance) * step + boundaryRings[i];
+            });
             boundaryRings = newBoundaryRings;
             temperature = newTemperature;
         }
@@ -323,7 +312,7 @@ namespace DistrictHeating
         }
 
         internal void Paint(Panel? panel)
-        {
+        {   // not implemented yet
         }
 
         internal double[] GetTemperatureProfile()
