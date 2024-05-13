@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DistrictHeating
 {
@@ -19,6 +20,11 @@ namespace DistrictHeating
             InitializeComponent();
             AddInfoButtons();
             paintDiagram = new PaintDiagram(graphicsPanel, panelLeft, panelRight, timeScale, toolTipDiagram, Plant);
+            string[] stations = Climate.GetChoises();
+            for (int i = 0; i < stations.Length; i++)
+            {
+                weatherStaionsList.Items.Add(stations[i]);
+            }
             SetPlantData();
         }
         private void AddInfoButtons()
@@ -198,7 +204,15 @@ namespace DistrictHeating
             volumeFlow.Checked = paintDiagram.ShowVolumeFlow;
             netLoss.Checked = paintDiagram.ShowNetLoss;
             boreHoleEnergy.Checked = paintDiagram.ShowBoreHoleEnergy;
-
+            for (int i = 0; i < weatherStaionsList.Items.Count; i++)
+            {
+                if (weatherStaionsList.Items[i].ToString() == Plant.Climate.stationAndYear)
+                {
+                    weatherStaionsList.SelectedIndex = i;
+                    break; 
+                }
+            }
+            weatherStaionsList_SelectedIndexChanged(weatherStaionsList, EventArgs.Empty);
         }
         public Control? GetPlantData()
         {
@@ -256,6 +270,7 @@ namespace DistrictHeating
             Plant.ConcentratingHeatPump.HeatPumpPower *= 1000;
             Plant.ConcentratingHeatPump.BatteryCapacity *= 1000;
             Plant.BoreHoleField.useConcentratingHeatPump = useConcentrator.Checked;
+            Plant.Climate.LoadData(weatherStaionsList.SelectedText);
             //// heating
 
             GetHeatingNameData(HeatingName.SelectedIndex);
@@ -545,6 +560,30 @@ namespace DistrictHeating
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
                 boreholeTempFileName.Text = saveFileDialog.FileName;
+            }
+        }
+
+        private void weatherStaionsList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (weatherStaionsList != null)
+            {
+                string? selected = weatherStaionsList.SelectedItem as string;
+                if (selected != null)
+                {
+                    Cursor oldCursor = Cursor.Current;
+                    Cursor.Current = Cursors.WaitCursor;
+                    Plant.Climate.LoadData(selected);
+                    weatherData.Items.Clear();
+                    weatherData.Items.Add("Datum\t\tTemperatur\tGlobalstrahlung\tDiffuse Strahlung");
+                    for (int i = 0; i < Plant.Climate.Temperature.Length; ++i)
+                    {
+                        (int month, int day, int hour) = Climate.HourNumberToDate(i);
+                        string line = day.ToString("D2")+"."+month.ToString("D2") +". " + hour.ToString("D2") + " Uhr\t" + Plant.Climate.Temperature[i].ToString("F1")
+                            +"°\t\t" + Plant.Climate.GlobalSolarRadiation[i].ToString("F1") + "\t\t" + Plant.Climate.DiffuseRadiation[i].ToString("F1");
+                        weatherData.Items.Add(line);
+                    }
+                    Cursor.Current = oldCursor;
+                }
             }
         }
     }

@@ -15,46 +15,22 @@ namespace DistrictHeating
     /// </summary>
     public class Climate
     {
-        public int Year { get; set; } = 2021;
+        public string? stationAndYear;
         /// <summary>
         /// Temperature in °C (TT_TU in dwd open data)
         /// </summary>
-        public double[] Temperature { get; set; } = new double[8760];
+        internal double[] Temperature { get; set; } = new double[8760];
         /// <summary>
         /// Global solar radiation in J/m² (FG_LBERG in dwd open data)
         /// </summary>
-        public double[] GlobalSolarRadiation { get; set; } = new double[8760];
+        internal double[] GlobalSolarRadiation { get; set; } = new double[8760];
         /// <summary>
         /// diffuse solar radiation in J/m² (FD_LBERG in dwd open data)
         /// </summary>
-        public double[] DiffuseRadiation { get; set; } = new double[8760];
+        internal double[] DiffuseRadiation { get; set; } = new double[8760];
         public Climate()
         {   // initializing with data embeded in the resource
-            //Assembly ThisAssembly = Assembly.GetExecutingAssembly();
-            //System.IO.Stream? str = ThisAssembly.GetManifestResourceStream("DistrictHeating.TemperatureData.txt");
-            //if (str != null)
-            //{
-            //    using (StreamReader reader = new StreamReader(str))
-            //    {
-            //        Dictionary<int, double[]> dwdData = ReadDwdData(reader, "TT_TU");
-            //        if (dwdData.Any()) Temperature = dwdData.First().Value;
-            //    }
-            //}
-            //str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
-            //if (str != null)
-            //{
-            //    using (StreamReader reader = new StreamReader(str))
-            //    {
-            //        Dictionary<int, double[]> dwdData = ReadDwdData(reader, "FG_LBERG");
-            //        if (dwdData.Any()) GlobalSolarRadiation = dwdData.First().Value;
-            //    }
-            //    str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
-            //    using (StreamReader reader = new StreamReader(str))
-            //    {
-            //        Dictionary<int, double[]> dwdData = ReadDwdData(reader, "FD_LBERG");
-            //        if (dwdData.Any()) DiffuseRadiation = dwdData.First().Value;
-            //    }
-            //}
+            LoadData(GetChoises()[0]);
         }
         public static Dictionary<int, double[]> ReadDwdData(StreamReader reader, string column)
         {
@@ -141,7 +117,7 @@ namespace DistrictHeating
                                     if (yy == year && month > 0 && month <= 12 && day > 0 && day <= 31 && hour >= 0 && hour < 24)
                                     {
                                         int hn = DateToHourNumber(month, day, hour);
-                                        data[hn] = Convert.ToDouble(parts[valueIndex], CultureInfo.InvariantCulture);
+                                        data[hn] = Convert.ToDouble(parts[valueIndex].Replace(',','.'), CultureInfo.InvariantCulture);
                                         if (data[hn] == -999 && hn > 0) data[hn] = data[hn - 1]; // -999 is an error in data
                                     }
                                 }
@@ -153,7 +129,7 @@ namespace DistrictHeating
             }
             return data;
         }
-        public string[] GetChoises()
+        public static string[] GetChoises()
         {
             string[] res = new string[]
             {
@@ -177,6 +153,8 @@ namespace DistrictHeating
         }
         public bool LoadData(string name)
         {
+            if (name == stationAndYear) return true;
+            stationAndYear = name;
             string[] parts = name.Split(' ');
             Assembly ThisAssembly = Assembly.GetExecutingAssembly();
             System.IO.Stream? str = ThisAssembly.GetManifestResourceStream("DistrictHeating.TemperatureData.txt");
@@ -194,7 +172,7 @@ namespace DistrictHeating
                 {
                     GlobalSolarRadiation = ReadDwdData(reader, parts[0], parts[2], "FG_LBERG");
                 }
-                str.Position = 0; // geht das?
+                // str.Position = 0; // cannot acces closed stream
                 str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
                 using (StreamReader reader = new StreamReader(str))
                 {
