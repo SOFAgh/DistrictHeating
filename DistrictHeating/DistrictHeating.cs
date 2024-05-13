@@ -270,7 +270,7 @@ namespace DistrictHeating
             Plant.ConcentratingHeatPump.HeatPumpPower *= 1000;
             Plant.ConcentratingHeatPump.BatteryCapacity *= 1000;
             Plant.BoreHoleField.useConcentratingHeatPump = useConcentrator.Checked;
-            Plant.Climate.LoadData(weatherStaionsList.SelectedText);
+            Plant.Climate.LoadData(weatherStaionsList.SelectedItem.ToString());
             //// heating
 
             GetHeatingNameData(HeatingName.SelectedIndex);
@@ -586,5 +586,6 @@ namespace DistrictHeating
                 }
             }
         }
+
     }
 }

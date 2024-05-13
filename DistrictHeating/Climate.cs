@@ -151,7 +151,7 @@ namespace DistrictHeating
             };
             return res;
         }
-        public bool LoadData(string name)
+        public bool LoadData(string? name)
         {
             if (name == stationAndYear) return true;
             stationAndYear = name;

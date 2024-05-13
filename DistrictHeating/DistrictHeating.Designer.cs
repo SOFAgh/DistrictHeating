@@ -76,10 +76,10 @@ namespace DistrictHeating
             System.Windows.Forms.Label label50;
             System.Windows.Forms.Label label51;
             System.Windows.Forms.Label label52;
+            System.Windows.Forms.Label label49;
             this.tabPlant = new System.Windows.Forms.TabPage();
             this.debug = new System.Windows.Forms.Button();
-            this.threePipes = new System.Windows.Forms.RadioButton();
-            this.twoPipes = new System.Windows.Forms.RadioButton();
+            this.netFlowTemperature = new System.Windows.Forms.TextBox();
             this.numConnections = new System.Windows.Forms.TextBox();
             this.insulationLambda = new System.Windows.Forms.TextBox();
             this.pipeInsulationDiameter = new System.Windows.Forms.TextBox();
@@ -227,6 +227,7 @@ namespace DistrictHeating
             label50 = new System.Windows.Forms.Label();
             label51 = new System.Windows.Forms.Label();
             label52 = new System.Windows.Forms.Label();
+            label49 = new System.Windows.Forms.Label();
             this.tabPlant.SuspendLayout();
             this.tabMain.SuspendLayout();
             this.tabBHTES.SuspendLayout();
@@ -611,11 +612,20 @@ namespace DistrictHeating
             label52.Text = "Peak Leistung der Photovoltaik (kW):";
             label52.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // label49
+            // 
+            label49.Location = new System.Drawing.Point(6, 180);
+            label49.Name = "label49";
+            label49.Size = new System.Drawing.Size(320, 15);
+            label49.TabIndex = 0;
+            label49.Text = "minimale Vorlauftemperatur im Netz:";
+            label49.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // tabPlant
             // 
             this.tabPlant.Controls.Add(this.debug);
-            this.tabPlant.Controls.Add(this.threePipes);
-            this.tabPlant.Controls.Add(this.twoPipes);
+            this.tabPlant.Controls.Add(this.netFlowTemperature);
+            this.tabPlant.Controls.Add(label49);
             this.tabPlant.Controls.Add(this.numConnections);
             this.tabPlant.Controls.Add(label23);
             this.tabPlant.Controls.Add(this.insulationLambda);
@@ -643,27 +653,12 @@ namespace DistrictHeating
             this.debug.Text = "Debug";
             this.debug.UseVisualStyleBackColor = true;
             // 
-            // threePipes
+            // netFlowTemperature
             // 
-            this.threePipes.AutoSize = true;
-            this.threePipes.Location = new System.Drawing.Point(333, 202);
-            this.threePipes.Name = "threePipes";
-            this.threePipes.Size = new System.Drawing.Size(87, 19);
-            this.threePipes.TabIndex = 2;
-            this.threePipes.TabStop = true;
-            this.threePipes.Text = "3 Leitungen";
-            this.threePipes.UseVisualStyleBackColor = true;
-            // 
-            // twoPipes
-            // 
-            this.twoPipes.AutoSize = true;
-            this.twoPipes.Location = new System.Drawing.Point(333, 177);
-            this.twoPipes.Name = "twoPipes";
-            this.twoPipes.Size = new System.Drawing.Size(87, 19);
-            this.twoPipes.TabIndex = 2;
-            this.twoPipes.TabStop = true;
-            this.twoPipes.Text = "2 Leitungen";
-            this.twoPipes.UseVisualStyleBackColor = true;
+            this.netFlowTemperature.Location = new System.Drawing.Point(333, 177);
+            this.netFlowTemperature.Name = "netFlowTemperature";
+            this.netFlowTemperature.Size = new System.Drawing.Size(100, 23);
+            this.netFlowTemperature.TabIndex = 1;
             // 
             // numConnections
             // 
@@ -1399,6 +1394,7 @@ namespace DistrictHeating
             this.startSimulation.TabIndex = 0;
             this.startSimulation.Text = "Simulation Starten";
             this.startSimulation.UseVisualStyleBackColor = true;
+            this.startSimulation.Click += new System.EventHandler(this.startSimulation_Click);
             // 
             // tabGraphics
             // 
@@ -1763,8 +1759,6 @@ namespace DistrictHeating
         private ComboBox HeatingName;
         private TextBox dayTemperature;
         private TextBox energyPerYear;
-        private RadioButton threePipes;
-        private RadioButton twoPipes;
         private TextBox insulationLambda;
         private TextBox pipeInsulationDiameter;
         private TextBox numConnections;
@@ -1834,5 +1828,6 @@ namespace DistrictHeating
         private Label currentDate;
         private Label label48;
         private ComboBox weatherStaionsList;
+        private TextBox netFlowTemperature;
     }
 }

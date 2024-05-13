@@ -27,7 +27,7 @@ namespace DistrictHeating
             currentTime = 0;
             UseThreePipes = false;
             Climate = new Climate();
-            SolarThermalCollector = new SolarThermalCollector() { Area = 5500 };
+            SolarThermalCollector = new SolarThermalCollector() { Area = 7500 };
             ConcentratingHeatPump = new ConcentratingHeatPump() { PeakPower = 100000, BatteryCapacity = 100000, HeatPumpPower = 10000 }; // 500m²=100kWhp
             Heating = new List<HeatingConsumer>();
             Heating.Add(HeatingConsumer.RadiatorHeating);
@@ -44,6 +44,7 @@ namespace DistrictHeating
         public int startSimulationHour = 2880;
         public double numYears = 1;
         public int timeStep = 3600;
+        public double netFlowTemperature = ZeroK + 55;
         // diagrams
         public struct DiagramEntry
         {

@@ -21,4 +21,14 @@ Die elektrische Leistung der Wärmepumpe. Die ist einfach als nicht modulierend 
 ---batteryCapacity:
 Die Kapazität des Batteriespeichers in kWh. Es wird davon ausgegangen, dass die Ladeleistung größer oder gleich der Peakleistung der PV ist, so dass immer geladen werden kann. Auch die Entzugsleistung entspricht der Leistungsaufnahme der Wärmepumpe. Der Akku hat einen Wirkungsgrad von 90%.
 ---weatherStaionsList:
-Liste der Wetterstationen und Jahre der Aufzeichnung. Die Daten kommen vom Deutschen Wetterdienst (https://www.dwd.de/DE/leistungen/klimadatendeutschland/klarchivstunden.html). Leider sind die oft unvollständig. Die Dateien heißen meist "stundenwerte_TU_?????_akt.zip" bzw "stundenwerte_TU_?????_hist.zip". Darin gibt es eine Datie mit dem Namen "produkt_tu_stunde...". Das sind die Temperatur Daten. Die Sonnenstrahlung findet sich in den Dateien _SD_ statt _TU_. Wenn du entsprechende daten hast, schicke sie mir, ich integriere sie in diese Liste. Es ist halt etwas aufwendig, die passenden Daten zu finden.
+Liste der Wetterstationen und Jahre der Aufzeichnung. Die Daten kommen vom Deutschen Wetterdienst (https://www.dwd.de/DE/leistungen/klimadatendeutschland/klarchivstunden.html). Leider sind die oft unvollständig. Die Dateien heißen meist "stundenwerte_TU_?????_akt.zip" bzw "stundenwerte_TU_?????_hist.zip". Darin gibt es eine Datie mit dem Namen "produkt_tu_stunde...". Das sind die Temperatur Daten. Die Sonnenstrahlung findet sich in den Dateien _SD_ statt _TU_. Wenn du entsprechende Daten hast, schicke sie mir, ich integriere sie in diese Liste. Es ist halt etwas aufwendig, die passenden Daten zu finden.
+---pipelineLength:
+Die Länge des Leitungsnetzes. Es wird z.Z. nur dazu verwendet, die Leitungsverluste zu berechnen. In Zukunft könnten wir auch verschiedene leitungsdurchmesser berücksichtigen, jeden mit einer bestimmten Länge. Die Hausanschlüsse werden noch gesondert berechnet.
+---pipeDiameter:
+Der Rohrdurchmesser des inneren Rohres, also ohne Dämmung.
+---pipeInsulationDiameter:
+Der Durchmesser des Isolierten Rohres. Daraus und aus der Wärmeleitfähigkeit der Dämmung wird der Leitungsverlust berechnet.
+---numConnections:
+Die Anzahl der Hausanschlüsse. Die bedeuten auch noch einen Wärmeverlust, der z.Z. leider nicht mit berechnet wird
+---netFlowTemperature:
+Die Vorlauftemperatur im Netz, die nicht unterschritten werden darf. Sie kann, insbesondere bei starker Sonneneinstrahlung auch höher sein. Wenn der Speicher weniger liefert, erhöht die zentrale Wärmepumpe die Temperatur. Häuser, denen diese Temperatur nicht ausreicht, bräuchten in der hausübergabestation noch eine kleine Wärmepumpe zum nochmaligen Anheben der Temperatur.
