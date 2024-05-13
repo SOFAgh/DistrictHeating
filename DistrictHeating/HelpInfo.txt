@@ -1,0 +1,22 @@
+﻿---solarFieldSize:
+Man kann hier sowohl mit Grundfläche als auch mit Modulfläche arbeiten, muss aber verschiedene Werte für die Effizienz beachten. 
+Die meisten auf Freiflächen realisierten Kollektorfelder weisen einen Flächenbedarf auf, der das 2-fache bis 2,3-fache der Bruttokollektorfläche beträgt. (https://www.solare-waermenetze.de/solare-waermenetze/solarthermie-freiflaechen/)
+Die Jahressumme der Globalstrahlung liegt in Deutschland zwischen 900 und 1.200 kWh pro m² und Jahr auf eine horizontale Fläche. (https://de.wikipedia.org/wiki/Globalstrahlung)
+Als Anhaltspunkt die Freiflächenanlage in Bernburg: Bruttokollektorfläche: 8603 m², Aperturfläche 7935 m², Aufstellfläche 16.000 m², Jahresertrag: 2,35 GWh bzw 3,44 GWh im 2. Jahr
+Das Ergibt 16.000*1050=16,8 GWh/a Globalstrahlung 14% Wirkungsgrad für die Freifläche, 26% Wirkungsgrad für Bruttokollektorfläche oder 28% für Aperturfläche.
+Anderes Beispiel Berlin Köpenick (Vattenfall): Bruttokollektorfläche: 1085 m², Jahresertrag 550 MWh. Aufstellfläche somit etwa 2300 m² Wirkungsgrad 1085/(2300*1050) = 45% auf die Bruttokollektorfläche.
+Quelle: https://www.solare-waermenetze.de/mediathek/wissensdatenbank-solare-waermenetze/?sbCategory%5B%5D=148&orderBy=date)
+Andere Quellen sprechen von 50% Wirkungsgrad der Solarthermie für senkrechte Einstrahlung. (z.B. hier: https://www.enbw.com/blog/energiewende/solarenergie/photovoltaik-vs-solarthermie/)
+---solarEfficiency:
+Die Effizienz, Wenn die Fläche als Modulfläche gedacht ist, dann etwa 50%, für die Aufstellfläche 25% (s.o.)
+---useConcentrator:
+Das Konzept:
+Die Erdsonden sind in Ringen angeordnet. Der innerste Ring wird am wärmsten, nach außen hin nimmt die Wärme ab. Um den Wärmeverlust noch weiter zu verringern, entzieht eine Wärmepumpe diesem äußeren Ring Wärme und führt sie in das Innere des Erdsondenspeichers. Das geschieht nur, wenn eine Photovoltaik Anlage genügend Strom liefert. 
+Da genau dann viel Photovoltaik Strom vorhanden ist, wenn auch viel Wärme aus Solarthermie erzeugt wird, würde das System nicht effizient arbeiten. Deshalb gibt es noch einen Batteriespeicher, der den Tagesertrag an Strom für die Nacht vorhält. Dann kann in der Nacht Wärme vom äußeren Ring ins Innere das Speichers geschaufelt werden.
+Die Bezeichnung Konzentrator: die Wärme wird im Inneren des Speichers konzentriert.
+---pvPeak:
+Die Peak Leistung der Photovoltaik, die diesen Konzentrator betreibt. Die jeweilige Stundenleistung ergibt sich aus den Wetterdaten.
+---cHeatPumpPower:
+Die elektrische Leistung der Wärmepumpe. Die ist einfach als nicht modulierend angenommen. Die Temperatur auf der kalten Seite der Wärmepumpe ist durch die Temperatur im äußeren Ring gegeben minus 10°, aber nie unter 0°C. Die Temperatur am warmen Ausgang  ergibt sich durch die Leistungsfähigkeit der Wärmepumpe (Carnot Wirkungsgrad * 0.5)
+---batteryCapacity:
+Die Kapazität des Batteriespeichers in kWh. Es wird davon ausgegangen, dass die Ladeleistung größer oder gleich der Peakleistung der PV ist, so dass immer geladen werden kann. Auch die Entzugsleistung entspricht der Leistungsaufnahme der Wärmepumpe. Der Akku hat einen Wirkungsgrad von 90%.

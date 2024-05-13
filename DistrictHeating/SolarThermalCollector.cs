@@ -36,7 +36,7 @@ namespace DistrictHeating
             // double efficiency = Math.Max(Math.Min((45 + ambientTempDiff), 65), 25) / 100; // efficiency between 25% and 65% depending on supply temperature versus ambient temperature
             double powerGenerated = Efficiency * (plant.Climate.GlobalSolarRadiation[plant.CurrentHourIndex] - 0.2 * plant.Climate.DiffuseRadiation[plant.CurrentHourIndex]) / 3600 * 10000 * Area; // current power in W
             // reduction by the diffuse radiation and the efficiency factor of 0.5 are guesses to result in a energy production of about 400 kWh/(m²*a) 
-            deltaT = 80 + Plant.ZeroK - plant.returnPipeTemp; // deltaT to yield an output of 80°C
+            deltaT = (100 + Plant.ZeroK - plant.returnPipeTemp)*0.95; // deltaT to yield an output of max 95°C
             if (deltaT > 0)
             {
                 volumetricFlowRate = powerGenerated / (4200 * deltaT) / 1000; // "/ 1000": kg (water) -> m³

@@ -17,8 +17,84 @@ namespace DistrictHeating
         public DistrictHeating()
         {
             InitializeComponent();
+            AddInfoButtons();
             paintDiagram = new PaintDiagram(graphicsPanel, panelLeft, panelRight, timeScale, toolTipDiagram, Plant);
             SetPlantData();
+        }
+        private void AddInfoButtons()
+        {
+            // Assuming 'tabControl' is the name of your TabControl
+            TabControl? tabControl = this.Controls["tabMain"] as TabControl;
+
+            if (tabControl != null)
+            {
+                foreach (TabPage? page in tabControl.TabPages)
+                {
+                    if (page == null) continue;
+                    foreach (Control? control in page.Controls)
+                    {
+                        if (control == null) continue;
+                        // Check if the control is a TextBox and has a non-empty Tag property
+                        string? info = HelpInfo.Item(control.Name);
+                        if (!string.IsNullOrEmpty(info))
+                        {
+                            Button infoButton = new Button
+                            {
+                                Text = "?",
+                                Width = 20,
+                                Height = control.Height,
+                                Location = new System.Drawing.Point(control.Location.X + control.Width + 5, control.Location.Y)
+                            };
+                            infoButton.Tag = control;
+                            infoButton.Click += InfoButton_Click;
+                            page.Controls.Add(infoButton);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void InfoButton_Click(object? sender, EventArgs e)
+        {
+            Button? infoButton = sender as Button;
+            // Assuming the TextBox is directly next to the button
+            if (infoButton == null) return;
+            // Traverse parent controls to find the corresponding TextBox
+            TabPage? tabPage = infoButton.Parent as TabPage;
+            Control? tb = infoButton.Tag as Control;
+            if (tb == null) return;
+            string? info = HelpInfo.Item(tb.Name);
+            if (info != null)
+            {
+                Label? label = FindLabelToLeft(tb);
+                string title = label != null ? label.Text : tb.Text;
+                InfoBox ib = new InfoBox(info, title, this.Width / 2, this.Height / 2);
+                ib.ShowDialog();
+            }
+        }
+
+        public static Label? FindLabelToLeft(Control control)
+        {
+            if (control.Parent == null)
+                return null;
+
+            foreach (Control? potentialLabel in control.Parent.Controls)
+            {
+                if (potentialLabel is Label)
+                {
+                    // Check if the label's right edge is just to the left of the control's left edge
+                    bool isToLeft = (potentialLabel.Right < control.Left);
+                    // Check if the label is vertically aligned with the control
+                    bool isVerticallyAligned = (potentialLabel.Top < control.Bottom && potentialLabel.Bottom > control.Top);
+
+                    if (isToLeft && isVerticallyAligned)
+                    {
+                        return (Label)potentialLabel;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private void readTemperatureData_Click(object sender, EventArgs e)
@@ -44,7 +120,17 @@ namespace DistrictHeating
             Control? ctrl = GetPlantData();
             if (ctrl == null)
             {
-                Plant.StartSimulation(delegate (int d) { progressBar.Value = d; });
+                Plant.StartSimulation(delegate (int d)
+                {
+                    progressBar.Value = d;
+                    int hi = Plant.CurrentHourIndex;
+                    if (hi % 24 == 0)
+                    {
+                        (int month, int day, int hour) = Climate.HourNumberToDate(hi);
+                        currentDate.Text = "Datum: " + day.ToString() + "." + month.ToString() + ".";
+                        currentDate.Refresh();
+                    }
+                });
                 solarPercentage.Text = (Plant.solarPercentage * 100).ToString("F2") + "% ";
                 electricityTotal.Text = Plant.electricityTotal.ToString("F2");
                 heatProduced.Text = Plant.heatProduced.ToString("F2");
@@ -92,6 +178,11 @@ namespace DistrictHeating
             // solar
             solarFieldSize.Text = Plant.SolarThermalCollector.Area.ToString();
             solarEfficiency.Text = Plant.SolarThermalCollector.Efficiency.ToString();
+            // concentrator
+            pvPeak.Text = (Plant.ConcentratingHeatPump.PeakPower / 1000).ToString(); // W -> kW
+            cHeatPumpPower.Text = (Plant.ConcentratingHeatPump.HeatPumpPower / 1000).ToString();
+            batteryCapacity.Text = (Plant.ConcentratingHeatPump.BatteryCapacity / 1000).ToString();
+            useConcentrator.Checked = Plant.BoreHoleField.useConcentratingHeatPump;
             // heating
             SetHeatingNameData(0);
             returnPipe.Checked = paintDiagram.ShowReturnPipeTemperature;
@@ -120,7 +211,6 @@ namespace DistrictHeating
             Plant.Pipeline.outerDiameter /= 1000;
             if (!int.TryParse(numConnections.Text, out Plant.Pipeline.connections)) return numConnections;
             // boreHoleField
-            // TODO: Anzahl der Bohrlöcher veränderbar machen!!!
             if (int.TryParse(numBoreHoles.Text.Substring(numBoreHoles.Text.IndexOf('(') + 1, 2).Trim(), out int nb))
             {
                 Plant.BoreHoleField = new BoreHoleField(nb, Plant.ZeroK + 10);
@@ -158,6 +248,14 @@ namespace DistrictHeating
             //// solar
             if (!double.TryParse(solarFieldSize.Text, out Plant.SolarThermalCollector.Area)) return solarFieldSize;
             if (!double.TryParse(solarEfficiency.Text, out Plant.SolarThermalCollector.Efficiency)) return solarEfficiency;
+            //// concentrator
+            if (!double.TryParse(pvPeak.Text, out Plant.ConcentratingHeatPump.PeakPower)) return pvPeak;
+            if (!double.TryParse(cHeatPumpPower.Text, out Plant.ConcentratingHeatPump.HeatPumpPower)) return cHeatPumpPower;
+            if (!double.TryParse(batteryCapacity.Text, out Plant.ConcentratingHeatPump.BatteryCapacity)) return batteryCapacity;
+            Plant.ConcentratingHeatPump.PeakPower *= 1000; // kW -> W
+            Plant.ConcentratingHeatPump.HeatPumpPower *= 1000;
+            Plant.ConcentratingHeatPump.BatteryCapacity *= 1000;
+            Plant.BoreHoleField.useConcentratingHeatPump = useConcentrator.Checked;
             //// heating
 
             GetHeatingNameData(HeatingName.SelectedIndex);
@@ -395,13 +493,14 @@ namespace DistrictHeating
 
         private void debug_Click(object sender, EventArgs e)
         {
-            BoreHoleFieldOld bhf = new BoreHoleFieldOld(1, Plant.ZeroK + 10);
-            bhf.BoreHoleDistance = 5.2;
-            bhf.Grid = 6;
-            bhf.Initialize();
-            bhf.InitializeNew(6);
-            bhf.SomeDebugCode();
-            bhf.TransferEnergieTest(0.1 / 1000, 363.15, out double outTemp, 300);
+            //BoreHoleFieldOld bhf = new BoreHoleFieldOld(1, Plant.ZeroK + 10);
+            //bhf.BoreHoleDistance = 5.2;
+            //bhf.Grid = 6;
+            //bhf.Initialize();
+            //bhf.InitializeNew(6);
+            //bhf.SomeDebugCode();
+            //bhf.TransferEnergieTest(0.1 / 1000, 363.15, out double outTemp, 300);
+            Plant.SaveData("");
         }
 
         private void saveSimulationData_Click(object sender, EventArgs e)

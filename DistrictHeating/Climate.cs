@@ -30,31 +30,31 @@ namespace DistrictHeating
         public double[] DiffuseRadiation { get; set; } = new double[8760];
         public Climate()
         {   // initializing with data embeded in the resource
-            Assembly ThisAssembly = Assembly.GetExecutingAssembly();
-            System.IO.Stream? str = ThisAssembly.GetManifestResourceStream("DistrictHeating.TemperatureData.txt");
-            if (str != null)
-            {
-                using (StreamReader reader = new StreamReader(str))
-                {
-                    Dictionary<int, double[]> dwdData = ReadDwdData(reader, "TT_TU");
-                    if (dwdData.Any()) Temperature = dwdData.First().Value;
-                }
-            }
-            str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
-            if (str != null)
-            {
-                using (StreamReader reader = new StreamReader(str))
-                {
-                    Dictionary<int, double[]> dwdData = ReadDwdData(reader, "FG_LBERG");
-                    if (dwdData.Any()) GlobalSolarRadiation = dwdData.First().Value;
-                }
-                str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
-                using (StreamReader reader = new StreamReader(str))
-                {
-                    Dictionary<int, double[]> dwdData = ReadDwdData(reader, "FD_LBERG");
-                    if (dwdData.Any()) DiffuseRadiation = dwdData.First().Value;
-                }
-            }
+            //Assembly ThisAssembly = Assembly.GetExecutingAssembly();
+            //System.IO.Stream? str = ThisAssembly.GetManifestResourceStream("DistrictHeating.TemperatureData.txt");
+            //if (str != null)
+            //{
+            //    using (StreamReader reader = new StreamReader(str))
+            //    {
+            //        Dictionary<int, double[]> dwdData = ReadDwdData(reader, "TT_TU");
+            //        if (dwdData.Any()) Temperature = dwdData.First().Value;
+            //    }
+            //}
+            //str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
+            //if (str != null)
+            //{
+            //    using (StreamReader reader = new StreamReader(str))
+            //    {
+            //        Dictionary<int, double[]> dwdData = ReadDwdData(reader, "FG_LBERG");
+            //        if (dwdData.Any()) GlobalSolarRadiation = dwdData.First().Value;
+            //    }
+            //    str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
+            //    using (StreamReader reader = new StreamReader(str))
+            //    {
+            //        Dictionary<int, double[]> dwdData = ReadDwdData(reader, "FD_LBERG");
+            //        if (dwdData.Any()) DiffuseRadiation = dwdData.First().Value;
+            //    }
+            //}
         }
         public static Dictionary<int, double[]> ReadDwdData(StreamReader reader, string column)
         {
@@ -108,6 +108,103 @@ namespace DistrictHeating
             }
             return yearToData;
         }
+        public static double[] ReadDwdData(StreamReader reader, string station, string year, string column)
+        {
+            double[] data = new double[8760];
+            string? line = reader.ReadLine();
+            if (line != null)
+            {
+                string[] title = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                int dateIndex = -1, valueIndex = -1, stationIndex = -1;
+                for (int i = 0; i < title.Length; i++)
+                {
+                    if (title[i].Contains("MESS_DATUM", StringComparison.InvariantCultureIgnoreCase)) dateIndex = i;
+                    if (title[i].Contains("STATIONS_ID", StringComparison.InvariantCultureIgnoreCase)) stationIndex = i;
+                    if (title[i].Contains(column, StringComparison.InvariantCultureIgnoreCase)) valueIndex = i;
+                }
+                if (dateIndex >= 0 && valueIndex >= 0 && stationIndex >= 0)
+                {
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        string[] parts = line.Split(';');
+                        if (parts.Length > dateIndex && parts.Length > valueIndex)
+                        {
+                            string date = parts[dateIndex];
+                            if (date.Length >= 10)
+                            {
+                                try
+                                {
+                                    string yy = date.Substring(0, 4);
+                                    int month = Convert.ToInt32(date.Substring(4, 2));
+                                    int day = Convert.ToInt32(date.Substring(6, 2));
+                                    int hour = Convert.ToInt32(date.Substring(8, 2));
+                                    if (yy == year && month > 0 && month <= 12 && day > 0 && day <= 31 && hour >= 0 && hour < 24)
+                                    {
+                                        int hn = DateToHourNumber(month, day, hour);
+                                        data[hn] = Convert.ToDouble(parts[valueIndex], CultureInfo.InvariantCulture);
+                                        if (data[hn] == -999 && hn > 0) data[hn] = data[hn - 1]; // -999 is an error in data
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                }
+            }
+            return data;
+        }
+        public string[] GetChoises()
+        {
+            string[] res = new string[]
+            {
+                "3987 Potsdam 2023",
+                "5100 Trier 2023",
+                "1580 Geisenheim 2000",
+                "1580 Geisenheim 2001",
+                "1580 Geisenheim 2002",
+                "1580 Geisenheim 2003",
+                "1580 Geisenheim 2004",
+                "1580 Geisenheim 2005",
+                "1580 Geisenheim 2006",
+                "1580 Geisenheim 2008",
+                "1580 Geisenheim 2009",
+                "1580 Geisenheim 2010",
+                "1580 Geisenheim 2011",
+                "1580 Geisenheim 2012",
+                "1580 Geisenheim 2013"
+            };
+            return res;
+        }
+        public bool LoadData(string name)
+        {
+            string[] parts = name.Split(' ');
+            Assembly ThisAssembly = Assembly.GetExecutingAssembly();
+            System.IO.Stream? str = ThisAssembly.GetManifestResourceStream("DistrictHeating.TemperatureData.txt");
+            if (str != null)
+            {
+                using (StreamReader reader = new StreamReader(str))
+                {
+                    Temperature = ReadDwdData(reader, parts[0], parts[2], "TT_TU");
+                }
+            }
+            str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
+            if (str != null)
+            {
+                using (StreamReader reader = new StreamReader(str))
+                {
+                    GlobalSolarRadiation = ReadDwdData(reader, parts[0], parts[2], "FG_LBERG");
+                }
+                str.Position = 0; // geht das?
+                str = ThisAssembly.GetManifestResourceStream("DistrictHeating.SolarData.txt");
+                using (StreamReader reader = new StreamReader(str))
+                {
+                    DiffuseRadiation = ReadDwdData(reader, parts[0], parts[2], "FD_LBERG");
+                }
+            }
+            return Temperature != null && GlobalSolarRadiation != null && DiffuseRadiation != null;
+        }
+        /*
+         */
         /// <summary>
         /// Converts a date to the number of the hour in the year [0..8759]
         /// </summary>
@@ -138,6 +235,7 @@ namespace DistrictHeating
         }
         public static (int month, int day, int hour) HourNumberToDate(int hour)
         {
+            if (hour > 365 * 24) hour -= 365 * 24;
             int[] months = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
             int m = 11;
             int d = 0;
@@ -155,7 +253,7 @@ namespace DistrictHeating
             // now hour contains number of hours in this month
             d = hour / 24;
             h = hour % 24;
-            return (m+1,d+1,h);
+            return (m + 1, d + 1, h);
         }
         public double GetTempBelow(double threshold)
         {   // TODO: use cache

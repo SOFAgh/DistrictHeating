@@ -22,28 +22,13 @@ namespace DistrictHeating
         public static int HoursPerYear = 8760;
         public static double ZeroK = 273.15;
         public static int[] daysPerMonth = new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-        //    JsonSerializer serializer = new JsonSerializer();
-        //    serializer.Converters.Add(new JavaScriptDateTimeConverter());
-        //    serializer.NullValueHandling = NullValueHandling.Ignore;
-
-        //    using (StreamWriter sw = new StreamWriter(@"c:\Temp\jsontest.json"))
-        //    using (JsonWriter writer = new JsonTextWriter(sw))
-        //    {
-        //        serializer.Serialize(writer, this);
-        //    }
-        //    using (StreamReader sr = new StreamReader(@"c:\Temp\jsontest.json"))
-        //    {
-        //        string jstr = sr.ReadToEnd();
-        //        // the following works:
-        //        Plant dbg = JsonConvert.DeserializeObject<Plant>(jstr);
-        //    }
-        //}
         public Plant()
         {
             currentTime = 0;
             UseThreePipes = false;
             Climate = new Climate();
-            SolarThermalCollector = new SolarThermalCollector() { Area = 3500 };
+            SolarThermalCollector = new SolarThermalCollector() { Area = 5500 };
+            ConcentratingHeatPump = new ConcentratingHeatPump() { PeakPower = 100000, BatteryCapacity = 100000, HeatPumpPower = 10000 }; // 500m²=100kWhp
             Heating = new List<HeatingConsumer>();
             Heating.Add(HeatingConsumer.RadiatorHeating);
             Heating.Add(HeatingConsumer.UnderFloorHeating);
@@ -52,10 +37,10 @@ namespace DistrictHeating
             Pipeline = new Pipeline();
         }
         // current state data:
-        public double currentTime; // number of seconds since first of january of the simulation
-        public double returnPipeTemp; // current temperature of the return pipe [K]
-        public double warmPipeTemp; // current temperature of the warm pipe [K]
-        public double hotPipeTemp; // current temperature of the hot pipe [K]
+        internal double currentTime; // number of seconds since first of january of the simulation
+        internal double returnPipeTemp; // current temperature of the return pipe [K]
+        internal double warmPipeTemp; // current temperature of the warm pipe [K]
+        internal double hotPipeTemp; // current temperature of the hot pipe [K]
         public int startSimulationHour = 2880;
         public double numYears = 1;
         public int timeStep = 3600;
@@ -96,6 +81,7 @@ namespace DistrictHeating
         public double HotPipeMinTemp { get; set; } = 50; // minimum temperature for the hot pipe
         public Climate Climate { get; set; }
         public SolarThermalCollector SolarThermalCollector;
+        public ConcentratingHeatPump ConcentratingHeatPump;
         public List<HeatingConsumer> Heating;
         public BoreHoleField BoreHoleField;
         public Pipeline Pipeline;
@@ -143,6 +129,7 @@ namespace DistrictHeating
             Diagrams.Clear();
             // initialize the components
             SolarThermalCollector.Initialize(this);
+            ConcentratingHeatPump.Initialize(this);
             returnPipeTemp = 10 + ZeroK; // 10°C for return pipe
             warmPipeTemp = 20 + ZeroK; // 20° for warm and hot, only relevant for the first step
             hotPipeTemp = 20 + ZeroK;
@@ -178,6 +165,8 @@ namespace DistrictHeating
             // the temperatures of the pipes (returnPipeTemp, warmPipeTemp, hotPipeTemp) stay constant over the period 'step'. Each device consumes fron one pip and delivers
             // to another pipe. This water is collected and determins the temperatures of the next period.
             int step = timeStep; // step with 3600 seconds, i.e. one hour
+            double coldRingTemp = ZeroK + 10; // at the beginning
+            bool extractingHeat = false; // used to control the concentrating heat pump
             // for (int i = 0; i < HoursPerYear * 3600 / step; i++)
             for (int i = 0; i < numYears * HoursPerYear * 3600 / step; i++)
             {
@@ -194,19 +183,19 @@ namespace DistrictHeating
                 double heatConsumption = 0.0;
                 double electricityConsumption = 0.0;
                 // let the solar collectors do their work
-                if (i + startSimulationHour == Climate.DateToHourNumber(5, 25, 1))
+                if (i + startSimulationHour == Climate.DateToHourNumber(5, 9, 21))
                 { // use as a breakpoint
 
                 }
+                if (i == 1124) { }
                 (int dbgMonth, int dbgDay, int dbgHour) = Climate.HourNumberToDate(i + startSimulationHour);
+                System.Diagnostics.Trace.WriteLine(dbgDay.ToString() + "." + dbgMonth.ToString() + ". " + dbgHour.ToString() + "h, Speicher:" +
+                    (JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)) / 1000).ToString("F2", CultureInfo.InvariantCulture));
                 SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
                 double solarVolume = volumetricFlowRate * step; // this much water was pumped through the collectors fromPipe->toPipe
                 double solarEnergy = solarVolume * deltaT * 4200000;
-                solarTotal += solarEnergy;
-                if (JouleToKW(solarEnergy, step) > 1000)
-                {
-
-                }
+                ConcentratingHeatPump.EnergyFlow(this, step, extractingHeat, coldRingTemp, returnPipeTemp, out double coldVolumetricFlowRate, out double hotVolumetricFlowRate, out double coldOutTemp, out double hotOutTemp);
+                coldRingTemp = coldOutTemp; // decreased by concentrating the heat from the outer ring into the boreholefield
                 if (solarVolume > 0)
                 {
                     if (fromPipe == Pipe.returnPipe) // which it always should be
@@ -215,6 +204,9 @@ namespace DistrictHeating
                         {
                             warmPipeEnergy += solarVolume * (returnPipeTemp + deltaT);
                             warmPipeVolume += solarVolume;
+                            warmPipeEnergy += hotVolumetricFlowRate * step * hotOutTemp; // added by ConcentratingHeatPump
+                            warmPipeVolume += hotVolumetricFlowRate * step;
+                            solarEnergy += hotVolumetricFlowRate * step * hotOutTemp;
                         }
                         else if (toPipe == Pipe.hotPipe)
                         {
@@ -223,6 +215,7 @@ namespace DistrictHeating
                         }
                     }
                 }
+                solarTotal += solarEnergy;
                 for (int j = 0; j < Heating.Count; j++)
                 {
                     Heating[j].EnergyFlow(this, out volumetricFlowRate, out deltaT, out fromPipe, out toPipe, out electricPower);
@@ -249,12 +242,13 @@ namespace DistrictHeating
                 {
                     if (warmPipeVolume > returnPipeVolume)
                     {   // there was more hot water generated than used. Pump the difference through the boreHoleField
+                        extractingHeat = false;
                         if (warmPipeVolume > 0)
                         {
                             double pumpThroughBorehole = (warmPipeVolume - returnPipeVolume); // always positive
                             // pump the water first through the buffer storage (if any) then through the borehole field
                             BufferStorage.TransferEnergie(pumpThroughBorehole / step, warmPipeTemp, out double outTemp, step);
-                            BoreHoleField.TransferEnergie(pumpThroughBorehole / step, outTemp, out outTemp, step);
+                            BoreHoleField.TransferEnergie(pumpThroughBorehole / step, outTemp, out outTemp, step, coldVolumetricFlowRate, coldRingTemp, out coldRingTemp);
                             transferredEnergy = -pumpThroughBorehole * (outTemp - warmPipeTemp) * 4200000;
                             boreHoleAdded += transferredEnergy; ;
                             volumeFlow = pumpThroughBorehole / step;
@@ -264,11 +258,12 @@ namespace DistrictHeating
                     }
                     else
                     {   // water from the warm pipe has been used, transfer from return pipe to warm pipe
+                        extractingHeat = true;
                         if (returnPipeVolume > 0)
                         {
                             double pumpThroughBorehole = (returnPipeVolume - warmPipeVolume); // always positive
                             // pump the water first through the borehole field then through the buffer storage (if any) 
-                            BoreHoleField.TransferEnergie(-pumpThroughBorehole / step, returnPipeTemp, out double outTemp, step);
+                            BoreHoleField.TransferEnergie(-pumpThroughBorehole / step, returnPipeTemp, out double outTemp, step, coldVolumetricFlowRate, coldRingTemp, out coldRingTemp);
                             BufferStorage.TransferEnergie(-pumpThroughBorehole / step, outTemp, out outTemp, step);
                             transferredEnergy = -pumpThroughBorehole * (outTemp - returnPipeTemp) * 4200000;
                             boreHoleRemoved -= transferredEnergy; ;
@@ -278,10 +273,11 @@ namespace DistrictHeating
                         }
                     }
                 }
-                if (BufferStorage.TopTemperature< BufferStorage.BottomTemperature)
+                if (BufferStorage.TopTemperature < BufferStorage.BottomTemperature)
                 { }
                 double dbgtebo = JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)) / 1000;
                 double dbgtebu = JouleToKWh(BufferStorage.GetTotalEnergy(ZeroK + 10)) / 1000;
+                if (returnPipeEnergy / returnPipeVolume > 100 + ZeroK) { }
                 if (returnPipeVolume > 0) returnPipeTemp = returnPipeEnergy / returnPipeVolume;
                 if (warmPipeVolume > 0) warmPipeTemp = warmPipeEnergy / warmPipeVolume;
                 if (hotPipeVolume > 0) hotPipeTemp = hotPipeEnergy / hotPipeVolume;
@@ -292,6 +288,7 @@ namespace DistrictHeating
                 (warmPipeTemp, warmPipeLoss) = Pipeline.TemperatureChange(warmPipeTemp, warmPipeVolume / step, step);
                 (hotPipeTemp, hotPipeLoss) = Pipeline.TemperatureChange(hotPipeTemp, hotPipeVolume / step, step);
                 double netLoss = warmPipeLoss + hotPipeLoss + returnPipeLoss;
+                if (returnPipeTemp < ZeroK-10) { }
                 // save the current data for the graphical representation
                 int currentSeconds = (int)Math.Round(currentTime);
                 if (currentSeconds % 3600 == 0) // should always reach exact hours
@@ -319,13 +316,13 @@ namespace DistrictHeating
                         //System.Diagnostics.Trace.WriteLine("BoreholeEnergy: " + JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)) / 1000);
                     }
                 }
-                if (boreHoleTempFile!=null)
+                if (boreHoleTempFile != null)
                 {
                     boreHoleTempFile.Write(i.ToString());
                     double[] profile = BoreHoleField.GetTemperatureProfile();
                     for (int pi = 0; pi < profile.Length; pi++)
                     {
-                        boreHoleTempFile.Write(", " + (profile[pi]-ZeroK).ToString("F2", CultureInfo.InvariantCulture));
+                        boreHoleTempFile.Write(", " + (profile[pi] - ZeroK).ToString("F2", CultureInfo.InvariantCulture));
                     }
                     boreHoleTempFile.WriteLine();
                 }
@@ -339,6 +336,25 @@ namespace DistrictHeating
             boreHoleAdded = JouleToKWh(boreHoleAdded) / 1000; // we expect MWh
         }
 
+        public void SaveData(string filename)
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.Converters.Add(new JavaScriptDateTimeConverter());
+            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+            using (StreamWriter sw = new StreamWriter(@"c:\Temp\jsontest.json"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                serializer.Serialize(writer, this);
+            }
+            using (StreamReader sr = new StreamReader(@"c:\Temp\jsontest.json"))
+            {
+                string jstr = sr.ReadToEnd();
+                // the following works:
+                Plant? dbg = JsonConvert.DeserializeObject<Plant>(jstr);
+            }
+
+        }
         private void DiagramAdd(int currentSeconds, string name, double value, string unit)
         {
             if (double.IsNaN(value)) { return; }
@@ -381,7 +397,7 @@ namespace DistrictHeating
                 // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
                 double usedEnergy = volumetricFlowRate * 1000 * step * deltaT * 4200; // Joule produced in this hour by solarthermal collectors
                 totalEnergy += usedEnergy;
-                bhf.TransferEnergie(volumetricFlowRate, returnPipeTemp + deltaT, out double outTemp, step);
+                bhf.TransferEnergie(volumetricFlowRate, returnPipeTemp + deltaT, out double outTemp, step, 0, 0, out double _);
                 if (volumetricFlowRate != 0)
                 {
                     returnPipeTemp = outTemp;
@@ -420,7 +436,7 @@ namespace DistrictHeating
             BoreHoleField bhf = new BoreHoleField(4, ZeroK + 10);
             for (int i = 0; i < HoursPerYear; i++)
             {
-                bhf.TransferEnergie(0.001, ZeroK + 60, out double outTemp, 3600);
+                bhf.TransferEnergie(0.001, ZeroK + 60, out double outTemp, 3600, 0, 0, out double _);
             }
             double kWhTh = bhf.GetTotalEnergy(ZeroK + 10) / 3600 / 1000; // J -> kWh
             bhf.Dump("consistency");
@@ -561,7 +577,7 @@ Durchschnitt & 16.1 & 13 & 12.5 & 8.1 & 3.5 & 2.2 & 1.7 & 1.6 & 5.2 & 8.4 & 12.2
         internal int TimeStep
         {
             get { return timeStep / 60; }
-            set { timeStep =value* 60; }
+            set { timeStep = value * 60; }
         }
     }
 }

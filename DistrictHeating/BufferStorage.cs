@@ -34,11 +34,11 @@ namespace DistrictHeating
                 temperature[i] = StartTemperature;
             }
         }
-        public double TopTemperature
+        internal double TopTemperature
         {
             get { return temperature[0]; }
         }
-        public double BottomTemperature
+        internal double BottomTemperature
         {
             get { return temperature[temperature.Length - 1]; }
         }

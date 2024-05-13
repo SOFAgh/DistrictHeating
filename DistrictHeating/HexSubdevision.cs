@@ -347,7 +347,13 @@ namespace DistrictHeating
                 return t / n;
             }
         }
-
+        internal double CenterTemperature
+        {
+            get
+            {
+                return temp(0, 0);
+            }
+        }
         public double TotalEnergy
         {
             get

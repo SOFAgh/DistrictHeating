@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -27,10 +28,11 @@ namespace DistrictHeating
         Dictionary<(int, int), int> BoreHoleIndex;
 
 
-        public int NumberOfBoreHoles { get; set; } = 61;
+        public int NumberOfBoreHoles { get; set; } = 127;
         public double BoreHoleDistance { get; set; } = 3.0;
         public int Grid { get; set; } = 6;
         public double TransferPower { get; set; } = 5; // W/(K*m) power of the heat exchange of the borehole per meter and per K temperature difference
+        public bool useConcentratingHeatPump = true;
         private double GridDistance
         {
             get
@@ -210,17 +212,35 @@ namespace DistrictHeating
             }
         }
 
-        internal void TransferEnergie(double flowRate, double inTemperature, out double outTemperature, int step)
+        internal void TransferEnergie(double flowRate, double inTemperature, out double outTemperature, int step, double coldFlowRate, double coldInTemperature, out double coldOutTemperature)
         {
             // Let the water flow through all boreholes from the inner borehole to the outer holes.
             // This cannot be done parallel, since the out temperature of one borehole is the in temperature for the next borehole
-            for (int i = 0; i < Boreholes.Length; i++)
+            int numHotBoreholes, numColdBoreholes;
+            if (useConcentratingHeatPump)
+            {
+                numHotBoreholes = (numBoreholeRings * (numBoreholeRings - 1)) / 2 * 6 + 1;
+                numColdBoreholes = Boreholes.Length - numHotBoreholes; // the outer Ring
+            }
+            else
+            {
+                numHotBoreholes = Boreholes.Length;
+                numColdBoreholes = 0; // the outer Ring
+            }
+            for (int i = 0; i < numHotBoreholes; i++)
             {
                 int index = i;
-                if (flowRate < 0) index = Boreholes.Length - i - 1; // from outside to center when flow rate is negative
+                if (flowRate < 0) index = numHotBoreholes - i - 1; // from outside to center when flow rate is negative
                 Boreholes[index].Step(Lambda, HeatCapacity, step, inTemperature, flowRate, out inTemperature);
             }
             outTemperature = inTemperature;
+            for (int i = 0; i < numColdBoreholes; i++)
+            {
+                int index = numHotBoreholes + i;
+                if (coldFlowRate < 0) index = Boreholes.Length - i - 1; // flowrate alternates to equalize cooling of the outer ring
+                Boreholes[index].Step(Lambda, HeatCapacity, step, coldInTemperature, coldFlowRate, out coldInTemperature);
+            }
+            coldOutTemperature = coldInTemperature;
             // Transfer the temperature change at the edge of the borehole[i,j] to the surrounding hexagons.
             // Also changes the temperature of the borehole
             Parallel.ForEach(BoreholeIndices, tuple =>
@@ -294,7 +314,13 @@ namespace DistrictHeating
         {
             return Boreholes[0].MeanTemperature;
         }
-
+        internal double TemperatureAtCenter
+        {
+            get
+            {
+                return Boreholes[0].CenterTemperature;
+            }
+        }
         internal double GetColdEndTemperature(int v)
         {
             // return this[numRings, 0];

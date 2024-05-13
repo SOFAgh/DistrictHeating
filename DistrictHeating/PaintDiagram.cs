@@ -178,7 +178,7 @@ namespace DistrictHeating
                     else unitMinValue[unit] = Math.Min(item.Value[i].val, unitMinValue[unit]);
                     if (!unitMaxValue.TryGetValue(unit, out val)) unitMaxValue[unit] = item.Value[i].val;
                     else unitMaxValue[unit] = Math.Max(item.Value[i].val, unitMaxValue[unit]);
-                    if (unit == "°C" && unitMaxValue[unit] > 100)
+                    if (unit == "°C" && unitMinValue[unit] < -100)
                     {
 
                     }

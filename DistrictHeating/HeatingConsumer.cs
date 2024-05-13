@@ -33,7 +33,7 @@ namespace DistrictHeating
                     DeltaTemp = 10,
                     SupplyTemp = new double[] { 20, 25, 30, 34, 38, 41, 44, 48, 50 }, // from: https://www.vaillant.de/heizung/heizung-verstehen/tipps-rund-um-ihre-heizung/vorlauf-rucklauftemperatur
                     HeatPumpEfficiency = 0.5,
-                    NumberOfInstances = 30
+                    NumberOfInstances = 300
                 };
             }
         }
@@ -52,7 +52,7 @@ namespace DistrictHeating
                     DeltaTemp = 10,
                     SupplyTemp = new double[] { 20, 30, 38, 44, 50, 56, 62, 68, 72 }, // from: https://www.vaillant.de/heizung/heizung-verstehen/tipps-rund-um-ihre-heizung/vorlauf-rucklauftemperatur
                     HeatPumpEfficiency = 0.5,
-                    NumberOfInstances = 70
+                    NumberOfInstances = 0
                 };
             }
         }
@@ -86,6 +86,10 @@ namespace DistrictHeating
                     // e.g. 10° outside, supplyNeeded = 44, powerNeeded = 34
                     sumEnergy += powerNeeded;
                 }
+                else
+                {
+                    sumEnergy += 1.0; 
+                }
             }
             // powerFactor*sumPower == PowerConsumptionPerYear [J] ==>
             powerFactor = EnergyConsumptionPerYear / sumEnergy / 3600; // this factor scales the temperature difference of powerNeeded to the actual power in W
@@ -104,9 +108,11 @@ namespace DistrictHeating
             if (dayHour >= DayStartHour && dayHour < DayEndHour) requestedTemperature = DayTemperature;
             else requestedTemperature = NightTemperature;
             if (ambient < requestedTemperature && ambient24 < requestedTemperature)
+            // if (true)
             {   // we need heating
 
                 double normalized = Math.Min(Math.Max(20 - ambient, 0), 39.9999);
+                if (normalized < 1.0) normalized = 1.0; // bad implementation, we need an implementation which also reflects warm water usage
                 int supplyIndex = (int)Math.Floor(normalized / 5);
                 double normOffset = normalized / 5 - supplyIndex;
                 double supplyNeeded = SupplyTemp[supplyIndex] + normOffset * (SupplyTemp[supplyIndex + 1] - SupplyTemp[supplyIndex]);

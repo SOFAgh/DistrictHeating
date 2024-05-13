@@ -5,9 +5,11 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="HelpInfo.txt" />
     <None Remove="SolarData.txt" />
     <None Remove="TemperatureData.txt" />
   </ItemGroup>
@@ -19,6 +21,10 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="HelpInfo.txt" />
   </ItemGroup>
 
 </Project>
