@@ -11,7 +11,7 @@ namespace DistrictHeating
         /// <summary>
         /// Volume of the storage, water in m³
         /// </summary>
-        public double Volume = 500;
+        public double Volume = 50;
         /// <summary>
         /// Energy transfer of the heat exchanger in W/K
         /// </summary>

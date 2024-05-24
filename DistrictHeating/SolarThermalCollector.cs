@@ -30,7 +30,7 @@ namespace DistrictHeating
             // data is in J/cm², /3600: s->h, *10000: cm²->m²; / 1000: Wh->kWh
             double kWhPerSquareMeter = globalSolarRadiation / 3600 * 10000 / 1000;
         }
-        public void EnergyFlow(Plant plant, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower)
+        public void EnergyFlow(Plant plant, out double volumetricFlowRate, out double deltaT, out double electricPower)
         {
             double ambientTempDiff = plant.GetCurrentTemperature() + Plant.ZeroK - plant.returnPipeTemp;
             // double efficiency = Math.Max(Math.Min((45 + ambientTempDiff), 65), 25) / 100; // efficiency between 25% and 65% depending on supply temperature versus ambient temperature
@@ -45,9 +45,6 @@ namespace DistrictHeating
                 volumetricFlowRate = 0.0;
                 deltaT = 0.0;
             }
-            fromPipe = Pipe.returnPipe;
-            if (plant.UseThreePipes) toPipe = Pipe.hotPipe;
-            else toPipe = Pipe.warmPipe;
             electricPower = 0.0;
         }
     }

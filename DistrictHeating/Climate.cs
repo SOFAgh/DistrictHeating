@@ -213,7 +213,7 @@ namespace DistrictHeating
         }
         public static (int month, int day, int hour) HourNumberToDate(int hour)
         {
-            if (hour > 365 * 24) hour -= 365 * 24;
+            hour = hour % (365 * 24);
             int[] months = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
             int m = 11;
             int d = 0;

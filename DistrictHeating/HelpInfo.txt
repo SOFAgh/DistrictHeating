@@ -32,3 +32,75 @@ Der Durchmesser des Isolierten Rohres. Daraus und aus der Wärmeleitfähigkeit d
 Die Anzahl der Hausanschlüsse. Die bedeuten auch noch einen Wärmeverlust, der z.Z. leider nicht mit berechnet wird
 ---netFlowTemperature:
 Die Vorlauftemperatur im Netz, die nicht unterschritten werden darf. Sie kann, insbesondere bei starker Sonneneinstrahlung auch höher sein. Wenn der Speicher weniger liefert, erhöht die zentrale Wärmepumpe die Temperatur. Häuser, denen diese Temperatur nicht ausreicht, bräuchten in der hausübergabestation noch eine kleine Wärmepumpe zum nochmaligen Anheben der Temperatur.
+---savePlant:
+Speichert alle Angaben über die Anlage, also auch die Daten in den anderen Tabs in einer Datei. Das Format ist JSON, das kann man auch in einem Texteditor lesen.
+---openPlant:
+Liest die Daten für die gesamte Anlage aus der ausgewählten Datei ein.
+---numBoreHoles:
+Anzahl der Erdsonden. Die Erdsonden werden bislang immer hexagonal angeordnet mit einer Bohrung in der Mitte. Bei einem Ring sind das somit 7 Bohrungen (die eine in der Mitte und 6 außen herum). Je mehr Ringe, umso mehr Bohrungen. Im Prinzip kann das System auch belieb angeordnete Erdsonden simulieren. Wenn das erwünscht ist, bitte melden.
+---boreHoleLength:
+Die Tiefe der Bohrung. Alle Bohrungen sind gleich tief.
+---borHoleDistance:
+Abstand zwischen den Bohrungen im hexagonalen Raster. Das Bohren mit geringen Abständen ist möglicherweise problematisch, da man schon gebohrte Erdsonden zerstören könnte, wenn sie sich treffen. Je geringer der Abstand, umso mehr konzentriert sich die Wärme in der Mitte.
+---groundLambda:
+Wärmeleitfähigkeit des Untergrunds. Es wird nicht berücksichtigt, dass der Untergrund inhomogen ist und die Wärmeleitfähigkeit bei verschiedenen Tiefen unterschiedlich sein könnte. Das würde die Simulation nochmal deutlich verlangsamen. Die entsprechende Behörde im Bundesland (in Hessen HLNUG) kennt meist Werte für die Wärmeleitfähigkeit aus Bohrungen in der Nähe. Letztlich muss dieser Wert durch eine Probebohrung und einen "Thermal Response Test" festgestellt werden.
+---groundHeatCapacity:
+Die Wärmekapazität des Untergrunds bezogen auf einen Kubikmeter. In der Literatur findet man meist die Werte bezogen auf ein kg. Muss man halt mit dem spezifischen Gewicht umrechnen. Die entsprechende Behörde im Bundesland (in Hessen HLNUG) kennt meist Werte für die Wärmekapazität aus Bohrungen in der Nähe. Letztlich muss dieser Wert durch eine Probebohrung und einen "Thermal Response Test" festgestellt werden. 
+---numGrid:
+Anzahl der Zwischenpunkte für die Simulation. Je mehr Zwischenpunkt, umso genauer wird die Simulation, aber umso länger dauert sie auch. 6 ist ein guter Wert, man kann ja ausprobieren, ob sich das Ergebnis signifikant unterscheidet, wenn man weniger nimmt, vor allem, wenn man über viele Jahre simulieren will.
+---boreHolePower:
+Der Wärmeleitwert der Erdsonde pro Meter und Temperaturdifferenz. Gewöhnlich verwendet man den Wert "Bohrlochwiderstand", welcher das inverse dieses Wertes ist Leistung = 1/Bohrlochwiderstand. Eine gute Übersicht findet man hier: https://www.geoenergie-konzept.de/thermischer-bohrlochwiderstand 10 ist ein guter Wert, je höher, umso besser arbeitet der Speicher.
+---selectBoreholeTempFile:
+Hier kann man einen Dateinamen angeben. In diese Datei wird währen der Simulation für jeden Simulationschritt das Temperaturprofil des Erdsondenspeichers in eine csv Datei geschrieben. Das Temperaturprofil ist die Temperatur entlang einer Linie, die horizontal mitten durch den Speicher geht. Damit kann man mit entsprechenden Werkzeugen (z.B. ChatGPT) schöne Diagramme über den Zustand des Speichers zu bestimmten Zeiten erzeugen.
+---bufferStroageSize:
+Größe eine Pufferspeichers, der Wasser enthält. Dieser ist zunächst dem Erdsondenspeicher einfach vorgeschaltet und kann somit als innerer Kern des Speichers betrachtet werden, der sehr schnell Energie speichern und abgeben kann. Das heiße Wasser von der Solarthermie läuft zuerst durch diesen Speicher und dann erst in das Zentrum des Erdsondenspeichers. Umgekehrt wird bei Wärmeentnahme aus dem Erdsondenspeicher das Wasser von außen nach innen durch den Erdsondenspeicher und dann noch durch den Pufferspeicher geleitet. Das ist oft sinnvoll, besser wäre es natürlich, man könnte je nach Anforderung den Wärmefluss dynamisch bestimmen. Dazu müsste ich allerdings eine Steuerung der Anlage simulieren. Spannendes Projekt, jedoch z.Z. nach hinten getsellt.
+---bufferStorageEnergyTransfer:
+Wärmeleitwert für den Wärmetauscher im Wasserspeicher. Habe dafür keine guten Werte gefunden. Wer was weiß, bitte melden.
+---bufferStorageInstances:
+Anzahl der Pufferspeicher in der Anlage. Warum sollte es mehr als einen geben? Gedacht ist dieser Wert, um die Schichtung des Pufferspeicher zu Simulieren. Das ist ein schwieriges Unterfangen und hier noch recht experimentell. Aber die Wärmeschichtung im Pufferspeicher hat sicherlich Auswirkungen auf das Verhalten.
+---energyPerYear:
+Die Wärmemenge, die in einem Jahr benötigt wird. Daraus wird der stündliche Wärmebedarf berechnet, oder auch die zeitabhängige Leistung, die die Anlage liefern muss. Der stündliche Wärmebedarf ergibt sich aus der Außentemperatur zu dieser Stunde und dem typischen Tagesprofil des Wärmebedarfs in Privatwohnungen. Das Tagesprofil sowohl für die Heizung als auch für Warmwasser ist dieser Seite entnommen: Quelle: https://www.npro.energy/main/de/load-profiles/residential
+---hotWaterPercentage:
+Dar Anteil der Energie, die für die Warmwasserbereitung benötigt wird. Man findet verschiedene Werte im Internet, 10% ist vielleicht ganz gut. Letztlich bestimmt dieser Wert zusammen mit dem Jahresbedarf, den Temperaturdaten und den Tagesprofilen den stündlichen Wärmebedarf.
+---heatPumpEfficiency:
+Die technische Effizienz der Wärmepunpe im Bezug zum theoretischen COP nach der Carnot Formel. Die Carnot Formel gibt an, welcher theoretisch maximale COP für eine Wärmepumpe möglich ist. Real existierende Wärmepumpen erreichen etwa die Hälfte davon. Die Wärmepumpe dient übrigens der Aufrechterhaltung der minimalen Netzvorlauftemperatur und gehöhrt eigentlich in den Tab "Anlage". sorry
+---startCenterTemperature:
+Anfangstemperatur des Erdsondenspeichers in der Mitte. Man sollte das auf 10° belassen, es sei denn, man kennt die Werte nach einigen Jahren der Simulation und möchte mittendrin weitersimulieren. Aber damit wird der Speicher homogen von innen nach außen mit einer Temperatur beaufschlagt, was nur annähernd der Realität entspricht.
+---startBorderTemperature:
+Anfangstemperatur des Erdsondenspeichers am Rand. Siehe: Anfangstemperatur des Erdsondenspeichers in der Mitte
+---startDate:
+An diesem Datum soll die Simulation beginnen. 1.5. ist deshalb ein guter Wert, da zu diesem Zeitpunkt der Speicher gewöhnlich sein Minimum erreicht. Beginnt man am 1.1. mit einem leeren Speicher, so zieht man den Speicher unter 0° und das sollte nicht passieren, dann funktioniert auch die Simulation nicht mehr korrekt.
+---numYears:
+Anzahl der Jahre, die simuliert werden sollen. Bei mehreren jahren wiederholt sich hierbei das Wetter jedes Jahr. Es geht bei mehreren Jahren darum zu erkennen, wie sich das Erdsondenfeld verändert.
+---timeStep:
+Zeitschritte für die Simulation, oder Dauer eines Simulationsschrittes. 60 Minuten ist ein guter Wert. Kleinere Werte machen die Simulation zwar genauer, die Berechnungen brauchen aber entsprechend länger.In der Nähe der Erdsonden wird die Simulation ohnehin sowohl zeitlich als auch räumlich in kleineren Schritten gerechnet.
+---boreHoleAdded:
+Energiemenge in MWh, die dem gesamten Erdsondenspeicher zugeführt wurde.
+---boreHoleRemoved:
+Energiemenge in MWh, die aus dem Erdsondenspeicher entnommen wurde. Die Differenz zwische Zufuhr und Entnahme ist einerseits die Energiemenge, die nach der Simulation noch im Speicher steckt, andererseits die Energiemenge, die verloren gegangen ist.
+---solarTotal:
+Energiemenge, die durch Solarthermie erzeugt wurde. Die Energie ist zu einem Teil im Erdsondenspeicher gelandet, zu einem anderen Teil direkt ins Netz gegangen.
+---heatProduced:
+Die Wärmemenge, die von der Anlage erzeugt wurde. Sollte der angeforderten Wärmemenge entsprechen.
+---electricityTotal:
+Der Stromverbrauch der Wärmepumpe, die das Netz auf die geforderte Vorlauftemperatur bringt.
+---solarPercentage:
+Anteil der Solarthermie an der gesamten Wärmeproduktion.
+---saveSimulationData:
+Speichert die Daten der Simulationsschritte in einer csv Datei. Dabei gibt es folgende Spalten:
+Stunde: die Stunden ab Simulationsstart. Man kann daraus das Datum bestimmen.
+returnPipe|°C: die Rücklauftemperatur im Netz (ohne Wärmepumpe)
+warmPipe|°C: die Vorlauftemperatur im Netz (ohne Wärmepumpe)
+boreHoleCenter|°C: Temperatur in der Mitte des Erdsondenspeichers
+boreHoleBorder|°C: Temperatur am Rand des Erdsondenspeichers
+heatConsumption|kW: aktuelle Wärmeverbrauch
+electricityConsumption|kW: aktueller Stromverbrauch für die Wärmepumpe
+solarEnergy|kW: Leistung der Solarthermie
+boreHoleEnergyFlow|kW: Energiefluss vom oder zum Speicher
+ambientTemperature|°C: Umgebungstemperatur aus den Wetterdaten
+volumeFlow|l/s: Volumenstrom durch den Speicher
+netLoss|kW: Netzverlust
+bufferEnergy|MWh: Energieinhalt des Wasser-Pufferspeichers
+bufferTopTemperature|°C: Temperatur Wasser-Pufferspeicher oben
+bufferBottomTemperature|°C: Temperatur Wasser-Pufferspeicher unten
+boreHoleEnergy|MWh: Energiegehalt des Erdsondenspeichers bemessen auf 10° Ausgangstemperatur

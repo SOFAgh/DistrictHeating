@@ -29,9 +29,7 @@ namespace DistrictHeating
             Climate = new Climate();
             SolarThermalCollector = new SolarThermalCollector() { Area = 7500 };
             ConcentratingHeatPump = new ConcentratingHeatPump() { PeakPower = 100000, BatteryCapacity = 100000, HeatPumpPower = 10000 }; // 500m²=100kWhp
-            Heating = new List<HeatingConsumer>();
-            Heating.Add(HeatingConsumer.RadiatorHeating);
-            Heating.Add(HeatingConsumer.UnderFloorHeating);
+            Heating = new HeatingConsumer();
             BoreHoleField = new BoreHoleField(4, ZeroK + 10);
             BufferStorage = new BufferStorage();
             Pipeline = new Pipeline();
@@ -56,34 +54,32 @@ namespace DistrictHeating
                 this.val = val;
             }
         }
-        public Dictionary<string, List<DiagramEntry>> Diagrams = new Dictionary<string, List<DiagramEntry>>();
-        public List<double> returnPipeTempPerHour = new List<double>();
-        public List<double> warmPipeTempPerHour = new List<double>();
-        public List<double> hotPipeTempPerHour = new List<double>();
-        public List<double> ambientTemperaturePerHour = new List<double>();
-        public List<double> boreHoleEnergyPerDay = new List<double>();
-        public List<double> boreHoleTempBorderPerHour = new List<double>();
-        public List<double> boreHoleTempCenterPerHour = new List<double>();
-        public List<double> boreHoleEnergyFlowPerHour = new List<double>();
-        public List<double> heatConsumptionPerHour = new List<double>();
-        public List<double> electricityConsumptionPerHour = new List<double>();
-        public List<double> solarHeatPerHour = new List<double>();
-        public List<double> volumeFlowPerHour = new List<double>();
-        public double solarPercentage;
-        public double electricityTotal;
-        public double heatProduced;
-        public double solarTotal;
-        public double boreHoleRemoved;
-        public double boreHoleAdded;
+        internal Dictionary<string, List<DiagramEntry>> Diagrams = new Dictionary<string, List<DiagramEntry>>();
+        internal List<double> returnPipeTempPerHour = new List<double>();
+        internal List<double> warmPipeTempPerHour = new List<double>();
+        internal List<double> hotPipeTempPerHour = new List<double>();
+        internal List<double> ambientTemperaturePerHour = new List<double>();
+        internal List<double> boreHoleEnergyPerDay = new List<double>();
+        internal List<double> boreHoleTempBorderPerHour = new List<double>();
+        internal List<double> boreHoleTempCenterPerHour = new List<double>();
+        internal List<double> boreHoleEnergyFlowPerHour = new List<double>();
+        internal List<double> heatConsumptionPerHour = new List<double>();
+        internal List<double> electricityConsumptionPerHour = new List<double>();
+        internal List<double> solarHeatPerHour = new List<double>();
+        internal List<double> volumeFlowPerHour = new List<double>();
+        internal double solarPercentage;
+        internal double electricityTotal;
+        internal double heatProduced;
+        internal double solarTotal;
+        internal double boreHoleRemoved;
+        internal double boreHoleAdded;
 
         // plant properties
-        public bool UseThreePipes { get; set; } = false; // use a three pipe system
-        public double WarmPipeMinTemp { get; set; } = 40; // minimum temperature for the warm pipe
-        public double HotPipeMinTemp { get; set; } = 50; // minimum temperature for the hot pipe
+        internal bool UseThreePipes { get; set; } = false; // use a three pipe system
         public Climate Climate { get; set; }
         public SolarThermalCollector SolarThermalCollector;
         public ConcentratingHeatPump ConcentratingHeatPump;
-        public List<HeatingConsumer> Heating;
+        public HeatingConsumer Heating;
         public BoreHoleField BoreHoleField;
         public Pipeline Pipeline;
         public BufferStorage BufferStorage;
@@ -134,10 +130,7 @@ namespace DistrictHeating
             returnPipeTemp = 10 + ZeroK; // 10°C for return pipe
             warmPipeTemp = 20 + ZeroK; // 20° for warm and hot, only relevant for the first step
             hotPipeTemp = 20 + ZeroK;
-            for (int j = 0; j < Heating.Count; j++)
-            {
-                Heating[j].Initialize(this); // calculate scaling factors
-            }
+            Heating.Initialize(this); // calculate scaling factors
             BoreHoleField.Initialize();
             BufferStorage.Initialize();
             if (!string.IsNullOrEmpty(boreHoleTempFileName))
@@ -188,48 +181,30 @@ namespace DistrictHeating
                 { // use as a breakpoint
 
                 }
-                if (i == 1124) { }
                 (int dbgMonth, int dbgDay, int dbgHour) = Climate.HourNumberToDate(i + startSimulationHour);
                 System.Diagnostics.Trace.WriteLine(dbgDay.ToString() + "." + dbgMonth.ToString() + ". " + dbgHour.ToString() + "h, Speicher:" +
                     (JouleToKWh(BoreHoleField.GetTotalEnergy(ZeroK + 10)) / 1000).ToString("F2", CultureInfo.InvariantCulture));
-                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out double electricPower);
                 double solarVolume = volumetricFlowRate * step; // this much water was pumped through the collectors fromPipe->toPipe
                 double solarEnergy = solarVolume * deltaT * 4200000;
                 ConcentratingHeatPump.EnergyFlow(this, step, extractingHeat, coldRingTemp, returnPipeTemp, out double coldVolumetricFlowRate, out double hotVolumetricFlowRate, out double coldOutTemp, out double hotOutTemp);
                 coldRingTemp = coldOutTemp; // decreased by concentrating the heat from the outer ring into the boreholefield
                 if (solarVolume > 0)
                 {
-                    if (fromPipe == Pipe.returnPipe) // which it always should be
-                    {
-                        if (toPipe == Pipe.warmPipe)
-                        {
-                            warmPipeEnergy += solarVolume * (returnPipeTemp + deltaT);
-                            warmPipeVolume += solarVolume;
-                            warmPipeEnergy += hotVolumetricFlowRate * step * hotOutTemp; // added by ConcentratingHeatPump
-                            warmPipeVolume += hotVolumetricFlowRate * step;
-                            solarEnergy += hotVolumetricFlowRate * step * hotOutTemp;
-                        }
-                        else if (toPipe == Pipe.hotPipe)
-                        {
-                            hotPipeEnergy += solarVolume * (returnPipeTemp + deltaT);
-                            hotPipeVolume += solarVolume;
-                        }
-                    }
+                    warmPipeEnergy += solarVolume * (returnPipeTemp + deltaT);
+                    warmPipeVolume += solarVolume;
+                    warmPipeEnergy += hotVolumetricFlowRate * step * hotOutTemp; // added by ConcentratingHeatPump
+                    warmPipeVolume += hotVolumetricFlowRate * step;
+                    solarEnergy += hotVolumetricFlowRate * step * hotOutTemp;
                 }
                 solarTotal += solarEnergy;
-                for (int j = 0; j < Heating.Count; j++)
-                {
-                    Heating[j].EnergyFlow(this, out volumetricFlowRate, out deltaT, out fromPipe, out toPipe, out electricPower);
-                    double heatingVolume = volumetricFlowRate * step; // amount of water which has been used by this heating
-                    if (toPipe == Pipe.returnPipe)
-                    {
-                        double inTemp = (fromPipe == Pipe.warmPipe) ? warmPipeTemp : hotPipeTemp;
-                        returnPipeVolume += heatingVolume; // add this amount of water to the return pipe pool with the now decreased temperature
-                        returnPipeEnergy += heatingVolume * (inTemp + deltaT); // deltaT is negative!
-                        heatConsumption += -heatingVolume * deltaT * 4200000; // in J, deltaT is negative, but we want a positiv value
-                        electricityConsumption += electricPower * step;
-                    }
-                }
+                Heating.EnergyFlow(this, out volumetricFlowRate, out deltaT, out electricPower);
+                double heatingVolume = volumetricFlowRate * step; // amount of water which has been used by this heating
+                double inTemp = warmPipeTemp;
+                returnPipeVolume += heatingVolume; // add this amount of water to the return pipe pool with the now decreased temperature
+                returnPipeEnergy += heatingVolume * (inTemp + deltaT); // deltaT is negative!
+                heatConsumption += -heatingVolume * deltaT * 4200000; // in J, deltaT is negative, but we want a positiv value
+                electricityConsumption += electricPower * step;
                 electricityTotal += electricityConsumption;
                 heatProduced += heatConsumption;
                 // now we have to balance the two or three pools, by pumping the water through the borehole field
@@ -267,7 +242,7 @@ namespace DistrictHeating
                             BoreHoleField.TransferEnergie(-pumpThroughBorehole / step, returnPipeTemp, out double outTemp, step, coldVolumetricFlowRate, coldRingTemp, out coldRingTemp);
                             BufferStorage.TransferEnergie(-pumpThroughBorehole / step, outTemp, out outTemp, step);
                             transferredEnergy = -pumpThroughBorehole * (outTemp - returnPipeTemp) * 4200000;
-                            boreHoleRemoved -= transferredEnergy; ;
+                            boreHoleRemoved -= transferredEnergy;
                             volumeFlow = -pumpThroughBorehole / step;
                             warmPipeVolume += returnPipeVolume;
                             warmPipeEnergy += returnPipeVolume * outTemp;
@@ -289,7 +264,7 @@ namespace DistrictHeating
                 (warmPipeTemp, warmPipeLoss) = Pipeline.TemperatureChange(warmPipeTemp, warmPipeVolume / step, step);
                 (hotPipeTemp, hotPipeLoss) = Pipeline.TemperatureChange(hotPipeTemp, hotPipeVolume / step, step);
                 double netLoss = warmPipeLoss + hotPipeLoss + returnPipeLoss;
-                if (returnPipeTemp < ZeroK-10) { }
+                if (returnPipeTemp < ZeroK - 10) { }
                 // save the current data for the graphical representation
                 int currentSeconds = (int)Math.Round(currentTime);
                 if (currentSeconds % 3600 == 0) // should always reach exact hours
@@ -297,7 +272,7 @@ namespace DistrictHeating
                     int hourIndex = currentSeconds / 3600;
                     DiagramAdd(currentSeconds, "returnPipe", returnPipeTemp - ZeroK, "°C");
                     DiagramAdd(currentSeconds, "warmPipe", warmPipeTemp - ZeroK, "°C");
-                    DiagramAdd(currentSeconds, "hotPipe", hotPipeTemp - ZeroK, "°C");
+                    //DiagramAdd(currentSeconds, "hotPipe", hotPipeTemp - ZeroK, "°C");
                     DiagramAdd(currentSeconds, "boreHoleCenter", BoreHoleField.GetHotEndTemperature(0) - ZeroK, "°C");
                     DiagramAdd(currentSeconds, "boreHoleBorder", BoreHoleField.GetColdEndTemperature(0) - ZeroK, "°C");
                     DiagramAdd(currentSeconds, "heatConsumption", JouleToKW(heatConsumption, step), "kW");
@@ -343,18 +318,23 @@ namespace DistrictHeating
             serializer.Converters.Add(new JavaScriptDateTimeConverter());
             serializer.NullValueHandling = NullValueHandling.Ignore;
 
-            using (StreamWriter sw = new StreamWriter(@"c:\Temp\jsontest.json"))
+            using (StreamWriter sw = new StreamWriter(filename))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
+                writer.Formatting = Formatting.Indented;
                 serializer.Serialize(writer, this);
             }
-            using (StreamReader sr = new StreamReader(@"c:\Temp\jsontest.json"))
+        }
+
+        public static Plant? ReadData(string filename)
+        {
+            using (StreamReader sr = new StreamReader(filename))
             {
                 string jstr = sr.ReadToEnd();
-                // the following works:
-                Plant? dbg = JsonConvert.DeserializeObject<Plant>(jstr);
+                Plant? res = JsonConvert.DeserializeObject<Plant>(jstr);
+                res?.BoreHoleField.Initialize();
+                return res;
             }
-
         }
         private void DiagramAdd(int currentSeconds, string name, double value, string unit)
         {
@@ -394,7 +374,7 @@ namespace DistrictHeating
             for (int i = 0; i < HoursPerYear * 3600 / step; i++)
             {
                 currentTime = i * step;
-                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out double electricPower);
                 // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
                 double usedEnergy = volumetricFlowRate * 1000 * step * deltaT * 4200; // Joule produced in this hour by solarthermal collectors
                 totalEnergy += usedEnergy;
@@ -454,7 +434,7 @@ namespace DistrictHeating
             {   // 1 hour steps
                 currentTime = i * 3600.0 / 60;
                 int month = Climate.HourNumberToMonth(i);
-                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+                SolarThermalCollector.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out double electricPower);
                 // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
                 double usedEnergy = (volumetricFlowRate * 1000 * 3600 / 60) * (deltaT) * 4200; // Joule used in this hour
                 totalEnergy += usedEnergy;
@@ -477,7 +457,7 @@ namespace DistrictHeating
             {   // read temperature per hour for all years in the file
                 tempPerYear = Climate.ReadDwdData(reader, "TT_TU");
             }
-            IProsumer radiator = HeatingConsumer.RadiatorHeating;
+            IProsumer radiator = HeatingConsumerOld.RadiatorHeating;
             System.Diagnostics.Trace.WriteLine(@"Jahr & Jan & Feb & Mär & Apr & Mai & Jun & Jul & Aug & Sep & Okt & Nov & Dez \\");
             for (int year = 2000; year < 2022; ++year)
             {   // for the years 2000 to 2021
@@ -493,7 +473,7 @@ namespace DistrictHeating
                     {   // 1 hour steps
                         currentTime = i * 3600.0;
                         int month = Climate.HourNumberToMonth(i);
-                        radiator.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+                        radiator.EnergyFlow(this, out double volumetricFlowRate, out double deltaT, out double electricPower);
                         // water: 4200 J/(kg*K), volumetricFlowRate in m³/s, (volumetricFlowRate * 1000 * 3600) = number of kg in this step (1 hour)
                         double usedEnergy = (volumetricFlowRate * 1000 * 3600) * (-deltaT) * 4200; // Joule used in this hour
                         totalEnergy += usedEnergy;

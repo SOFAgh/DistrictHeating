@@ -9,6 +9,6 @@ namespace DistrictHeating
     public interface IProsumer
     {
         void Initialize(Plant plant);
-        void EnergyFlow(Plant plant, out double volumetricFlowRate, out double deltaT, out Pipe fromPipe, out Pipe toPipe, out double electricPower);
+        void EnergyFlow(Plant plant, out double volumetricFlowRate, out double deltaT, out double electricPower);
     }
 }

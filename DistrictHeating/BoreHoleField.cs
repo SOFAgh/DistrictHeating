@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace DistrictHeating
 {
@@ -13,7 +14,7 @@ namespace DistrictHeating
         readonly double sqrt3 = Math.Sqrt(3.0);
         private double[,] temperature;
         private int numRings; // number of rings of hexagons (not boreholes)
-        private int numBoreholeRings;
+        public int numBoreholeRings; // public: to be saved as JSON
         private double[] boundaryRings;
         private const int numBoundaryRings = 100;
         double area;
@@ -28,11 +29,11 @@ namespace DistrictHeating
         Dictionary<(int, int), int> BoreHoleIndex;
 
 
-        public int NumberOfBoreHoles { get; set; } = 127;
+        internal int NumberOfBoreHoles { get; set; } = 127; // internal: do not save as JSON
         public double BoreHoleDistance { get; set; } = 3.0;
         public int Grid { get; set; } = 6;
-        public double TransferPower { get; set; } = 5; // W/(K*m) power of the heat exchange of the borehole per meter and per K temperature difference
-        public bool useConcentratingHeatPump = true;
+        public double TransferPower { get; set; } = 10; // W/(K*m) power of the heat exchange of the borehole per meter and per K temperature difference
+        public bool useConcentratingHeatPump = false;
         private double GridDistance
         {
             get

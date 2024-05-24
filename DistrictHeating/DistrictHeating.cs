@@ -13,7 +13,6 @@ namespace DistrictHeating
     public partial class DistrictHeating : Form
     {
         public Plant Plant { get; set; } = new Plant();
-        private int HeatingNameIndex;
         private PaintDiagram paintDiagram;
         public DistrictHeating()
         {
@@ -139,7 +138,7 @@ namespace DistrictHeating
                 });
                 solarPercentage.Text = (Plant.solarPercentage * 100).ToString("F2") + "% ";
                 electricityTotal.Text = Plant.electricityTotal.ToString("F2");
-                heatProduced.Text = Plant.heatProduced.ToString("F2");
+                heatProduced.Text = (Plant.heatProduced + Plant.electricityTotal).ToString("F2");
                 solarTotal.Text = Plant.solarTotal.ToString("F2");
                 boreHoleRemoved.Text = Plant.boreHoleRemoved.ToString("F2");
                 boreHoleAdded.Text = Plant.boreHoleAdded.ToString("F2");
@@ -154,6 +153,7 @@ namespace DistrictHeating
             insulationLambda.Text = Plant.Pipeline.insulationLambda.ToString();
             pipeInsulationDiameter.Text = (Plant.Pipeline.outerDiameter * 1000).ToString();
             numConnections.Text = Plant.Pipeline.connections.ToString();
+            netFlowTemperature.Text = (Plant.netFlowTemperature - Plant.ZeroK).ToString();
             // boreHoleField
             for (int i = 0; i < numBoreHoles.Items.Count; i++)
             {
@@ -190,7 +190,10 @@ namespace DistrictHeating
             batteryCapacity.Text = (Plant.ConcentratingHeatPump.BatteryCapacity / 1000).ToString();
             useConcentrator.Checked = Plant.BoreHoleField.useConcentratingHeatPump;
             // heating
-            SetHeatingNameData(0);
+            energyPerYear.Text = (Plant.Heating.EnergyConsumptionPerYear / 3600 / 1000000).ToString(); // J -> MWh
+            hotWaterPercentage.Text = Plant.Heating.percentageHotWater.ToString();
+            heatPumpEfficiency.Text = Plant.Heating.HeatPumpEfficiency.ToString();
+
             returnPipe.Checked = paintDiagram.ShowReturnPipeTemperature;
             warmPipe.Checked = paintDiagram.ShowWarmPipeTemperature;
             hotPipe.Checked = paintDiagram.ShowHotPipeTemperature;
@@ -209,7 +212,7 @@ namespace DistrictHeating
                 if (weatherStaionsList.Items[i].ToString() == Plant.Climate.stationAndYear)
                 {
                     weatherStaionsList.SelectedIndex = i;
-                    break; 
+                    break;
                 }
             }
             weatherStaionsList_SelectedIndexChanged(weatherStaionsList, EventArgs.Empty);
@@ -224,6 +227,9 @@ namespace DistrictHeating
             if (!double.TryParse(pipeInsulationDiameter.Text, out Plant.Pipeline.outerDiameter)) return pipeInsulationDiameter;
             Plant.Pipeline.outerDiameter /= 1000;
             if (!int.TryParse(numConnections.Text, out Plant.Pipeline.connections)) return numConnections;
+            if (!double.TryParse(netFlowTemperature.Text, out Plant.netFlowTemperature)) return netFlowTemperature;
+            Plant.netFlowTemperature += Plant.ZeroK;
+
             // boreHoleField
             if (int.TryParse(numBoreHoles.Text.Substring(numBoreHoles.Text.IndexOf('(') + 1, 2).Trim(), out int nb))
             {
@@ -270,10 +276,17 @@ namespace DistrictHeating
             Plant.ConcentratingHeatPump.HeatPumpPower *= 1000;
             Plant.ConcentratingHeatPump.BatteryCapacity *= 1000;
             Plant.BoreHoleField.useConcentratingHeatPump = useConcentrator.Checked;
+            // heating
+            if (!double.TryParse(energyPerYear.Text, out double ec)) return energyPerYear;
+            Plant.Heating.EnergyConsumptionPerYear = ec * 3600 * 1000000; // MWh -> J
+            if (!double.TryParse(hotWaterPercentage.Text, out double hw)) return hotWaterPercentage;
+            Plant.Heating.percentageHotWater = hw;
+            if (!double.TryParse(heatPumpEfficiency.Text, out double hpe)) return heatPumpEfficiency;
+            Plant.Heating.HeatPumpEfficiency = hpe;
+
             Plant.Climate.LoadData(weatherStaionsList.SelectedItem.ToString());
             //// heating
 
-            GetHeatingNameData(HeatingName.SelectedIndex);
             paintDiagram.ShowReturnPipeTemperature = returnPipe.Checked;
             paintDiagram.ShowWarmPipeTemperature = warmPipe.Checked;
             paintDiagram.ShowHotPipeTemperature = hotPipe.Checked;
@@ -289,166 +302,84 @@ namespace DistrictHeating
             paintDiagram.ShowBoreHoleEnergy = boreHoleEnergy.Checked;
             return null;
         }
-        private void SetHeatingNameData(int indexToSelect)
-        {
-            HeatingName.Items.Clear();
-            for (int i = 0; i < Plant.Heating.Count; i++)
-            {
-                HeatingName.Items.Add(Plant.Heating[i].Name);
-            }
-            HeatingName.Items.Add("--- neuer Eintrag ---");
-
-            HeatingName.SelectedIndex = indexToSelect;
-        }
-
-        private void HeatingName_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (HeatingNameIndex != HeatingName.SelectedIndex) GetHeatingNameData(HeatingNameIndex);
-            HeatingNameIndex = HeatingName.SelectedIndex;
-            if ("--- neuer Eintrag ---" == HeatingName.GetItemText(HeatingName.SelectedItem))
-            {
-                HeatingConsumer n = HeatingConsumer.RadiatorHeating;
-                n.Name = "Bezeichnung";
-                Plant.Heating.Add(n);
-                SetHeatingNameData(0);
-                int ind = HeatingName.FindString(n.Name);
-                HeatingName.SelectedIndex = ind;
-            }
-            for (int i = 0; i < Plant.Heating.Count; i++)
-            {
-                if (Plant.Heating[i].Name == HeatingName.GetItemText(HeatingName.SelectedItem))
-                {
-                    energyPerYear.Text = (Plant.Heating[i].EnergyConsumptionPerYear / 3600 / 1000).ToString("#");
-                    vl20.Text = Plant.Heating[i].SupplyTemp[0].ToString();
-                    vl15.Text = Plant.Heating[i].SupplyTemp[1].ToString();
-                    vl10.Text = Plant.Heating[i].SupplyTemp[2].ToString();
-                    vl5.Text = Plant.Heating[i].SupplyTemp[3].ToString();
-                    vl0.Text = Plant.Heating[i].SupplyTemp[4].ToString();
-                    vlm5.Text = Plant.Heating[i].SupplyTemp[5].ToString();
-                    vlm10.Text = Plant.Heating[i].SupplyTemp[6].ToString();
-                    vlm15.Text = Plant.Heating[i].SupplyTemp[7].ToString();
-                    vlm20.Text = Plant.Heating[i].SupplyTemp[8].ToString();
-                    dayTemperature.Text = Plant.Heating[i].DayTemperature.ToString("#");
-                    nightTemperature.Text = Plant.Heating[i].NightTemperature.ToString("#");
-                    beginDayTime.Text = Plant.Heating[i].DayStartHour.ToString("#");
-                    endDayTime.Text = Plant.Heating[i].DayEndHour.ToString("#");
-                    heatPumpEfficiency.Text = (Plant.Heating[i].HeatPumpEfficiency * 100).ToString("#");
-                    instanceNumber.Text = Plant.Heating[i].NumberOfInstances.ToString("#");
-                    break;
-                }
-            }
-        }
-        private void GetHeatingNameData(int index)
-        {
-            if (index >= 0 && index < Plant.Heating.Count)
-            {
-                if (double.TryParse(energyPerYear.Text, out double epy)) Plant.Heating[index].EnergyConsumptionPerYear = epy * 3600 * 1000;
-                double.TryParse(vl20.Text, out Plant.Heating[index].SupplyTemp[0]);
-                double.TryParse(vl15.Text, out Plant.Heating[index].SupplyTemp[1]);
-                double.TryParse(vl10.Text, out Plant.Heating[index].SupplyTemp[2]);
-                double.TryParse(vl5.Text, out Plant.Heating[index].SupplyTemp[3]);
-                double.TryParse(vl0.Text, out Plant.Heating[index].SupplyTemp[4]);
-                double.TryParse(vlm5.Text, out Plant.Heating[index].SupplyTemp[5]);
-                double.TryParse(vlm10.Text, out Plant.Heating[index].SupplyTemp[6]);
-                double.TryParse(vlm15.Text, out Plant.Heating[index].SupplyTemp[7]);
-                double.TryParse(vlm20.Text, out Plant.Heating[index].SupplyTemp[8]);
-                if (double.TryParse(dayTemperature.Text, out double dyt)) Plant.Heating[index].DayTemperature = dyt;
-                if (double.TryParse(nightTemperature.Text, out double nt)) Plant.Heating[index].NightTemperature = nt;
-                if (int.TryParse(beginDayTime.Text, out int dsh)) Plant.Heating[index].DayStartHour = dsh;
-                if (int.TryParse(endDayTime.Text, out int deh)) Plant.Heating[index].DayEndHour = deh;
-                if (double.TryParse(heatPumpEfficiency.Text, out double hpe)) Plant.Heating[index].HeatPumpEfficiency = hpe / 100;
-                if (int.TryParse(instanceNumber.Text, out int noi)) Plant.Heating[index].NumberOfInstances = noi;
-            }
-        }
-
-        private void HeatingName_TextUpdate(object sender, EventArgs e)
-        {
-            string txt = HeatingName.Text;
-            Plant.Heating[HeatingNameIndex].Name = txt;
-        }
-
-        private void HeatingName_Leave(object sender, EventArgs e)
-        {
-            SetHeatingNameData(HeatingNameIndex);
-        }
 
         private void graphicsPanel_Paint(object sender, PaintEventArgs e)
         {
             paintDiagram.Paint();
         }
 
-        private void warmPipe_CheckedChanged(object sender, EventArgs e)
+        private void warmPipe_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowWarmPipeTemperature = (sender as CheckBox).Checked;
         }
 
-        private void returnPipe_CheckedChanged(object sender, EventArgs e)
+        private void returnPipe_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowReturnPipeTemperature = (sender as CheckBox).Checked;
         }
 
-        private void hotPipe_CheckedChanged(object sender, EventArgs e)
+        private void hotPipe_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowHotPipeTemperature = (sender as CheckBox).Checked;
         }
 
-        private void boreHoleCenter_CheckedChanged(object sender, EventArgs e)
+        private void boreHoleCenter_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowBoreHoleTempCenter = (sender as CheckBox).Checked;
         }
 
-        private void boreHoleBorder_CheckedChanged(object sender, EventArgs e)
+        private void boreHoleBorder_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowBoreHoleTempBorder = (sender as CheckBox).Checked;
         }
 
-        private void heatConsumption_CheckedChanged(object sender, EventArgs e)
+        private void heatConsumption_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowHeatConsumption = (sender as CheckBox).Checked;
         }
 
-        private void electricityConsumption_CheckedChanged(object sender, EventArgs e)
+        private void electricityConsumption_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowElectricityConsumption = (sender as CheckBox).Checked;
         }
 
-        private void solarEnergy_CheckedChanged(object sender, EventArgs e)
+        private void solarEnergy_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowSolarHeat = (sender as CheckBox).Checked;
         }
 
-        private void boreHoleEnergyFlow_CheckedChanged(object sender, EventArgs e)
+        private void boreHoleEnergyFlow_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowBoreHoleEnergyFlow = (sender as CheckBox).Checked;
         }
 
-        private void ambientTemperature_CheckedChanged(object sender, EventArgs e)
+        private void ambientTemperature_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowAmbientTemperature = (sender as CheckBox).Checked;
         }
 
-        private void volumeFlow_CheckedChanged(object sender, EventArgs e)
+        private void volumeFlow_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowVolumeFlow = (sender as CheckBox).Checked;
         }
-        private void netLoss_CheckedChanged(object sender, EventArgs e)
+        private void netLoss_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowNetLoss = (sender as CheckBox).Checked;
         }
-        private void bufferEnergy_CheckedChanged(object sender, EventArgs e)
+        private void bufferEnergy_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowBufferEnergy = (sender as CheckBox).Checked;
         }
-        private void bufferTopTemperature_CheckedChanged(object sender, EventArgs e)
+        private void bufferTopTemperature_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowBufferTopTemperature = (sender as CheckBox).Checked;
         }
-        private void bufferBottomTemperature_CheckedChanged(object sender, EventArgs e)
+        private void bufferBottomTemperature_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowBufferBottomTemperature = (sender as CheckBox).Checked;
         }
 
-        private void boreHoleEnergy_CheckedChanged(object sender, EventArgs e)
+        private void boreHoleEnergy_CheckChanged(object sender, EventArgs e)
         {
             paintDiagram.ShowBoreHoleEnergy = (sender as CheckBox).Checked;
         }
@@ -496,11 +427,6 @@ namespace DistrictHeating
 
         }
 
-        private void contextMenuSaveImage_Opening(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-
-        }
-
         private void saveImage_Click(object sender, EventArgs e)
         {
             paintDiagram.saveImage();
@@ -526,7 +452,7 @@ namespace DistrictHeating
             {
                 using (StreamWriter outputFile = new StreamWriter(saveFileDialog.FileName))
                 {
-                    outputFile.Write("Stunde");
+                    outputFile.Write("Stunde, Datum");
                     int maxLength = 0;
                     List<string> columns = new List<string>();
                     foreach (string column in Plant.Diagrams.Keys)
@@ -538,7 +464,9 @@ namespace DistrictHeating
                     outputFile.WriteLine();
                     for (int i = 0; i < maxLength; i++)
                     {
-                        outputFile.Write(i.ToString());
+                        int hournum = Plant.startSimulationHour + i;
+                        (int month, int day, int hour) = Climate.HourNumberToDate(hournum);
+                        outputFile.Write(hournum.ToString() + ", +" + day.ToString() + "." + month.ToString() + ". " + hour.ToString() + " Uhr");
                         for (int j = 0; j < columns.Count; j++)
                         {
                             List<Plant.DiagramEntry> l = Plant.Diagrams[columns[j]];
@@ -578,12 +506,40 @@ namespace DistrictHeating
                     for (int i = 0; i < Plant.Climate.Temperature.Length; ++i)
                     {
                         (int month, int day, int hour) = Climate.HourNumberToDate(i);
-                        string line = day.ToString("D2")+"."+month.ToString("D2") +". " + hour.ToString("D2") + " Uhr\t" + Plant.Climate.Temperature[i].ToString("F1")
-                            +"°\t\t" + Plant.Climate.GlobalSolarRadiation[i].ToString("F1") + "\t\t" + Plant.Climate.DiffuseRadiation[i].ToString("F1");
+                        string line = day.ToString("D2") + "." + month.ToString("D2") + ". " + hour.ToString("D2") + " Uhr\t" + Plant.Climate.Temperature[i].ToString("F1")
+                            + "°\t\t" + Plant.Climate.GlobalSolarRadiation[i].ToString("F1") + "\t\t" + Plant.Climate.DiffuseRadiation[i].ToString("F1");
                         weatherData.Items.Add(line);
                     }
                     Cursor.Current = oldCursor;
                 }
+            }
+        }
+
+        private void savePlant_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "json files (*.json)|*.json|All files (*.*)|*.*";
+            saveFileDialog.FilterIndex = 1;
+            saveFileDialog.RestoreDirectory = true;
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                GetPlantData();
+                Plant.SaveData(saveFileDialog.FileName);
+            }
+
+        }
+
+        private void openPlant_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "json files (*.json)|*.json|All files (*.*)|*.*";
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
+            if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                Plant = Plant.ReadData(openFileDialog.FileName);
+                SetPlantData();
             }
         }
 
