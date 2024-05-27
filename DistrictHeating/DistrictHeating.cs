@@ -8,6 +8,12 @@ using System.IO;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 
+/* Setup: so funktioniert der Setup:
+ * Build->Publish Selection (FolderProfile.pubxml)
+ * Danach Inno Setup mit DistrictHeatingSetup.iss (Dokumente) starten und Compile aufrufen.
+ * Das Ergebnis befindet sich dann unter Dokumente/Output/dhsetup.exe
+ */
+
 namespace DistrictHeating
 {
     public partial class DistrictHeating : Form
