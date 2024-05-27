@@ -255,6 +255,7 @@ namespace DistrictHeating
                 }
             });
             double[,] newTemperature = (double[,])temperature.Clone();
+            // the following is Crank-Nicelson or better explicit Euler, which makes almost no difference to implicit Crank-Nicelson 
             Parallel.ForEach(AllIndicesWithoutBoreholes, tuple =>
             {
                 (int i, int j) = tuple;

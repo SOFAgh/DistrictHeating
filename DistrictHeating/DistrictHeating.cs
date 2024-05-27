@@ -10,6 +10,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 /* Setup: so funktioniert der Setup:
  * Build->Publish Selection (FolderProfile.pubxml)
+ * Alles wird compiliert und nach C:\Users\ghofm\source\repos\DistrictHeating\DistrictHeating\bin\Release\netcoreapp3.1\publish kopiert
  * Danach Inno Setup mit DistrictHeatingSetup.iss (Dokumente) starten und Compile aufrufen.
  * Das Ergebnis befindet sich dann unter Dokumente/Output/dhsetup.exe
  */
